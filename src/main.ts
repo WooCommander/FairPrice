@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import './styles/main.scss'
 import App from './App.vue'
 import router from './router'
-import { useAuth } from './composables/useAuth'
+import { useAuth } from '@/modules/auth/composables/useAuth'
 
 const app = createApp(App)
 

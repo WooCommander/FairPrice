@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTheme } from '@/composables/useTheme'
-import { useAuth } from '@/composables/useAuth'
+import { useAuth } from '@/modules/auth/composables/useAuth'
 
 const { isDark, toggleTheme } = useTheme()
 const { currentUser } = useAuth()

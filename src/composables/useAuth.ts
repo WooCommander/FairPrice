@@ -1,5 +1,5 @@
 import { ref, readonly } from 'vue'
-import type { User } from '@supabase/supabase-js'
+import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js'
 import { AuthService } from '@/services/AuthService'
 import { supabase } from '@/api/supabase'
 
@@ -19,7 +19,7 @@ const initAuth = async () => {
     }
 
     // Listen to auth changes
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
         currentUser.value = session?.user ?? null
     })
 }

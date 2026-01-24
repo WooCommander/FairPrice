@@ -1,0 +1,84 @@
+// Design System Tokens
+// Inspired by Material Design for Android feel
+
+:root {
+    // --- Colors ---
+    // Primary (Brand)
+    --color-primary: #6200ee;
+    --color-primary-variant: #3700b3;
+    --color-on-primary: #ffffff;
+
+    // Secondary (Accent)
+    --color-secondary: #03dac6;
+    --color-secondary-variant: #018786;
+    --color-on-secondary: #000000;
+
+    // Backgrounds & Surfaces
+    --color-background: #f5f5f5;
+    --color-surface: #ffffff;
+    --color-error: #b00020;
+
+    // Text / Content
+    --color-text-primary: #000000de; // High emphasis
+    --color-text-secondary: #00000099; // Medium emphasis
+    --color-text-disabled: #00000061;
+
+    // Borders
+    --color-border: #e0e0e0;
+
+    // --- Typography ---
+    --font-family-base: 'Roboto', 'Inter', sans-serif;
+
+    --text-h1: 96px;
+    --text-h2: 60px;
+    --text-h3: 48px;
+    --text-h4: 34px;
+    --text-h5: 24px;
+    --text-h6: 20px;
+
+    --text-body-1: 16px; // Base body
+    --text-body-2: 14px;
+
+    --text-button: 14px;
+    --text-caption: 12px;
+    --text-overline: 10px;
+
+    // --- Spacing & Sizing ---
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    // Touch Targets (Android Minimum)
+    --touch-target-min: 48px;
+
+    // Radii
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 16px; // Cards
+    --radius-pill: 999px;
+
+    // Shadows (Elevation)
+    --shadow-1: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+    --shadow-2: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+}
+
+// Dark Theme Overrides
+body.dark-theme {
+    --color-primary: #bb86fc;
+    --color-primary-variant: #3700b3;
+    --color-on-primary: #000000;
+
+    --color-secondary: #03dac6;
+
+    --color-background: #121212;
+    --color-surface: #1e1e1e;
+    --color-error: #cf6679;
+
+    --color-text-primary: #ffffffde;
+    --color-text-secondary: #ffffff99;
+    --color-text-disabled: #ffffff61;
+
+    --color-border: #383838;
+}
