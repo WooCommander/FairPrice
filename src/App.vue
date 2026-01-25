@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import MainLayout from '@/layouts/MainLayout.vue'
 
 const { initTheme } = useTheme()
 
@@ -10,9 +11,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <router-view />
+  <MainLayout />
 </template>
 
 <style lang="scss">
-/* Global styles could go here or in main.scss */
-</style>
+// Global resets if needed</style>

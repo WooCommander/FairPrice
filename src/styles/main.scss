@@ -1,6 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 :root {
-    --font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-    --bg-color: #ffffff;
+    --font-family: 'Outfit', sans-serif;
+    --bg-color: var(--color-background);
     --text-color: #213547;
     --border-color: #e5e7eb;
 }

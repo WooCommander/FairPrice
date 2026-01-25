@@ -24,6 +24,7 @@ const initAuth = async () => {
 export function useAuth() {
     return {
         currentUser: authStore.currentUser,
+        isLoading: AppService.isLoading,
         initAuth,
         signOut: AuthService.signOut.bind(AuthService)
     }

@@ -32,6 +32,17 @@ class AuthService {
         const { error } = await supabase.auth.signOut()
         if (error) throw error
     }
+
+    // Mock stats for MVP
+    async getUserStats() {
+        return {
+            joinedDate: new Date(2025, 10, 15),
+            reputation: 1250,
+            pricesSubmitted: 42,
+            moneySaved: 850000,
+            topCategory: 'Groceries'
+        }
+    }
 }
 
 export const instance = new AuthService()

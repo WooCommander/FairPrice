@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="fp-card" :class="[ `padding-${props.padding}`, { 'is-flat': props.flat } ]">
+  <div class="fp-card" :class="[`padding-${props.padding}`, { 'is-flat': props.flat }]">
     <slot />
   </div>
 </template>
@@ -19,20 +19,36 @@ const props = withDefaults(defineProps<Props>(), {
 <style scoped lang="scss">
 .fp-card {
   background-color: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-1);
-  transition: box-shadow 0.2s;
-  color: var(--color-text-primary);
-  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  width: 100%;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
-  &.is-flat {
-    box-shadow: none;
-    border: 1px solid var(--color-border);
+  &.shadow {
+    box-shadow: var(--shadow-1);
   }
 
-  &.padding-none { padding: 0; }
-  &.padding-sm { padding: var(--spacing-sm); }
-  &.padding-md { padding: var(--spacing-md); }
-  &.padding-lg { padding: var(--spacing-lg); }
+  // Padding variants
+  &.p-none {
+    padding: 0;
+  }
+
+  &.p-sm {
+    padding: var(--spacing-sm);
+  }
+
+  &.p-md {
+    padding: var(--spacing-md);
+  }
+
+  &.p-lg {
+    padding: var(--spacing-lg);
+  }
+
+  &:hover {
+    // Optional hover effect if clickable class is added or parent handles it
+    // transform: translateY(-2px); 
+    // box-shadow: var(--shadow-hover);
+  }
 }
 </style>
