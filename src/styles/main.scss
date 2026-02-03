@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&display=swap'); // Suggesting a serif for classic feel
 
 *,
 *::before,
@@ -7,22 +8,79 @@
 }
 
 :root {
+    // Fonts
     --font-family: 'Outfit', sans-serif;
-    --bg-color: var(--color-background);
-    --text-color: #213547;
-    --border-color: #e5e7eb;
+    --font-heading: 'Lora', serif;
+
+    // Spacing
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+
+    // Colors (Classic Light Theme)
+    --color-background: #f4f4f5; // Softer gray background
+    --color-surface: #ffffff;
+    --color-surface-translucent: rgba(255, 255, 255, 0.9);
+
+    --color-primary: #2c3e50; // Deep Blue/Slate for serious feel
+    --color-primary-rgb: 44, 62, 80;
+
+    --color-text-primary: #111827;
+    --color-text-secondary: #6b7280;
+    --color-text-disabled: #9ca3af;
+
+    --color-border: #e5e7eb;
+    --color-success: #059669;
+
+    // Shadows
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    // Text Sizes
+    --text-h1: 36px;
+    --text-h2: 30px;
+    --text-h3: 24px;
+    --text-h5: 18px;
+    --text-h6: 16px;
+    --text-body-1: 16px;
+    --text-body-2: 14px;
+    --text-caption: 12px;
+
+    // Radius
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-pill: 9999px;
 }
 
 body.dark-theme {
-    --bg-color: #1a1a1a;
-    --text-color: #ffffff;
-    --border-color: #374151;
+    --color-background: #111827;
+    --color-surface: #1f2937;
+    --color-surface-translucent: rgba(31, 41, 55, 0.9);
+
+    --color-primary: #60a5fa; // Lighter blue for dark mode
+    --color-text-primary: #f9fafb;
+    --color-text-secondary: #d1d5db;
+    --color-border: #374151;
 }
 
 body {
     margin: 0;
     font-family: var(--font-family);
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
     transition: background-color 0.3s, color 0.3s;
+    line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--font-heading), var(--font-family); // Use Serif if available
+    margin-top: 0;
 }

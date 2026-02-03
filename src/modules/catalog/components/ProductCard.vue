@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import FpCard from '@/design-system/components/FpCard.vue'
-import FpButton from '@/design-system/components/FpButton.vue'
-import type { Product } from '../services/CatalogService'
+import type { ProductModel } from '../adapters/CatalogAdapter'
 
 interface Props {
-    product: Product
+    product: ProductModel
 }
 
 const props = defineProps<Props>()
@@ -15,15 +13,16 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <FpCard class="product-card" @click="emit('click', props.product.id)">
+    <div class="product-card" @click="emit('click', props.product.id)">
         <div class="product-info">
             <h4 class="product-name">{{ props.product.name }}</h4>
             <span class="product-category">{{ props.product.category }}</span>
         </div>
-        <div class="product-action">
-            <FpButton variant="text" size="sm">></FpButton>
+        <div class="product-meta">
+            <span class="product-price">{{ props.product.formattedPrice }}</span>
+            <span class="product-time">{{ props.product.lastUpdateRelative }}</span>
         </div>
-    </FpCard>
+    </div>
 </template>
 
 <style scoped lang="scss">
@@ -53,5 +52,23 @@ const emit = defineEmits<{
 .product-category {
     font-size: var(--text-caption);
     color: var(--color-text-secondary);
+}
+
+.product-meta {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.product-price {
+    font-weight: 600;
+    color: var(--color-primary);
+    font-size: var(--text-body-2);
+}
+
+.product-time {
+    font-size: 10px;
+    color: var(--color-text-disabled);
 }
 </style>

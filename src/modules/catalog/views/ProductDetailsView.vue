@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { CatalogService, type Product } from '../services/CatalogService'
+import { catalogStore } from '../store/catalogStore'
 import { AnalyticsService, type PricePoint, type CheapPlace } from '@/modules/analytics/services/AnalyticsService'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
@@ -10,7 +10,7 @@ import CheapPlacesList from '@/modules/analytics/components/CheapPlacesList.vue'
 
 const route = useRoute()
 const router = useRouter()
-const product = ref<Product | null>(null)
+const product = catalogStore.currentProduct
 const loading = ref(true)
 const priceHistory = ref<PricePoint[]>([])
 const cheapPlaces = ref<CheapPlace[]>([])
@@ -19,9 +19,9 @@ onMounted(async () => {
     const id = String(route.params.id)
     loading.value = true
     try {
-        const found = await CatalogService.getProductById(id)
-        if (found) {
-            product.value = found
+        await catalogStore.loadProductById(id)
+        
+        if (product.value) {
             // Load analytics in parallel
             const [history, places] = await Promise.all([
                 AnalyticsService.getPriceHistory(id),
@@ -57,7 +57,7 @@ const goToAddPrice = () => {
 
             <div class="actions">
                 <FpButton variant="primary" size="full" @click="goToAddPrice">
-                    + Add Price Report
+                    + Добавить цену
                 </FpButton>
             </div>
 

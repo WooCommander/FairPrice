@@ -1,344 +1,328 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import FpCard from '@/design-system/components/FpCard.vue'
+import FpButton from '@/design-system/components/FpButton.vue'
 
 const router = useRouter()
 
-const login = async () => {
-  alert('Please implement real login or use Supabase Auth UI.')
-}
-
 const mockFeed = [
-  { id: 1, icon: '🥔', title: 'Potato (Young)', price: '4,500 UZS', store: 'Makro', time: '2 mins ago' },
-  { id: 2, icon: '🥩', title: 'Beef (Boneless)', price: '95,000 UZS', store: 'Chorsu Bazaar', time: '15 mins ago' },
-  { id: 3, icon: '🥚', title: 'Eggs (10pcs)', price: '18,200 UZS', store: 'Korzinka', time: '45 mins ago' },
-  { id: 4, icon: '🥛', title: 'Milk (Nestle 1L)', price: '14,500 UZS', store: 'Havas', time: '1 hour ago' },
-  { id: 5, icon: '🍎', title: 'Apples (Golden)', price: '12,000 UZS', store: 'Eco Bazaar', time: '2 hours ago' },
+  { id: 1, title: 'Картофель (Молодой)', price: '4 500 UZS', store: 'Makro', time: '2 мин. назад' },
+  { id: 2, title: 'Говядина (Мякоть)', price: '95 000 UZS', store: 'Чорсу Базар', time: '15 мин. назад' },
+  { id: 3, title: 'Яйца (10 шт)', price: '18 200 UZS', store: 'Korzinka', time: '45 мин. назад' },
+  { id: 4, title: 'Молоко (Nestle 1Л)', price: '14 500 UZS', store: 'Havas', time: '1 ч. назад' },
+  { id: 5, title: 'Яблоки (Голден)', price: '12 000 UZS', store: 'Эко Базар', time: '2 ч. назад' },
+]
+
+const recentSearches = [
+    'Сахар', 'Масло растительное', 'Мука 1с'
 ]
 </script>
 
 <template>
   <div class="home-dashboard">
-    <!-- Main Content Area -->
-    <section class="dashboard-main">
-      <div class="hero-banner">
-        <div class="hero-content">
-          <h1>Welcome to Fair Price</h1>
-          <p>Find the best deals nearby or share your own findings.</p>
-          <div class="hero-actions">
-            <button class="primary-btn" @click="router.push('/search')">Search Products</button>
-            <button class="secondary-btn" @click="router.push('/about')">How it works</button>
-          </div>
-        </div>
-        <div class="hero-illustration">
-          <!-- Abstract pattern or illustration -->
-          🛒
-        </div>
-      </div>
-
-      <div class="quick-actions-section">
-        <h3>What would you like to do?</h3>
-        <div class="actions-grid">
-          <FpCard class="action-card" @click="router.push('/search')">
-            <span class="emoji">🔍</span>
-            <span class="label">Find Products</span>
-            <span class="desc">Search efficiently</span>
-          </FpCard>
-          <FpCard class="action-card" @click="login">
-            <span class="emoji">➕</span>
-            <span class="label">Add Price</span>
-            <span class="desc">Contribute data</span>
-          </FpCard>
-          <FpCard class="action-card">
-            <span class="emoji">📍</span>
-            <span class="label">Map View</span>
-            <span class="desc">Explore nearby</span>
-          </FpCard>
-          <FpCard class="action-card">
-            <span class="emoji">⭐</span>
-            <span class="label">Saved Items</span>
-            <span class="desc">Your favorites</span>
-          </FpCard>
-        </div>
-      </div>
-    </section>
-
-    <!-- Sidebar / Feed Area -->
-    <aside class="dashboard-sidebar">
-      <div class="feed-container">
-        <div class="feed-header">
-          <h3>Recent Updates</h3>
-          <a href="#">View All</a>
+    <!-- Header / Hero Section -->
+    <header class="dashboard-header">
+        <h1 class="page-title">Мониторинг Цен</h1>
+        <p class="page-subtitle">Сравните цены в ближайших магазинах и на рынках.</p>
+        
+        <div class="search-bar-container">
+            <input type="text" class="search-input" placeholder="Поиск товара (например, молоко)..." @click="router.push('/search')" />
+            <div class="search-icon">🔍</div>
         </div>
 
-        <div class="feed-list">
-          <FpCard class="feed-item" padding="sm" v-for="item in mockFeed" :key="item.id">
-            <div class="feed-icon">{{ item.icon }}</div>
-            <div class="feed-content">
-              <span class="title">{{ item.title }}</span>
-              <div class="meta-row">
-                <span class="price">{{ item.price }}</span>
-                <span class="divider">•</span>
-                <span class="store">{{ item.store }}</span>
-              </div>
-              <span class="time">{{ item.time }}</span>
+        <div class="quick-links">
+            <span class="quick-link-label">Часто ищут:</span>
+            <button v-for="tag in recentSearches" :key="tag" class="tag-link" @click="router.push('/search')">
+                {{ tag }}
+            </button>
+        </div>
+    </header>
+
+    <div class="dashboard-content">
+        <!-- Main Actions -->
+        <section class="actions-section">
+            <FpCard class="action-card" @click="router.push('/search')">
+                <div class="action-icon">🔎</div>
+                <div class="action-details">
+                    <h3>Найти товар</h3>
+                    <span>Поиск лучших цен</span>
+                </div>
+            </FpCard>
+            
+            <FpCard class="action-card" @click="router.push('/add-price')">
+                <div class="action-icon">📝</div>
+                <div class="action-details">
+                    <h3>Добавить цену</h3>
+                    <span>Внести вклад в базу</span>
+                </div>
+            </FpCard>
+
+            <FpCard class="action-card" @click="router.push('/add-price')">
+                <div class="action-icon">⭐</div>
+                <div class="action-details">
+                    <h3>Избранное</h3>
+                    <span>Ваши списки</span>
+                </div>
+            </FpCard>
+        </section>
+
+        <!-- Recent Updates Feed -->
+        <section class="updates-section">
+            <div class="section-header">
+                <h2>Последние обновления</h2>
+                <FpButton variant="text" size="sm">Смотреть все</FpButton>
             </div>
-          </FpCard>
-        </div>
-      </div>
-    </aside>
+
+            <FpCard class="feed-table-card" padding="none">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Товар</th>
+                            <th class="text-right">Цена</th>
+                            <th>Магазин</th>
+                            <th class="text-right">Время</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="item in mockFeed" :key="item.id" class="feed-row" @click="router.push('/search')">
+                            <td class="font-medium">{{ item.title }}</td>
+                            <td class="text-right text-success font-bold">{{ item.price }}</td>
+                            <td class="text-secondary">{{ item.store }}</td>
+                            <td class="text-right text-muted text-sm">{{ item.time }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </FpCard>
+        </section>
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 .home-dashboard {
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: var(--spacing-xl);
-  align-items: start;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
+  max-width: 1000px; // Reduced max-width for better focus
+  margin: 0 auto;
+  padding: var(--spacing-xl) var(--spacing-lg);
 }
 
-// --- Hero Section ---
-.hero-banner {
-  background: linear-gradient(110deg, var(--color-primary), #A66EFF);
-  border-radius: var(--radius-lg);
-  padding: 56px;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-xl);
-  box-shadow: var(--shadow-2);
-  position: relative;
-  overflow: hidden;
-
-  // Background blobs
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -20%;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
-    border-radius: 50%;
-  }
-
-  .hero-content {
-    z-index: 1;
-    max-width: 65%;
-
-    h1 {
-      font-size: var(--text-h2);
-      font-weight: 700;
-      margin: 0 0 var(--spacing-sm);
-      letter-spacing: -1px;
-    }
-
-    p {
-      opacity: 0.95;
-      font-size: var(--text-h6);
-      margin-bottom: var(--spacing-lg);
-      line-height: 1.5;
-    }
-  }
-
-  .hero-actions {
-    display: flex;
-    gap: var(--spacing-md);
-
-    button {
-      padding: 14px 28px;
-      border-radius: var(--radius-pill);
-      font-weight: 600;
-      font-size: var(--text-body-1);
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-      }
-    }
-
-    .primary-btn {
-      background: white;
-      color: var(--color-primary);
-    }
-
-    .secondary-btn {
-      background: rgba(255, 255, 255, 0.25);
-      color: white;
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.35);
-      }
-    }
-  }
-
-  .hero-illustration {
-    font-size: 140px;
-    opacity: 0.8;
-    transform: rotate(15deg) translateY(10px);
-    filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.2));
-  }
+.dashboard-header {
+    margin-bottom: var(--spacing-2xl);
+    text-align: center;
 }
 
-.quick-actions-section {
-  h3 {
-    margin-bottom: var(--spacing-md);
-    font-size: var(--text-h5);
+.page-title {
+    font-family: var(--font-heading);
+    font-size: var(--text-h1); // Larger title
     font-weight: 700;
-  }
+    margin: 0 0 var(--spacing-sm);
+    color: var(--color-primary); // Use primary color
+    letter-spacing: -0.5px;
+}
 
-  .actions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: var(--spacing-md);
-  }
+.page-subtitle {
+    font-size: var(--text-h5);
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--spacing-xl);
+    font-weight: 300;
+}
 
-  .action-card {
-    display: flex;
-    flex-direction: column;
-    padding: var(--spacing-lg);
-    gap: var(--spacing-xs);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
+.search-bar-container {
     position: relative;
-    overflow: hidden;
-
-    &:hover {
-      border-color: var(--color-primary);
-      box-shadow: var(--shadow-hover);
-      transform: translateY(-4px);
-
-      .emoji {
-        transform: scale(1.1);
-      }
-    }
-
-    .emoji {
-      font-size: 40px;
-      margin-bottom: var(--spacing-sm);
-      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .label {
-      font-weight: 700;
-      font-size: var(--text-h6);
-    }
-
-    .desc {
-      font-size: var(--text-body-2);
-      color: var(--color-text-secondary);
-      line-height: 1.4;
-    }
-  }
+    max-width: 500px;
+    margin: 0 auto var(--spacing-lg);
 }
 
-// --- Sidebar ---
-.feed-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: var(--spacing-md);
+.search-input {
+    width: 100%;
+    padding: 18px 24px 18px 52px;
+    font-size: var(--text-body-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill); // Pill shape for classic modern feel
+    outline: none;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
 
-  h3 {
-    font-size: var(--text-h5);
-    font-weight: 700;
-    margin: 0;
-  }
+    &:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.1);
+    }
+}
 
-  a {
-    font-size: var(--text-body-2);
+.search-icon {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    font-size: 18px;
+}
+
+.quick-links {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.quick-link-label {
+    font-size: var(--text-caption);
+    color: var(--color-text-disabled);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     font-weight: 600;
-    color: var(--color-primary);
-    text-decoration: none;
+}
+
+.tag-link {
+    background: white;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-size: var(--text-caption);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    font-weight: 500;
+    
+    &:hover {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+        background: white;
+    }
+}
+
+.dashboard-content {
+    display: grid;
+    gap: var(--spacing-2xl);
+}
+
+// Actions Section
+.actions-section {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); // Strict 3 columns
+    gap: var(--spacing-lg);
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.action-card {
+    display: flex !important;
+    align-items: center;
+    gap: var(--spacing-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-lg) !important;
 
     &:hover {
-      text-decoration: underline;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--color-primary);
     }
-  }
 }
 
-.feed-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.feed-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  transition: all 0.2s;
-  cursor: pointer;
-  border: 1px solid transparent; // prevent layout shift on hover
-
-  &:hover {
-    background-color: var(--color-surface);
-    border-color: var(--color-border);
-    transform: scale(1.01);
-    box-shadow: var(--shadow-1);
-  }
-
-  .feed-icon {
-    font-size: 28px;
-    background: var(--color-background);
-    width: 56px;
-    height: 56px; // Larger touch target
+.action-icon {
+    font-size: 24px;
+    color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.05);
+    padding: 12px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-md);
-  }
+}
 
-  .feed-content {
+.action-details {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    overflow: hidden;
-  }
 
-  .title {
-    font-weight: 700;
-    font-size: var(--text-body-1);
-    color: var(--color-text-primary);
-  }
-
-  .meta-row {
-    display: flex;
-    gap: 8px;
-    font-size: var(--text-body-2);
-    color: var(--color-text-secondary);
-    align-items: center;
-    margin-top: 2px;
-
-    .price {
-      color: var(--color-success);
-      font-weight: 700;
-      background: rgba(0, 210, 160, 0.1);
-      padding: 0 6px;
-      border-radius: 4px;
+    h3 {
+        margin: 0;
+        font-family: var(--font-heading);
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--color-text-primary);
     }
-  }
 
-  .time {
-    font-size: var(--text-caption);
-    color: var(--color-text-disabled);
-    margin-top: 4px;
-  }
+    span {
+        font-size: var(--text-body-2);
+        color: var(--color-text-secondary);
+        margin-top: 2px;
+    }
 }
+
+// Updates Section
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--color-border);
+
+    h2 {
+        font-family: var(--font-heading);
+        font-size: var(--text-h3);
+        font-weight: 600;
+        margin: 0;
+        color: var(--color-text-primary);
+    }
+}
+
+.feed-table-card {
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    
+    th, td {
+        padding: 16px 24px; // More padding
+        text-align: left;
+    }
+
+    th {
+        font-size: 11px; // Smaller uppercase header
+        color: var(--color-text-secondary);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        background: #fafafa; // Light gray header
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    tbody tr {
+        border-bottom: 1px solid var(--color-border);
+        transition: background-color 0.1s;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:hover {
+            background-color: #f9fafb; // Subtle hover
+        }
+    }
+
+    .feed-row {
+        cursor: pointer;
+    }
+}
+
+.text-right { text-align: right; }
+.font-medium { font-weight: 500; }
+.font-bold { font-weight: 700; }
+.text-success { color: var(--color-success); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-muted { color: var(--color-text-disabled); }
+.text-sm { font-size: var(--text-caption); }
 </style>

@@ -12,6 +12,11 @@ const routes = [
         name: 'Profile',
         component: () => import('@/views/ProfileView.vue'),
         meta: { requiresAuth: true } // Or false for MVP demo
+    },
+    {
+        path: '/add-price/:id?',
+        name: 'AddPrice',
+        component: () => import('@/modules/prices/views/AddPriceView.vue')
     }
 ]
 
