@@ -8,9 +8,10 @@ const route = useRoute()
 const { isDark, toggleTheme } = useTheme()
 
 const navItems = [
-    { label: 'Home', path: '/' },
-    { label: 'Search', path: '/search' },
-    { label: 'Profile', path: '/profile' }
+    { label: 'Главная', path: '/' },
+    { label: 'Поиск', path: '/search' },
+    { label: 'Профиль', path: '/profile' },
+    { label: 'Стенд', path: '/design-system' }
 ]
 
 const currentPath = computed(() => route.path)

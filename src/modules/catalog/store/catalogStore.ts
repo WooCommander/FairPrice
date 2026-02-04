@@ -11,6 +11,16 @@ export const catalogStore = {
     currentProduct: readonly(currentProduct),
     isSearching: readonly(isSearching),
 
+    async loadRecentProducts() {
+        isSearching.value = true
+        try {
+            const results = await CatalogService.getRecentProducts()
+            searchResults.value = results.map(adaptProduct) // Assuming getRecentProducts returns DTOs
+        } finally {
+            isSearching.value = false
+        }
+    },
+
     async searchProducts(query: string, filters?: { category?: string, sort?: string }) {
         // Always run search to allow showing all products if query is empty
 

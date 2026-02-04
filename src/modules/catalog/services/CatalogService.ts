@@ -74,6 +74,11 @@ class CatalogService {
         return results
     }
 
+    async getRecentProducts(): Promise<ProductDTO[]> {
+        await new Promise(r => setTimeout(r, 500))
+        return this.mockProducts
+    }
+
     async getProductById(id: string): Promise<ProductDTO | undefined> {
         await new Promise(r => setTimeout(r, 300))
         return this.mockProducts.find(p => p.id === id)

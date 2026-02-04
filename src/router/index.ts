@@ -17,6 +17,11 @@ const routes = [
         path: '/add-price/:id?',
         name: 'AddPrice',
         component: () => import('@/modules/prices/views/AddPriceView.vue')
+    },
+    {
+        path: '/design-system',
+        name: 'DesignSystem',
+        component: () => import('@/views/DesignSystemView.vue')
     }
 ]
 

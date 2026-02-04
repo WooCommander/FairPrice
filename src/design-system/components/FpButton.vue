@@ -30,7 +30,8 @@ const classes = computed(() => [
 </script>
 
 <template>
-  <button :class="classes" :disabled="props.disabled || props.loading" :type="props.type" @click="emit('click', $event)">
+  <button :class="classes" :disabled="props.disabled || props.loading" :type="props.type"
+    @click="emit('click', $event)">
     <span v-if="loading" class="fp-button__loader">...</span>
     <span v-else class="fp-button__content">
       <slot />
@@ -58,28 +59,30 @@ const classes = computed(() => [
   // Sizes & Radius
   &--sm {
     height: 32px;
-    padding: 0 var(--spacing-md);
+    padding: 0 16px;
     font-size: var(--text-caption);
     border-radius: var(--radius-sm);
   }
 
   &--md {
-    height: var(--touch-target-min); // 48px
-    padding: 0 var(--spacing-lg);
+    height: 48px;
+    padding: 0 32px; // Wider padding for elegance
     font-size: var(--text-button);
     border-radius: var(--radius-md);
+    min-width: 120px; // Ensure buttons aren't too small
   }
 
   &--lg {
     height: 56px;
-    padding: 0 var(--spacing-xl);
+    padding: 0 40px;
     font-size: var(--text-body-1);
     border-radius: var(--radius-md);
+    min-width: 160px;
   }
 
   &--full {
     width: 100%;
-    height: var(--touch-target-min);
+    height: 56px; // Taller for full width
     font-size: var(--text-button);
     border-radius: var(--radius-md);
   }
@@ -105,12 +108,12 @@ const classes = computed(() => [
     background-color: transparent;
     color: var(--color-primary);
     box-shadow: none;
-    
+
     &:hover {
       background-color: rgba(98, 0, 238, 0.04);
     }
   }
-  
+
   &--outline {
     background-color: transparent;
     border: 1px solid var(--color-border);

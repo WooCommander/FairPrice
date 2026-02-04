@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 export interface ComboboxItem {
     id: string | number
@@ -91,9 +91,9 @@ onUnmounted(() => {
 
 <template>
     <div class="fp-combobox" ref="wrapperRef">
-        <div class="input-wrapper">
+        <div class="input-wrapper" :class="{ 'is-focused': isOpen }">
             <input ref="inputRef" class="fp-input" type="text" :value="modelValue" @input="onInput" @focus="onFocus"
-                :placeholder="placeholder" />
+                :placeholder="isOpen ? placeholder : ''" />
             <label v-if="label" class="fp-label" :class="{ 'has-value': modelValue || isOpen }">
                 {{ label }}
             </label>
@@ -109,7 +109,15 @@ onUnmounted(() => {
             </div>
 
             <div v-if="showCreateOption" class="dropdown-item create-option" @click="onCreate">
-                <span class="plus-icon">+</span> {{ createLabel }} "{{ modelValue }}"
+                <span class="plus-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </span>
+                <span class="create-text">
+                    {{ createLabel }} <span class="highlight">"{{ modelValue }}"</span>
+                </span>
             </div>
         </div>
     </div>
@@ -130,6 +138,12 @@ onUnmounted(() => {
     height: 56px;
     display: flex;
     align-items: flex-end;
+    transition: all 0.2s ease;
+
+    &.is-focused {
+        border-bottom-color: var(--color-primary);
+        background-color: rgba(var(--color-primary-rgb), 0.04);
+    }
 }
 
 .fp-input {
@@ -172,16 +186,18 @@ onUnmounted(() => {
     max-height: 250px;
     overflow-y: auto;
     z-index: 100;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .dropdown-item {
     padding: 12px 16px;
     cursor: pointer;
-    font-size: var(--text-body-2);
+    font-size: var(--text-body-1);
     color: var(--color-text-primary);
+    transition: background-color 0.1s;
 
-    &:hover {
+    &:hover,
+    &.selected {
         background: var(--color-background);
     }
 }
@@ -192,19 +208,39 @@ onUnmounted(() => {
     border-top: 1px solid var(--color-border);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    padding: 14px 16px;
+
+    &:hover {
+        background-color: rgba(var(--color-primary-rgb), 0.04);
+    }
+
+    .plus-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        background: rgba(var(--color-primary-rgb), 0.1);
+        border-radius: 50%;
+        color: var(--color-primary);
+    }
+
+    .highlight {
+        font-weight: 700;
+    }
 }
 
 .spinner {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border: 2px solid var(--color-border);
     border-top-color: var(--color-primary);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     position: absolute;
     right: 16px;
-    bottom: 16px;
+    bottom: 18px;
 }
 
 @keyframes spin {

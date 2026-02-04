@@ -84,21 +84,3 @@ body.dark-theme {
     --shadow-2: 0px 12px 32px -8px rgba(0, 0, 0, 0.3);
 }
 
-// Dark Theme Overrides
-body.dark-theme {
-    --color-primary: #bb86fc;
-    --color-primary-variant: #3700b3;
-    --color-on-primary: #000000;
-
-    --color-secondary: #03dac6;
-
-    --color-background: #121212;
-    --color-surface: #1e1e1e;
-    --color-error: #cf6679;
-
-    --color-text-primary: #ffffffde;
-    --color-text-secondary: #ffffff99;
-    --color-text-disabled: #ffffff61;
-
-    --color-border: #383838;
-}
