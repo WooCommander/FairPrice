@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { priceStore } from '../store/priceStore'
-import { settingsStore } from '@/modules/settings/store/settingsStore'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
@@ -16,7 +15,7 @@ const step = ref(1) // 1: Select Product, 2: Enter Details
 const searchQuery = ref('')
 const storeName = ref('')
 const price = ref<string | number>('')
-const currency = ref<'UZS' | 'RUB'>('UZS')
+const unit = ref('кг')
 let debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined
 const isStoreSelected = ref(false)
 
@@ -57,6 +56,8 @@ const comboboxSearchResults = computed(() => {
 const handleSearchStore = async (val: string) => {
     storeName.value = val
     if (val.length < 2) {
+        // Don't clear if it's empty, might be default list
+        if (val.length === 0) return
         storeResults.value = []
         return
     }
@@ -80,6 +81,18 @@ const createStore = (name: string) => {
     isStoreSelected.value = true
 }
 
+const onStoreFocus = async () => {
+    // Load defaults/recents if empty
+    if (!storeName.value) {
+        isSearchingStores.value = true
+        try {
+            storeResults.value = await priceStore.getStores('')
+        } finally {
+            isSearchingStores.value = false
+        }
+    }
+}
+
 // Product Methods
 const handleSearch = (val: string) => {
     const query = String(val)
@@ -96,6 +109,13 @@ const handleSearch = (val: string) => {
 const selectProduct = (p: { id: string | number, name: string }) => {
     catalogStore.loadProductById(String(p.id))
     step.value = 2
+}
+
+const onProductFocus = async () => {
+    if (!searchQuery.value) {
+        // Load recent or empty search
+        await catalogStore.searchProducts('')
+    }
 }
 
 const handleProductCreate = (query: string) => {
@@ -146,41 +166,20 @@ const createUnit = (val: string) => {
 const isSuccess = ref(false)
 
 // Exchange Rate Logic
-const isEditingRate = ref(false)
-const tempRate = ref(settingsStore.exchangeRate.value)
-const rateInputRef = ref<HTMLInputElement | null>(null)
 
-const startEditingRate = () => {
-    tempRate.value = settingsStore.exchangeRate.value
-    isEditingRate.value = true
-    nextTick(() => rateInputRef.value?.focus())
-}
-
-const saveRate = () => {
-    isEditingRate.value = false
-    settingsStore.setExchangeRate(tempRate.value)
-}
-
-const convertedPrice = computed(() => {
-    const val = Number(price.value)
-    if (isNaN(val) || !val) return 0
-    if (currency.value === 'UZS') return val
-    return Math.round(val * settingsStore.exchangeRate.value)
-})
-
-const formatPrice = (val: number) => val.toLocaleString('ru-RU')
 
 const submit = async () => {
     if (!currentProduct.value) return
 
-    const finalPrice = convertedPrice.value
+    const finalPrice = Number(price.value)
 
     try {
         await priceStore.submitPrice({
             productId: currentProduct.value.id,
             storeName: storeName.value,
             price: finalPrice,
-            currency: 'UZS' // Always send UZS to backend
+            currency: 'RUB', // Always send RUB
+            unit: unit.value
         })
         isSuccess.value = true
         setTimeout(() => {
@@ -200,6 +199,7 @@ onMounted(async () => {
         await catalogStore.loadProductById(id)
         if (currentProduct.value) {
             step.value = 2
+            unit.value = currentProduct.value.unit || 'кг'
         }
     } else {
         catalogStore.clearSearch()
@@ -221,7 +221,7 @@ onMounted(async () => {
                     <FpCombobox v-model="searchQuery" label="Поиск товара" placeholder="Например: Молоко"
                         :items="comboboxSearchResults" :loading="catalogStore.isSearching.value" allow-create
                         create-label="Добавить новый товар" @update:modelValue="handleSearch" @select="selectProduct"
-                        @create="handleProductCreate" />
+                        @create="handleProductCreate" @focus="onProductFocus" />
                 </div>
 
                 <div v-else class="creation-form">
@@ -262,32 +262,14 @@ onMounted(async () => {
                         <FpCombobox v-model="storeName" label="Магазин" placeholder="Магазин или рынок"
                             :items="storeResults" :loading="isSearchingStores" allow-create
                             create-label="Добавить место" @update:modelValue="handleSearchStore" @select="selectStore"
-                            @create="createStore" />
+                            @create="createStore" @focus="onStoreFocus" />
                     </div>
 
                     <div class="price-row">
-                        <FpInput v-model="price" label="Цена" type="number" placeholder="0" class="price-input" />
-
-                        <div class="currency-toggles">
-                            <button class="currency-btn" :class="{ active: currency === 'UZS' }"
-                                @click="currency = 'UZS'">UZS</button>
-                            <button class="currency-btn" :class="{ active: currency === 'RUB' }"
-                                @click="currency = 'RUB'">RUB</button>
-                        </div>
-                    </div>
-
-                    <!-- Exchange Rate Control (only for RUB) -->
-                    <div v-if="currency === 'RUB'" class="exchange-rate-control">
-                        <div class="rate-info">
-                            <span>Курс: 1 RUB = </span>
-                            <input v-if="isEditingRate" v-model.number="tempRate" type="number" class="rate-input"
-                                @blur="saveRate" @keyup.enter="saveRate" ref="rateInputRef" />
-                            <span v-else class="rate-value" @click="startEditingRate">{{
-                                settingsStore.exchangeRate.value }}
-                                UZS</span>
-                        </div>
-                        <div class="converted-price" v-if="price">
-                            ≈ {{ formatPrice(convertedPrice) }} UZS
+                        <FpInput v-model="price" label="Цена (₽)" type="number" placeholder="0" class="price-input" />
+                        <div class="unit-select">
+                            <FpCombobox v-model="unit" label="За" :items="unitItems" placeholder="кг" allow-create
+                                @create="createUnit" :clearable="false" />
                         </div>
                     </div>
                 </div>
@@ -377,7 +359,12 @@ onMounted(async () => {
 }
 
 .price-input {
+    flex: 2;
+}
+
+.unit-select {
     flex: 1;
+    min-width: 80px;
 }
 
 .currency-toggles {

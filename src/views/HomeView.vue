@@ -1,21 +1,21 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 
 const router = useRouter()
 
-const mockFeed = [
-    { id: 1, title: 'Картофель (Молодой)', price: '4 500 UZS', store: 'Makro', time: '2 мин. назад' },
-    { id: 2, title: 'Говядина (Мякоть)', price: '95 000 UZS', store: 'Чорсу Базар', time: '15 мин. назад' },
-    { id: 3, title: 'Яйца (10 шт)', price: '18 200 UZS', store: 'Korzinka', time: '45 мин. назад' },
-    { id: 4, title: 'Молоко (Nestle 1Л)', price: '14 500 UZS', store: 'Havas', time: '1 ч. назад' },
-    { id: 5, title: 'Яблоки (Голден)', price: '12 000 UZS', store: 'Эко Базар', time: '2 ч. назад' },
-]
+const { recentUpdates } = catalogStore
 
 const recentSearches = [
     'Сахар', 'Масло растительное', 'Мука 1с'
 ]
+
+onMounted(() => {
+    catalogStore.loadRecentProducts()
+})
 </script>
 
 <template>
@@ -85,12 +85,12 @@ const recentSearches = [
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="item in mockFeed" :key="item.id" class="feed-row"
-                                @click="router.push('/search')">
-                                <td class="font-medium">{{ item.title }}</td>
-                                <td class="text-right text-success font-bold">{{ item.price }}</td>
-                                <td class="text-secondary">{{ item.store }}</td>
-                                <td class="text-right text-muted text-sm">{{ item.time }}</td>
+                            <tr v-for="item in recentUpdates" :key="item.id" class="feed-row"
+                                @click="router.push(`/product/${item.id}`)">
+                                <td class="font-medium">{{ item.displayName }}</td>
+                                <td class="text-right text-success font-bold">{{ item.formattedPrice }}</td>
+                                <td class="text-secondary">{{ item.storeName }}</td>
+                                <td class="text-right text-muted text-sm">{{ item.lastUpdateRelative }}</td>
                             </tr>
                         </tbody>
                     </table>

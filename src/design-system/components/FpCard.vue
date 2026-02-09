@@ -23,6 +23,7 @@ const props = withDefaults(defineProps<Props>(), {
   border: 1px solid var(--color-border);
   width: 100%;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  padding: var(--spacing-md);
 
   &.shadow {
     box-shadow: var(--shadow-1);

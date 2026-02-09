@@ -7,12 +7,29 @@ export interface ProductModel {
     displayName: string
     formattedPrice: string
     lastUpdateRelative: string
+    storeName?: string
+    lastPrice?: number
+    unit: string
+    history: ProductHistoryModel[]
+}
+
+export interface ProductHistoryModel {
+    price: number
+    date: string
+    storeName: string
+    author: string
+    unit: string
+    dateRelative: string
 }
 
 export function adaptProduct(dto: ProductDTO): ProductModel {
     const price = dto.priceRange
-        ? `${dto.priceRange.min.toLocaleString()} - ${dto.priceRange.max.toLocaleString()} UZS`
+        ? `${dto.priceRange.min.toLocaleString()} - ${dto.priceRange.max.toLocaleString()} ₽`
         : 'Нет цен'
+
+    const specificPrice = dto.lastPrice
+        ? `${dto.lastPrice.toLocaleString()} ₽`
+        : price
 
     // Simple relative time
     const date = dto.lastUpdate ? new Date(dto.lastUpdate) : new Date()
@@ -27,7 +44,18 @@ export function adaptProduct(dto: ProductDTO): ProductModel {
         name: dto.name,
         category: dto.category,
         displayName: `${dto.name} (${dto.unit})`,
-        formattedPrice: price,
-        lastUpdateRelative: timeString
+        formattedPrice: dto.lastPrice ? specificPrice : price,
+        lastUpdateRelative: timeString,
+        storeName: dto.lastStore || 'Неизвестно',
+        lastPrice: dto.lastPrice,
+        unit: dto.unit,
+        history: (dto.history || []).map(h => ({
+            price: h.price,
+            date: h.date,
+            storeName: h.storeName,
+            author: h.author,
+            unit: h.unit,
+            dateRelative: new Date(h.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+        }))
     }
 }

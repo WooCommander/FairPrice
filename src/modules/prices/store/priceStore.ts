@@ -1,5 +1,6 @@
 import { ref, readonly } from 'vue'
 import { PriceService, type AddPriceDTO } from '../services/PriceService'
+import { catalogStore } from '@/modules/catalog/store/catalogStore'
 
 const isSubmitting = ref(false)
 const error = ref<string | null>(null)
@@ -13,6 +14,8 @@ export const priceStore = {
         error.value = null
         try {
             await PriceService.addPrice(dto)
+            // Notify catalog about update to refresh recent feed
+            await catalogStore.registerPriceUpdate(dto.productId, dto.price, dto.storeName, dto.unit)
         } catch (e: any) {
             error.value = e.message || 'Ошибка при добавлении цены'
             throw e

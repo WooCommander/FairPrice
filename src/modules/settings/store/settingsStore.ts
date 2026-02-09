@@ -1,7 +1,7 @@
 import { ref, readonly } from 'vue'
 
 const EXCHANGE_RATE_KEY = 'fp_exchange_rate'
-const DEFAULT_RATE = 135
+const DEFAULT_RATE = 16.35
 
 const savedRate = localStorage.getItem(EXCHANGE_RATE_KEY)
 const exchangeRate = ref<number>(savedRate ? Number(savedRate) : DEFAULT_RATE)

@@ -30,20 +30,22 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void
     (e: 'select', item: ComboboxItem): void
     (e: 'create', query: string): void
+    (e: 'focus'): void
+    (e: 'blur'): void
 }>()
 
 const isOpen = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
 const wrapperRef = ref<HTMLElement | null>(null)
 const selectedIndex = ref(-1)
+const isFiltering = ref(false)
 
 const filteredItems = computed(() => {
-    // If strict filtering is needed locally:
-    // const q = props.modelValue.toLowerCase()
-    // return props.items.filter(i => i.name.toLowerCase().includes(q))
-
-    // But usually items are already filtered by parent via API
-    return props.items
+    if (!isFiltering.value) {
+        return props.items
+    }
+    const q = props.modelValue.toLowerCase()
+    return props.items.filter(i => i.name.toLowerCase().includes(q))
 })
 
 const showCreateOption = computed(() => {
@@ -56,6 +58,7 @@ const onInput = (e: Event) => {
     const val = (e.target as HTMLInputElement).value
     emit('update:modelValue', val)
     isOpen.value = true
+    isFiltering.value = true
     selectedIndex.value = -1
 }
 
@@ -72,11 +75,18 @@ const onCreate = () => {
 
 const onFocus = () => {
     isOpen.value = true
+    isFiltering.value = false
+    emit('focus')
+}
+
+const onBlur = () => {
+    emit('blur')
 }
 
 const handleClickOutside = (e: MouseEvent) => {
     if (wrapperRef.value && !wrapperRef.value.contains(e.target as Node)) {
         isOpen.value = false
+        emit('blur')
     }
 }
 
@@ -93,11 +103,17 @@ onUnmounted(() => {
     <div class="fp-combobox" ref="wrapperRef">
         <div class="input-wrapper" :class="{ 'is-focused': isOpen }">
             <input ref="inputRef" class="fp-input" type="text" :value="modelValue" @input="onInput" @focus="onFocus"
-                :placeholder="isOpen ? placeholder : ''" />
+                @blur="onBlur" :placeholder="isOpen ? placeholder : ''" />
             <label v-if="label" class="fp-label" :class="{ 'has-value': modelValue || isOpen }">
                 {{ label }}
             </label>
             <div v-if="loading" class="spinner"></div>
+            <div v-else class="chevron" :class="{ 'is-open': isOpen }">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </div>
         </div>
 
         <div class="dropdown" v-if="isOpen && (items.length > 0 || showCreateOption)">
@@ -246,6 +262,20 @@ onUnmounted(() => {
 @keyframes spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+.chevron {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    color: var(--color-text-secondary);
+    transition: transform 0.2s ease;
+    pointer-events: none;
+
+    &.is-open {
+        transform: rotate(180deg);
+        color: var(--color-primary);
     }
 }
 </style>

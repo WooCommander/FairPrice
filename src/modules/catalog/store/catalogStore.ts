@@ -3,11 +3,13 @@ import { CatalogService } from '../services/CatalogService'
 import { type ProductModel, adaptProduct } from '../adapters/CatalogAdapter'
 
 const searchResults = ref<ProductModel[]>([])
+const recentUpdates = ref<ProductModel[]>([])
 const currentProduct = ref<ProductModel | null>(null)
 const isSearching = ref(false)
 
 export const catalogStore = {
     searchResults: readonly(searchResults),
+    recentUpdates: readonly(recentUpdates),
     currentProduct: readonly(currentProduct),
     isSearching: readonly(isSearching),
 
@@ -15,9 +17,18 @@ export const catalogStore = {
         isSearching.value = true
         try {
             const results = await CatalogService.getRecentProducts()
-            searchResults.value = results.map(adaptProduct) // Assuming getRecentProducts returns DTOs
+            recentUpdates.value = results.map(adaptProduct)
         } finally {
             isSearching.value = false
+        }
+    },
+
+    async registerPriceUpdate(productId: string, price: number, storeName: string, unit: string) {
+        // Validation/Logging could happen here
+        await this.loadRecentProducts()
+        // Also refresh specific product if it's the current one
+        if (currentProduct.value && currentProduct.value.id === productId) {
+            await this.loadProductById(productId)
         }
     },
 

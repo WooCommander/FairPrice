@@ -22,6 +22,16 @@ const routes = [
         path: '/design-system',
         name: 'DesignSystem',
         component: () => import('@/views/DesignSystemView.vue')
+    },
+    {
+        path: '/search',
+        name: 'Search',
+        component: () => import('@/views/SearchView.vue')
+    },
+    {
+        path: '/product/:id',
+        name: 'Product',
+        component: () => import('@/views/ProductView.vue')
     }
 ]
 
