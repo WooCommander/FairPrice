@@ -29,8 +29,8 @@ onMounted(async () => {
     <div class="home-dashboard">
         <!-- Header / Hero Section -->
         <header class="dashboard-header">
-            <h1 class="page-title">Мониторинг Цен</h1>
-            <p class="page-subtitle">Сравните цены в ближайших магазинах и на рынках.</p>
+            <h1 class="page-title">Справедливая цена</h1>
+            <p class="page-subtitle">Сравните цены в магазинах и на рынках.</p>
 
             <div class="search-bar-container">
                 <input v-model="searchQuery" type="text" class="search-input" placeholder="Поиск товара..."

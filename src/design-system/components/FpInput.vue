@@ -50,17 +50,8 @@ const onBlur = () => {
 <template>
   <div class="fp-input-wrapper" :class="{ 'has-error': !!props.error, 'is-focused': isFocused, 'has-value': hasValue }">
     <div class="input-container">
-      <input
-        :id="inputId"
-        class="fp-input"
-        :type="props.type"
-        :value="props.modelValue"
-        :disabled="props.disabled"
-        placeholder=" " 
-        @input="onInput"
-        @focus="onFocus"
-        @blur="onBlur"
-      />
+      <input :id="inputId" class="fp-input" :type="props.type" :value="props.modelValue" :disabled="props.disabled"
+        placeholder=" " @input="onInput" @focus="onFocus" @blur="onBlur" />
       <label v-if="props.label" :for="inputId" class="fp-label">
         {{ props.label }}
       </label>
@@ -70,8 +61,6 @@ const onBlur = () => {
 </template>
 
 <style scoped lang="scss">
-// @use '../tokens.scss' as *; // Assume vars are global or imported
-
 .fp-input-wrapper {
   display: flex;
   flex-direction: column;
@@ -86,7 +75,7 @@ const onBlur = () => {
   border-bottom: 2px solid var(--color-border);
   transition: border-color 0.2s;
   height: 56px; // Material Default
-  
+
   display: flex;
   align-items: flex-end; // Align input to bottom
 }
