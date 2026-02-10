@@ -26,7 +26,7 @@ class CatalogService {
     // Mock data removed
     // private mockProducts: ProductDTO[] = []
 
-    async searchProducts(query: string, filters?: { category?: string, sort?: string }): Promise<ProductDTO[]> {
+    async searchProducts(query: string, _filters?: { category?: string, sort?: string }): Promise<ProductDTO[]> {
         let queryBuilder = supabase
             .from('products')
             .select(`
@@ -55,57 +55,67 @@ class CatalogService {
     }
 
     async getRecentProducts(): Promise<ProductDTO[]> {
-        // Get recent PRICE updates
-        const { data, error } = await supabase
+        // 1. Get recent price updates to identify active products
+        const { data: recentPrices, error: priceError } = await supabase
             .from('prices')
-            .select(`
-                *,
-                products (*),
-                stores (name)
-            `)
+            .select('product_id, created_at')
             .order('created_at', { ascending: false })
             .limit(20)
 
-        if (error) {
-            console.error('Error fetching recent products:', error)
+        if (priceError) {
+            console.error('Error fetching recent prices:', priceError)
             return []
         }
 
-        // Map flat prices to ProductDTOs (deduplicating products if needed, 
-        // but for "recent updates" feed, listing individual updates is fine 
-        // OR we grouping by product. Current UI expects list of products.
-        // Let's return the products associated with these prices.
+        if (!recentPrices || recentPrices.length === 0) return []
 
-        const productsMap = new Map<string, ProductDTO>()
+        // 2. Extract unique product IDs
+        const productIds = [...new Set(recentPrices.map(p => p.product_id))]
 
-        data.forEach((priceRow: any) => {
-            if (!priceRow.products) return
-            const p = priceRow.products
+        // 3. Fetch full product details with ALL prices for these IDs
+        const { data: products, error: productsError } = await supabase
+            .from('products')
+            .select(`
+                *,
+                prices (
+                    price,
+                    created_at,
+                    store_id,
+                    stores (name),
+                    created_by,
+                    unit
+                )
+            `)
+            .in('id', productIds)
 
-            // We want to show THIS specific price update as the "last" info
-            const dto: ProductDTO = {
-                id: p.id,
-                name: p.name,
-                category: p.category,
-                unit: p.unit,
-                lastPrice: priceRow.price,
-                lastStore: priceRow.stores?.name,
-                lastUpdate: priceRow.created_at
-            }
-            // Simple dedupe: if we already have this product in list, skip? 
-            // Or show multiple updates for same product?
-            // "Recent Updates" usually shows distinct events. 
-            // But if I updated Potato price 5 times, showing 5 potatoes might be annoying.
-            // Let's dedupe by ID for now.
-            if (!productsMap.has(p.id)) {
-                productsMap.set(p.id, dto)
-            }
-        })
+        if (productsError) {
+            console.error('Error fetching products:', productsError)
+            return []
+        }
 
-        return Array.from(productsMap.values()).slice(0, 10)
+        // 4. Map to DTOs (this will calculate ranges correctly)
+        // We preserve the order of the 'recentPrices' by sorting the result
+        const productMap = new Map(products.map(p => [p.id, this.mapToDTO(p)]))
+
+        return productIds
+            .map(id => productMap.get(id))
+            .filter((p): p is ProductDTO => !!p)
     }
 
-    async registerPriceUpdate(productId: string, price: number, store: string, unit: string) {
+    async getPopularSearchTerms(): Promise<string[]> {
+        const { data } = await supabase
+            .from('products')
+            .select('category')
+            .limit(50)
+
+        if (!data) return []
+
+        // Extract unique categories
+        const categories = [...new Set(data.map((p: any) => p.category).filter(Boolean))]
+        return categories.slice(0, 5)
+    }
+
+    async registerPriceUpdate(_productId: string, _price: number, _store: string, _unit: string) {
         // In DB mode, PriceService writes to DB. CatalogService just reads.
         // But if we need to trigger a refresh or something... 
         // actually PriceService calls this?

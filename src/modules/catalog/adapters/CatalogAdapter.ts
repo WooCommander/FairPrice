@@ -23,13 +23,17 @@ export interface ProductHistoryModel {
 }
 
 export function adaptProduct(dto: ProductDTO): ProductModel {
-    const price = dto.priceRange
-        ? `${dto.priceRange.min.toLocaleString()} - ${dto.priceRange.max.toLocaleString()} ₽`
-        : 'Нет цен'
+    let formattedPrice = 'Нет цен'
 
-    const specificPrice = dto.lastPrice
-        ? `${dto.lastPrice.toLocaleString()} ₽`
-        : price
+    if (dto.priceRange) {
+        if (dto.priceRange.min !== dto.priceRange.max) {
+            formattedPrice = `${dto.priceRange.min.toLocaleString()} - ${dto.priceRange.max.toLocaleString()} ₽`
+        } else {
+            formattedPrice = `${dto.priceRange.min.toLocaleString()} ₽`
+        }
+    } else if (dto.lastPrice) {
+        formattedPrice = `${dto.lastPrice.toLocaleString()} ₽`
+    }
 
     // Simple relative time
     const date = dto.lastUpdate ? new Date(dto.lastUpdate) : new Date()
@@ -44,7 +48,7 @@ export function adaptProduct(dto: ProductDTO): ProductModel {
         name: dto.name,
         category: dto.category,
         displayName: `${dto.name} (${dto.unit})`,
-        formattedPrice: dto.lastPrice ? specificPrice : price,
+        formattedPrice: formattedPrice,
         lastUpdateRelative: timeString,
         storeName: dto.lastStore || 'Неизвестно',
         lastPrice: dto.lastPrice,

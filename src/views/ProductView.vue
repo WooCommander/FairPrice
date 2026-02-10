@@ -18,18 +18,7 @@ onMounted(async () => {
 
 const latestHistory = computed(() => {
     if (!currentProduct.value?.history) return []
-
-    const uniqueStores = new Map()
-    // History is sorted by date desc (from service/adapter)
-    // We want ONE entry per store (the latest one)
-
-    currentProduct.value.history.forEach(h => {
-        if (!uniqueStores.has(h.storeName)) {
-            uniqueStores.set(h.storeName, h)
-        }
-    })
-
-    return Array.from(uniqueStores.values())
+    return currentProduct.value.history
 })
 
 const goToAddPrice = () => {
@@ -79,7 +68,7 @@ const goToAddPrice = () => {
             </FpCard>
 
             <div class="history-section">
-                <h3>Цены в магазинах</h3>
+                <h3>История цен</h3>
                 <div v-if="latestHistory.length === 0" class="empty-state">
                     История цен пуста
                 </div>

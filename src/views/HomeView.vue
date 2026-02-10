@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
+import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 
@@ -9,12 +10,18 @@ const router = useRouter()
 
 const { recentUpdates } = catalogStore
 
-const recentSearches = [
-    'Сахар', 'Масло растительное', 'Мука 1с'
-]
+const recentSearches = ref<string[]>([])
+const searchQuery = ref('')
 
-onMounted(() => {
+const handleSearch = () => {
+    if (searchQuery.value.trim()) {
+        router.push({ path: '/search', query: { q: searchQuery.value } })
+    }
+}
+
+onMounted(async () => {
     catalogStore.loadRecentProducts()
+    recentSearches.value = await CatalogService.getPopularSearchTerms()
 })
 </script>
 
@@ -26,12 +33,12 @@ onMounted(() => {
             <p class="page-subtitle">Сравните цены в ближайших магазинах и на рынках.</p>
 
             <div class="search-bar-container">
-                <input type="text" class="search-input" placeholder="Поиск товара (например, молоко)..."
-                    @click="router.push('/search')" />
-                <div class="search-icon">🔍</div>
+                <input v-model="searchQuery" type="text" class="search-input" placeholder="Поиск товара..."
+                    @keyup.enter="handleSearch" />
+                <div class="search-icon" @click="handleSearch">🔍</div>
             </div>
 
-            <div class="quick-links">
+            <div class="quick-links" v-if="recentSearches.length > 0">
                 <span class="quick-link-label">Часто ищут:</span>
                 <button v-for="tag in recentSearches" :key="tag" class="tag-link" @click="router.push('/search')">
                     {{ tag }}
@@ -157,6 +164,12 @@ onMounted(() => {
     transform: translateY(-50%);
     opacity: 0.5;
     font-size: 18px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 1;
+    }
 }
 
 .quick-links {
