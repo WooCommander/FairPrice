@@ -17,6 +17,7 @@ export interface ProductHistoryDTO {
     price: number;
     date: string;
     storeName: string;
+    storeId: string;
     author: string;
     unit: string;
 }
@@ -192,11 +193,40 @@ class CatalogService {
             history: p.prices?.map((price: any) => ({
                 price: price.price,
                 date: price.created_at,
+                date: price.created_at,
                 storeName: price.stores?.name || 'Неизвестно',
+                storeId: price.store_id,
                 unit: price.unit || p.unit,
                 author: 'User' // TODO: Join with profiles if available
             }))
         }
+    }
+
+    async updateProduct(id: string, updates: { name?: string, category?: string }) {
+        const { error } = await supabase
+            .from('products')
+            .update(updates)
+            .eq('id', id)
+
+        if (error) throw error
+    }
+
+    async deleteProduct(id: string) {
+        const { error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', id)
+
+        if (error) throw error
+    }
+
+    async updateStoreName(id: string, name: string) {
+        const { error } = await supabase
+            .from('stores')
+            .update({ name })
+            .eq('id', id)
+
+        if (error) throw error
     }
 
     private calculatePriceRange(prices: any[]) {

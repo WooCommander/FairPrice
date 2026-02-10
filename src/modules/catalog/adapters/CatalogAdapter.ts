@@ -17,6 +17,7 @@ export interface ProductHistoryModel {
     price: number
     date: string
     storeName: string
+    storeId: string
     author: string
     unit: string
     dateRelative: string
@@ -57,6 +58,7 @@ export function adaptProduct(dto: ProductDTO): ProductModel {
             price: h.price,
             date: h.date,
             storeName: h.storeName,
+            storeId: h.storeId,
             author: h.author,
             unit: h.unit,
             dateRelative: new Date(h.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })

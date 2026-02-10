@@ -67,6 +67,26 @@ export const catalogStore = {
         } finally {
             isSearching.value = false
         }
+    },
+
+    async updateProduct(id: string, updates: { name?: string, category?: string }) {
+        await CatalogService.updateProduct(id, updates)
+        if (currentProduct.value && currentProduct.value.id === id) {
+            await this.loadProductById(id)
+        }
+    },
+
+    async updateStoreName(id: string, name: string) {
+        await CatalogService.updateStoreName(id, name)
+        // Refresh product to see updated store name in history
+        if (currentProduct.value) {
+            await this.loadProductById(currentProduct.value.id)
+        }
+    },
+
+    async deleteProduct(id: string) {
+        await CatalogService.deleteProduct(id)
+        currentProduct.value = null
     }
 }
 
