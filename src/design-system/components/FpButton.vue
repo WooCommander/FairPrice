@@ -40,7 +40,7 @@ const classes = computed(() => [
 </template>
 
 <style scoped lang="scss">
-@use '../tokens.scss' as *;
+/* @use '../tokens.scss' as *; - Variables are now global */
 
 .fp-button {
   display: inline-flex;

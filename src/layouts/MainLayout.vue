@@ -129,7 +129,7 @@ const handleLogout = async () => {
 	padding: 0 var(--spacing-lg);
 
 	.nav-container {
-		max-width: 1400px;
+		max-width: var(--layout-max-width);
 		margin: 0 auto;
 		height: 80px; // Taller header
 		display: flex;
@@ -183,7 +183,7 @@ const handleLogout = async () => {
 }
 
 .content-container {
-	max-width: 1400px;
+	max-width: var(--layout-max-width);
 	margin: 0 auto;
 	padding: var(--spacing-lg);
 }

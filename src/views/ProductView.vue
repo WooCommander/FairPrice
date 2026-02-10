@@ -97,9 +97,9 @@ const goToAddPrice = () => {
 
 <style scoped lang="scss">
 .product-view {
-    max-width: 600px;
+    /* max-width removed to use global layout */
     margin: 0 auto;
-    padding: var(--spacing-md);
+    padding: var(--spacing-md) 0;
 }
 
 .page-header {

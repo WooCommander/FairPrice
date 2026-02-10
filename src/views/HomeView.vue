@@ -109,9 +109,9 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .home-dashboard {
-    max-width: 1000px; // Reduced max-width for better focus
+    /* max-width removed to use global layout */
     margin: 0 auto;
-    padding: var(--spacing-xl) var(--spacing-lg);
+    padding: var(--spacing-xl) 0;
 }
 
 .dashboard-header {
@@ -325,7 +325,7 @@ onMounted(async () => {
         }
 
         &:hover {
-            background-color: #f9fafb; // Subtle hover
+            background-color: var(--color-surface-hover);
         }
     }
 
