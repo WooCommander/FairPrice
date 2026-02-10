@@ -2,6 +2,7 @@
 import { useRouter, useRoute } from 'vue-router'
 import { computed } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { authStore } from '@/modules/auth/store/authStore'
 
 const router = useRouter()
 const route = useRoute()
@@ -18,6 +19,11 @@ const currentPath = computed(() => route.path)
 
 const navigate = (path: string) => {
 	router.push(path)
+}
+
+const handleLogout = async () => {
+	await authStore.logout()
+	router.push('/login')
 }
 </script>
 
@@ -40,7 +46,18 @@ const navigate = (path: string) => {
 					<button class="icon-btn theme-toggle" @click="toggleTheme">
 						{{ isDark ? '🌞' : '🌙' }}
 					</button>
-					<!-- Fallback login/profile icon could go here -->
+
+					<div v-if="authStore.user.value" class="auth-controls">
+						<span class="user-email">{{ authStore.user.value.email }}</span>
+						<button class="icon-btn logout-btn" @click="handleLogout" title="Выйти">
+							🚪
+						</button>
+					</div>
+					<div v-else>
+						<button class="login-btn" @click="router.push('/login')">
+							Войти
+						</button>
+					</div>
 				</div>
 			</div>
 		</header>
@@ -163,5 +180,47 @@ const navigate = (path: string) => {
 .fade-enter-from,
 .fade-leave-to {
 	opacity: 0;
+}
+
+.auth-controls {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.user-email {
+	font-size: var(--text-caption);
+	color: var(--color-text-secondary);
+	display: none;
+
+	@media (min-width: 768px) {
+		display: block;
+	}
+}
+
+.login-btn {
+	background: var(--color-primary);
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	border-radius: var(--radius-pill);
+	font-weight: 600;
+	cursor: pointer;
+	font-size: 14px;
+	transition: 0.2s;
+
+	&:hover {
+		opacity: 0.9;
+	}
+}
+
+.logout-btn {
+	color: var(--color-error);
+	border-color: rgba(var(--color-error-rgb), 0.2);
+
+	&:hover {
+		background: rgba(var(--color-error-rgb), 0.1);
+		border-color: var(--color-error);
+	}
 }
 </style>

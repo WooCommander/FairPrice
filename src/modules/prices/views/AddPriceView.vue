@@ -144,9 +144,9 @@ const createProduct = async () => {
         })
         isCreating.value = false
         step.value = 2
-    } catch (e) {
+    } catch (e: any) {
         console.error('Failed to create product:', e)
-        alert('Не удалось создать товар')
+        alert(`Не удалось создать товар: ${e.message || e}`)
     }
 }
 

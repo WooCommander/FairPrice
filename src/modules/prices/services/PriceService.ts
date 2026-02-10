@@ -26,7 +26,10 @@ class PriceService {
             // Create new
             const { data: newStore, error: storeError } = await supabase
                 .from('stores')
-                .insert({ name: dto.storeName })
+                .insert({
+                    name: dto.storeName,
+                    created_by: (await supabase.auth.getUser()).data.user?.id
+                })
                 .select('id')
                 .single()
 
@@ -45,7 +48,8 @@ class PriceService {
                 store_id: storeId,
                 price: dto.price,
                 currency: dto.currency,
-                unit: dto.unit
+                unit: dto.unit,
+                created_by: (await supabase.auth.getUser()).data.user?.id
             })
 
         if (priceError) {

@@ -144,7 +144,8 @@ class CatalogService {
             .insert({
                 name: data.name,
                 category: data.category,
-                unit: data.unit
+                unit: data.unit,
+                created_by: (await supabase.auth.getUser()).data.user?.id
             })
             .select()
             .single()

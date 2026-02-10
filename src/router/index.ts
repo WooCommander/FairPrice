@@ -1,7 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth } from '@/modules/auth/composables/useAuth'
+import { authStore } from '@/modules/auth/store/authStore'
 
 const routes = [
+    {
+        path: '/login',
+        name: 'Login',
+        component: () => import('@/modules/auth/views/LoginView.vue')
+    },
     {
         path: '/',
         name: 'Home',
@@ -11,12 +16,13 @@ const routes = [
         path: '/profile',
         name: 'Profile',
         component: () => import('@/views/ProfileView.vue'),
-        meta: { requiresAuth: true } // Or false for MVP demo
+        meta: { requiresAuth: true }
     },
     {
         path: '/add-price/:id?',
         name: 'AddPrice',
-        component: () => import('@/modules/prices/views/AddPriceView.vue')
+        component: () => import('@/modules/prices/views/AddPriceView.vue'),
+        meta: { requiresAuth: true }
     },
     {
         path: '/design-system',
@@ -41,25 +47,20 @@ const router = createRouter({
 })
 
 // Guard placeholder
+// Guard placeholder
 router.beforeEach(async (to, _from, next) => {
-    const { currentUser, isLoading } = useAuth()
+    const { isAuthenticated, isLoading } = authStore
 
-    // Wait for auth init if needed
-    if (isLoading) {
-        // This is a naive wait, ideally useAuth returns a promise or we check a flag
-        // For now we rely on main.ts having awaited initAuth before mounting app
+    // Wait for auth init if needed (simple check)
+    // In real app we might wait for a promise
+    if (isLoading.value) {
+        // console.log('Auth loading...')
     }
 
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
-    if (requiresAuth && !currentUser.value) {
-        console.log('Redirecting to login...')
-        // In real app redirect to /login, but here we might just prevent access or show modal
-        // For MVP just let them pass but maybe show alert? 
-        // Actually, let's redirect to Home since we have login there
-        // next('/') <-- DISABLING FOR DEMO
-        // Allow pass through for demo so we can see the Profile View
-        next()
+    if (requiresAuth && !isAuthenticated.value) {
+        next('/login')
     } else {
         next()
     }
