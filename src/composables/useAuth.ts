@@ -1,6 +1,6 @@
 import { ref, readonly } from 'vue'
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js'
-import { AuthService } from '@/services/AuthService'
+import { AuthService } from '@/modules/auth/services/AuthService'
 import { supabase } from '@/api/supabase'
 
 const currentUser = ref<User | null>(null)

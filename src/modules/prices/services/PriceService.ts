@@ -44,8 +44,6 @@ class PriceService {
         // 2. Normalize Price (Calculate price per 1 base unit)
         // Base units: kg, l, pcs
         let normalizedPrice: number | null = null
-        let baseUnit = 'kg' // Default
-
         const q = Number(dto.quantity)
         const u = dto.quantityUnit.toLowerCase()
 
@@ -53,21 +51,16 @@ class PriceService {
             if (u === 'g' || u === 'г') {
                 // Convert g to kg
                 normalizedPrice = dto.price / (q / 1000)
-                baseUnit = 'kg'
             } else if (u === 'ml' || u === 'мл') {
                 // Convert ml to l
                 normalizedPrice = dto.price / (q / 1000)
-                baseUnit = 'l'
             } else if (u === 'kg' || u === 'кг') {
                 normalizedPrice = dto.price / q
-                baseUnit = 'kg'
             } else if (u === 'l' || u === 'л') {
                 normalizedPrice = dto.price / q
-                baseUnit = 'l'
             } else {
                 // pcs or unknown, just price / quantity
                 normalizedPrice = dto.price / q
-                baseUnit = u
             }
         }
 

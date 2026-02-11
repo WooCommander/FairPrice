@@ -36,7 +36,7 @@ const points = computed(() => {
     const priceRange = maxPrice - minPrice || 1
     const tRange = timeRange || 1
 
-    return data.map((d, index) => {
+    return data.map((d) => {
         const x = ((d.date.getTime() - startTime) / tRange) * 100 // Percentage
         // Y is inverted (0 is top)
         const y = 100 - ((d.price - minPrice) / priceRange) * 100
@@ -48,12 +48,7 @@ const polylinePoints = computed(() => {
     return points.value.map(p => `${p.x},${p.y}`).join(' ')
 })
 
-const fillPath = computed(() => {
-    if (points.value.length === 0) return ''
-    const first = points.value[0]
-    const last = points.value[points.value.length - 1]
-    return `0,100 ${polylinePoints.value} 100,100` // Close loop at bottom
-})
+
 
 const avgLineY = computed(() => {
     if (!props.averagePrice || points.value.length === 0) return null
