@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpCard from '@/design-system/components/FpCard.vue'
+import FpBackButton from '@/design-system/components/FpBackButton.vue'
 
 const router = useRouter()
 const { searchResults, isSearching } = catalogStore
@@ -51,7 +52,7 @@ const goToProduct = (id: string) => {
     <div class="search-view">
         <header class="search-header">
             <div class="search-bar">
-                <button class="back-btn" @click="router.back()">←</button>
+                <FpBackButton />
                 <div class="input-container">
                     <input v-model="query" type="text" class="search-input" placeholder="Поиск товаров..."
                         @input="handleSearch" autofocus />
@@ -82,7 +83,7 @@ const goToProduct = (id: string) => {
                         </div>
                         <div class="price-info">
                             <span class="price">{{ item.formattedPrice }}</span>
-                            <span v-if="item.storeName" class="store">{{ item.storeName }}</span>
+                            <span v-if="item.lastStore" class="store">{{ item.lastStore }}</span>
                         </div>
                     </div>
                 </FpCard>
@@ -116,15 +117,6 @@ const goToProduct = (id: string) => {
     align-items: center;
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-md);
-}
-
-.back-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--color-text-primary);
-    padding: 0 8px;
 }
 
 .input-container {

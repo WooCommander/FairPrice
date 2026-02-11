@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import FpBackButton from '@/design-system/components/FpBackButton.vue'
 import FpBreadcrumbs from '@/design-system/components/FpBreadcrumbs.vue'
 
 const route = useRoute()
@@ -61,20 +62,26 @@ const goToAddProduct = () => {
 
 <template>
     <div class="category-view">
+
         <header class="page-header">
-            <div class="nav-row">
-                <FpButton variant="text" size="sm" @click="router.back()">← Назад</FpButton>
-                <FpBreadcrumbs :items="[
-                    { label: 'Главная', to: '/' },
-                    { label: categoryName }
-                ]" />
+            <div class="header-top">
+                <FpBackButton />
+                <div class="header-title">
+                    <h1>{{ categoryName }}</h1>
+                </div>
+                <!-- Action placeholder / Spacer -->
+                <div class="header-actions">
+                    <button class="add-btn-icon" @click="router.push(`/add-price?category=${categoryName}`)"
+                        title="Добавить товар">
+                        +
+                    </button>
+                </div>
             </div>
-            <h1>{{ categoryName }}</h1>
-            <div class="header-actions">
-                <FpButton size="sm" @click="router.push(`/add-price?category=${categoryName}`)">
-                    + Добавить товар
-                </FpButton>
-            </div>
+
+            <FpBreadcrumbs :items="[
+                { label: 'Главная', to: '/' },
+                { label: categoryName }
+            ]" class="breadcrumbs-container" />
         </header>
         <div v-if="isLoading" class="loading">Загрузка...</div>
 
@@ -132,18 +139,53 @@ const goToAddProduct = () => {
 }
 
 .page-header {
-    text-align: center;
     margin-bottom: var(--spacing-lg);
 
-    h1 {
-        margin: var(--spacing-sm) 0 4px;
-        font-size: var(--text-h3);
-        text-transform: capitalize;
+    .header-top {
+        display: grid;
+        grid-template-columns: 48px 1fr 48px;
+        align-items: center;
+        margin-bottom: var(--spacing-sm);
     }
 
-    .subtitle {
-        color: var(--color-text-secondary);
+    .header-title h1 {
         margin: 0;
+        font-size: 24px;
+        text-align: center;
+        text-transform: capitalize;
+        line-height: 1.2;
+    }
+
+    .breadcrumbs-container {
+        display: flex;
+        justify-content: center;
+    }
+
+    .header-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .add-btn-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s;
+
+        &:hover {
+            background: var(--color-primary-variant);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
     }
 }
 

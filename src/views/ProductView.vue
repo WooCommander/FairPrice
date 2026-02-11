@@ -3,6 +3,7 @@ import { onMounted, computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import FpBackButton from '@/design-system/components/FpBackButton.vue'
 import FpConfirmationModal from '@/design-system/components/FpConfirmationModal.vue'
 import FpBreadcrumbs from '@/design-system/components/FpBreadcrumbs.vue'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
@@ -138,17 +139,25 @@ const canDelete = computed(() => {
 
 <template>
     <div class="product-view">
-        <!-- Breadcrumbs already provide context, 'Back' button can be part of a toolbar -->
-        <div class="nav-bar">
-            <FpButton variant="text" size="sm" class="back-link" @click="router.back()">
-                <span class="back-arrow">←</span> Назад
-            </FpButton>
-            <FpBreadcrumbs :items="[
-                { label: 'Главная', to: '/' },
-                { label: currentProduct?.category || 'Категория', to: currentProduct ? `/category/${currentProduct.category}` : undefined },
-                { label: currentProduct?.name || 'Товар' }
-            ]" />
+
+        <!-- HEADER: standardized 3-column layout -->
+        <div class="page-header">
+            <FpBackButton />
+
+            <!-- Title in center, unrelated context in breadcrumbs below? or separate -->
+            <div class="header-title">
+                <h1>{{ currentProduct?.name || 'Товар' }}</h1>
+            </div>
+
+            <!-- Spacer or Action placeholder -->
+            <div class="header-spacer"></div>
         </div>
+
+        <FpBreadcrumbs :items="[
+            { label: 'Главная', to: '/' },
+            { label: currentProduct?.category || 'Категория', to: currentProduct ? `/category/${currentProduct.category}` : undefined },
+            { label: currentProduct?.name || 'Товар' }
+        ]" class="breadcrumbs-container" />
 
         <div v-if="currentProduct">
             <FpCard class="main-card">
@@ -156,7 +165,7 @@ const canDelete = computed(() => {
                 <div class="product-header">
                     <div v-if="!isEditingProduct" class="header-content">
                         <div class="product-title-row">
-                            <h2>{{ currentProduct.name }}</h2>
+                            <!-- Title moved to top header, keeping just category here or removing title duplication -->
                             <div class="badges">
                                 <span class="category-badge"
                                     @click="router.push(`/category/${currentProduct.category}`)">
@@ -311,27 +320,29 @@ const canDelete = computed(() => {
     width: 100%;
 }
 
-.nav-bar {
-    display: flex;
+.page-header {
+    display: grid;
+    grid-template-columns: 48px 1fr 48px;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
+    margin-bottom: var(--spacing-sm);
 }
 
-.back-link {
-    color: var(--color-text-secondary);
-    font-weight: 500;
-    padding: 0;
-
-    &:hover {
-        color: var(--color-primary);
-    }
+.header-title h1 {
+    margin: 0;
+    font-size: 24px;
+    text-align: center;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.back-arrow {
-    font-size: 1.2em;
-    margin-right: 4px;
+.breadcrumbs-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-md);
 }
+
 
 .product-header {
     margin-bottom: 24px;
@@ -342,12 +353,6 @@ const canDelete = computed(() => {
     flex-direction: column;
     gap: 8px;
     width: 100%;
-}
-
-.product-title-row h2 {
-    margin: 0;
-    font-size: var(--text-h2);
-    line-height: 1.2;
 }
 
 .badges {

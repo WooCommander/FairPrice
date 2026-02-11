@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import FpBackButton from '@/design-system/components/FpBackButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -72,21 +73,26 @@ const saveEdit = async () => {
 <template>
     <div class="store-view">
         <header class="page-header">
-            <FpButton variant="text" size="sm" @click="router.back()">← Назад</FpButton>
-
-            <div v-if="!isEditing" class="title-row">
-                <h1>{{ storeName }}</h1>
-                <button class="icon-btn" @click="startEdit" title="Редактировать название">✏️</button>
-            </div>
-            <div v-else class="edit-row">
-                <input v-model="editName" class="edit-input" @keyup.enter="saveEdit" ref="editInputRef" />
-                <div class="edit-actions">
-                    <button class="icon-btn save" @click="saveEdit" title="Сохранить">💾</button>
-                    <button class="icon-btn cancel" @click="cancelEdit" title="Отмена">❌</button>
+            <div class="header-top">
+                <FpBackButton />
+                <div class="header-title-container">
+                    <div v-if="!isEditing" class="title-row">
+                        <h1>{{ storeName }}</h1>
+                        <button class="icon-btn edit-icon" @click="startEdit" title="Редактировать название">✏️</button>
+                    </div>
+                    <div v-else class="edit-row">
+                        <input v-model="editName" class="edit-input" @keyup.enter="saveEdit" ref="editInputRef" />
+                        <div class="edit-actions">
+                            <button class="icon-btn save" @click="saveEdit" title="Сохранить">💾</button>
+                            <button class="icon-btn cancel" @click="cancelEdit" title="Отмена">❌</button>
+                        </div>
+                    </div>
                 </div>
+                <div class="header-spacer"></div> <!-- Spacer for visuals balance -->
             </div>
 
             <p class="subtitle">Товары в этой точке</p>
+
             <div class="header-actions">
                 <FpButton class="add-btn" size="sm" @click="goToAddPrice">
                     + Добавить цену
@@ -124,12 +130,20 @@ const saveEdit = async () => {
 }
 
 .page-header {
-    text-align: center;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl); // Increased spacing
+
+    .header-top {
+        display: grid;
+        grid-template-columns: 48px 1fr 48px; // Fixed width for back btn and spacer
+        align-items: center;
+        margin-bottom: var(--spacing-sm);
+    }
 
     h1 {
-        margin: var(--spacing-sm) 0 4px;
-        font-size: var(--text-h3);
+        margin: 0;
+        font-size: 28px; // Increased title size
+        text-align: center;
+        line-height: 1.2;
     }
 
     .title-row {
@@ -139,12 +153,16 @@ const saveEdit = async () => {
         gap: 8px;
     }
 
+    .edit-icon {
+        font-size: 1rem;
+        opacity: 0.3;
+    }
+
     .edit-row {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 8px;
-        margin: var(--spacing-sm) 0;
     }
 
     .edit-input {
@@ -188,7 +206,14 @@ const saveEdit = async () => {
 
     .subtitle {
         color: var(--color-text-secondary);
-        margin: 0;
+        margin: 0 0 var(--spacing-md);
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .header-actions {
+        display: flex;
+        justify-content: center;
     }
 }
 
@@ -212,12 +237,12 @@ const saveEdit = async () => {
 
 .product-info h3 {
     margin: 0;
-    font-size: var(--text-body-1);
+    font-size: 18px; // 18px
     font-weight: 600;
 }
 
 .category {
-    font-size: var(--text-caption);
+    font-size: 14px; // 14px
     color: var(--color-text-secondary);
 }
 
@@ -229,11 +254,12 @@ const saveEdit = async () => {
 
 .price {
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--color-success); // Ensure success color
+    font-size: 18px; // 18px
 }
 
 .date {
-    font-size: var(--text-caption);
+    font-size: 12px;
     color: var(--color-text-tertiary);
 }
 

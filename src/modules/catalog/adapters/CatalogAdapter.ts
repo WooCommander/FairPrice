@@ -16,6 +16,7 @@ export interface ProductModel {
     history: ProductHistoryModel[]
     category: string;
     formattedPrice: string; // Add missing properties
+    formattedAveragePrice?: string; // New field
     displayName: string;
 }
 
@@ -48,6 +49,7 @@ export function adaptProduct(dto: ProductDTO): ProductModel {
         priceRange: dto.priceRange,
         formattedPriceRange: formatPriceRange(dto.priceRange),
         formattedPrice: dto.lastPrice ? formatPrice(dto.lastPrice) : 'Нет цены',
+        formattedAveragePrice: dto.averagePrice ? `~${formatPrice(dto.averagePrice)}` : undefined,
         history: (dto.history || []).map(h => ({
             id: h.id,
             price: h.price,
