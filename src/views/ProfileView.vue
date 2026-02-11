@@ -7,35 +7,30 @@ interface UserStats {
     joinedDate: Date
     reputation: number
     pricesSubmitted: number
-    moneySaved: number
+    productsCreated: number
     topCategory: string
 }
 
 const isLoading = ref(true)
 const stats = ref<UserStats | null>(null)
-const user = ref({ email: 'user@example.com', name: 'Demo User', id: '', role: '' }) // Mock user
+const activityFeed = ref<any[]>([])
+const user = ref({ email: '', id: '', role: '' })
 
 onMounted(async () => {
     try {
-        // In real app, we get user from session
         const { user: authUser } = await AuthService.getUser()
         if (authUser) {
             user.value.email = authUser.email || ''
             user.value.id = authUser.id
-            user.value.role = authUser.role || 'User'
+            user.value.role = authUser.role || 'Пользователь'
         }
 
         stats.value = await AuthService.getUserStats()
+        activityFeed.value = await AuthService.getUserActivity()
     } finally {
         isLoading.value = false
     }
 })
-
-const activityFeed = [
-    { id: 1, action: 'Added Price', item: 'Banana (1kg)', details: '18,500 UZS at Korzinka', time: '2 hours ago', icon: '🍌' },
-    { id: 2, action: 'Verified', item: 'Milk (1L)', details: 'Confirmed price at Makro', time: '1 day ago', icon: '🥛' },
-    { id: 3, action: 'Commented', item: 'Sugar', details: '"Price seems too high"', time: '3 days ago', icon: '💬' },
-]
 </script>
 
 <template>
@@ -43,14 +38,13 @@ const activityFeed = [
         <!-- Header -->
         <section class="profile-header">
             <div class="avatar-placeholder">
-                {{ user.name.charAt(0) }}
+                {{ user.email.charAt(0).toUpperCase() }}
             </div>
             <div class="user-info">
-                <h1>{{ user.name }}</h1>
+                <h1>{{ user.email.split('@')[0] }}</h1>
                 <p class="email">{{ user.email }}</p>
                 <div class="badges">
-                    <span class="badge" v-if="stats">⭐ {{ stats.reputation }} Rep</span>
-                    <span class="badge" v-if="user.role">🛡️ {{ user.role }}</span>
+                    <span class="badge" v-if="stats">⭐ {{ stats.reputation }} Репутация</span>
                     <span class="badge id-badge" title="User ID">🆔 {{ user.id.slice(0, 8) }}...</span>
                 </div>
             </div>
@@ -60,22 +54,25 @@ const activityFeed = [
         <section class="stats-grid" v-if="stats">
             <FpCard class="stat-card">
                 <span class="stat-value">{{ stats.pricesSubmitted }}</span>
-                <span class="stat-label">Prices Added</span>
+                <span class="stat-label">Цен добавлено</span>
             </FpCard>
             <FpCard class="stat-card">
-                <span class="stat-value">{{ (stats.moneySaved / 1000).toFixed(0) }}k</span>
-                <span class="stat-label">UZS Saved (Est)</span>
+                <span class="stat-value">{{ stats.productsCreated }}</span>
+                <span class="stat-label">Товаров создано</span>
             </FpCard>
             <FpCard class="stat-card">
-                <span class="stat-value">🏆</span>
-                <span class="stat-label">Top: {{ stats.topCategory }}</span>
+                <span class="stat-value">📅</span>
+                <span class="stat-label">С нами с {{ stats.joinedDate.toLocaleDateString() }}</span>
             </FpCard>
         </section>
 
         <!-- Activity Feed -->
         <section class="activity-section">
-            <h2>Recent Activity</h2>
+            <h2>Последняя активность</h2>
             <div class="activity-list">
+                <div v-if="activityFeed.length === 0" class="empty-feed">
+                    Нет активности
+                </div>
                 <FpCard v-for="act in activityFeed" :key="act.id" class="activity-item" padding="sm">
                     <div class="act-icon">{{ act.icon }}</div>
                     <div class="act-content">
@@ -94,8 +91,7 @@ const activityFeed = [
 
 <style scoped lang="scss">
 .profile-view {
-    max-width: 900px;
-    margin: 0 auto;
+    /* max-width handled by MainLayout */
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xl);
@@ -106,7 +102,7 @@ const activityFeed = [
     align-items: center;
     gap: var(--spacing-lg);
     background: var(--color-surface);
-    padding: var(--spacing-xl); // Larger padding
+    padding: var(--spacing-xl);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-1);
@@ -228,6 +224,15 @@ const activityFeed = [
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+}
+
+.empty-feed {
+    text-align: center;
+    color: var(--color-text-secondary);
+    padding: var(--spacing-lg);
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
 }
 
 .activity-item {
