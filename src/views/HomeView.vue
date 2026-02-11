@@ -2,14 +2,15 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
-import { CatalogService } from '@/modules/catalog/services/CatalogService'
+import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import FpCard from '@/design-system/components/FpCard.vue'
 
 const router = useRouter()
 
 const { recentUpdates } = catalogStore
 
-const recentSearches = ref<string[]>([])
+// Use a subset for HomeView
+const categories = PRODUCT_CATEGORIES.slice(0, 5)
 const searchQuery = ref('')
 const showFavoritesOnly = ref(false)
 
@@ -39,8 +40,7 @@ onMounted(async () => {
     try {
         await Promise.all([
             catalogStore.loadRecentProducts(),
-            catalogStore.loadFavorites(),
-            CatalogService.getPopularSearchTerms().then(res => recentSearches.value = res)
+            catalogStore.loadFavorites()
         ])
     } catch (e) {
         console.error('Failed to load home data', e)
@@ -58,9 +58,9 @@ onMounted(async () => {
                 <div class="search-icon" @click="handleSearch">🔍</div>
             </div>
 
-            <div class="quick-links" v-if="recentSearches.length > 0">
-                <span class="quick-link-label">Часто ищут:</span>
-                <button v-for="tag in recentSearches" :key="tag" class="tag-link" @click="searchQuery = tag">
+            <div class="quick-links">
+                <span class="quick-link-label">Категории:</span>
+                <button v-for="tag in categories" :key="tag" class="tag-link" @click="router.push(`/category/${tag}`)">
                     {{ tag }}
                 </button>
             </div>

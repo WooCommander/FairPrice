@@ -29,13 +29,17 @@ const newProductName = ref('')
 const newProductCategory = ref('Бакалея')
 const newProductUnit = ref('шт')
 
-const categories = [
-    'Овощи', 'Фрукты', 'Мясо', 'Бакалея', 'Молочные продукты', 'Напитки', 'Бытовая химия'
-].map(c => ({ id: c, name: c }))
+import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
+// ... (imports)
+
+// ...
+
+const categories = PRODUCT_CATEGORIES.map(c => ({ id: c, name: c }))
 
 const units = ['шт', 'кг', 'л', 'уп'].map(u => ({ id: u, name: u }))
 
-const categoryItems = ref(categories)
+// Explicitly type as generic string to allow custom categories
+const categoryItems = ref<{ id: string, name: string }[]>([...categories])
 const unitItems = ref(units)
 
 // Store access

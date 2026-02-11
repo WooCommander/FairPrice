@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
+import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpBackButton from '@/design-system/components/FpBackButton.vue'
 
@@ -12,9 +13,7 @@ const query = ref('')
 const selectedCategory = ref<string | null>(null)
 let debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined
 
-const categories = [
-    'Овощи', 'Фрукты', 'Мясо', 'Бакалея', 'Молочные продукты', 'Напитки', 'Бытовая химия'
-]
+const categories = PRODUCT_CATEGORIES
 
 const handleSearch = () => {
     clearTimeout(debounceTimer)
@@ -158,11 +157,12 @@ const goToProduct = (id: string) => {
 .filter-chip {
     white-space: nowrap;
     padding: 6px 12px;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-sm); // Match HomeView
     border: 1px solid var(--color-border);
-    background: var(--color-surface);
+    background: white; // Match HomeView
     color: var(--color-text-secondary);
     font-size: var(--text-caption);
+    font-weight: 500; // Match HomeView
     cursor: pointer;
     transition: all 0.2s;
 
@@ -170,6 +170,11 @@ const goToProduct = (id: string) => {
         background: var(--color-primary);
         color: white;
         border-color: var(--color-primary);
+    }
+
+    &:hover:not(.active) {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
     }
 }
 
