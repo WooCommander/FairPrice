@@ -13,6 +13,7 @@ export const authStore = {
     error: readonly(error),
 
     isAuthenticated: computed(() => !!user.value),
+    currentUserId: computed(() => user.value?.id),
 
     async init() {
         isLoading.value = true

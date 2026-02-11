@@ -7,10 +7,14 @@ import FpBackButton from '@/design-system/components/FpBackButton.vue'
 import FpConfirmationModal from '@/design-system/components/FpConfirmationModal.vue'
 import FpBreadcrumbs from '@/design-system/components/FpBreadcrumbs.vue'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
+import { shoppingListStore } from '@/modules/shopping-list/store/shoppingListStore'
+import { authStore } from '@/modules/auth/store/authStore'
+import PriceChart from '@/components/PriceChart.vue'
 
 const route = useRoute()
 const router = useRouter()
 const { currentProduct } = catalogStore
+const { currentUserId } = authStore
 
 // Product Editing State
 const isEditingProduct = ref(false)
@@ -49,6 +53,17 @@ const groupedHistory = computed(() => {
     })
 
     return Array.from(groups.values())
+})
+
+const chartData = computed(() => {
+    if (!latestHistory.value) return []
+    // Filter out invalid prices/dates if any
+    return latestHistory.value
+        .map(h => ({
+            date: new Date(h.date),
+            price: h.price
+        }))
+        .filter(d => !isNaN(d.price) && !isNaN(d.date.getTime()))
 })
 
 // --- Product Actions ---
@@ -123,18 +138,9 @@ const goToAddPrice = () => {
     }
 }
 
-import { AuthService } from '@/modules/auth/services/AuthService'
-const currentUserId = ref<string | null>(null)
-
-onMounted(async () => {
-    const { user } = await AuthService.getUser()
-    currentUserId.value = user?.id || null
-})
-
 const canDelete = computed(() => {
     if (!currentProduct.value || !currentUserId.value) return false
     return currentProduct.value.created_by === currentUserId.value || !currentProduct.value.created_by
-
 })
 
 const isFavorite = computed(() => {
@@ -145,6 +151,17 @@ const isFavorite = computed(() => {
 const toggleFavorite = async () => {
     if (currentProduct.value) {
         await catalogStore.toggleFavorite(currentProduct.value.id)
+    }
+}
+
+const addToShoppingList = async () => {
+    if (currentProduct.value) {
+        try {
+            await shoppingListStore.addItem(currentProduct.value.name, currentProduct.value.id)
+            alert('Добавлено в список покупок!')
+        } catch (e) {
+            alert('Не удалось добавить в список')
+        }
     }
 }
 </script>
@@ -162,6 +179,9 @@ const toggleFavorite = async () => {
             </div>
 
             <div class="header-actions">
+                <button class="icon-btn list-btn" @click="addToShoppingList" title="В список">
+                    <span>📝</span>
+                </button>
                 <button class="icon-btn star-btn" :class="{ active: isFavorite }" @click="toggleFavorite"
                     title="В избранное">
                     <span v-if="isFavorite">★</span>
@@ -212,8 +232,22 @@ const toggleFavorite = async () => {
                     <div class="stat-block">
                         <span class="label">Последняя цена</span>
                         <div class="price-row">
-                            <span class="price">{{ currentProduct.formattedPrice }}</span>
+                            <span class="price" :class="{
+                                'text-success': currentProduct.priceStatus === 'good',
+                                'text-error': currentProduct.priceStatus === 'bad',
+                                'text-neutral': currentProduct.priceStatus === 'neutral'
+                            }">
+                                {{ currentProduct.formattedPrice }}
+                            </span>
                             <span class="unit" v-if="currentProduct.unit">/ {{ currentProduct.unit }}</span>
+                        </div>
+                        <div class="unit-price" v-if="currentProduct.formattedUnitPrice">
+                            {{ currentProduct.formattedUnitPrice }}
+                        </div>
+                        <div class="status-badge" v-if="currentProduct.priceStatus !== 'neutral'">
+                            <span v-if="currentProduct.priceStatus === 'good'" class="badge-good">👍 Выгодная
+                                цена</span>
+                            <span v-if="currentProduct.priceStatus === 'bad'" class="badge-bad">👎 Дороговато</span>
                         </div>
                     </div>
                 </div>
@@ -232,6 +266,12 @@ const toggleFavorite = async () => {
 
             <div class="history-section">
                 <h3>История цен</h3>
+
+                <!-- Chart Section -->
+                <div class="chart-wrapper" v-if="chartData.length > 1">
+                    <PriceChart :data="chartData" :average-price="currentProduct.averagePrice" />
+                </div>
+
                 <div v-if="latestHistory.length === 0" class="empty-state">
                     История цен пуста
                 </div>
@@ -302,13 +342,20 @@ const toggleFavorite = async () => {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 18px;
     padding: 4px;
-    border-radius: 4px;
-    transition: background 0.2s;
+    font-size: 24px;
+    transition: transform 0.1s;
+
+    &:active {
+        transform: scale(0.9);
+    }
+}
+
+.list-btn {
+    font-size: 20px;
 
     &:hover {
-        background: var(--color-surface-hover);
+        opacity: 0.8;
     }
 }
 
@@ -460,6 +507,10 @@ const toggleFavorite = async () => {
     gap: 16px;
 }
 
+.chart-wrapper {
+    margin-bottom: 24px;
+}
+
 .history-group {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -528,5 +579,51 @@ const toggleFavorite = async () => {
     font-size: var(--text-caption);
     color: var(--color-text-tertiary);
     gap: 2px;
+}
+
+.last-update {
+    font-size: 12px; // Increased from 10px
+    color: var(--color-text-disabled);
+    text-transform: uppercase;
+}
+
+.text-success {
+    color: var(--color-success);
+}
+
+.text-error {
+    color: var(--color-error);
+}
+
+.text-neutral {
+    color: var(--color-text-primary);
+}
+
+.status-badge {
+    margin-top: 4px;
+    font-size: var(--text-caption);
+    font-weight: 500;
+}
+
+.unit-price {
+    font-size: var(--text-body-2);
+    color: var(--color-text-secondary);
+    margin-top: -4px;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.badge-good {
+    color: var(--color-success);
+    background: rgba(var(--color-success-rgb), 0.1);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+}
+
+.badge-bad {
+    color: var(--color-error);
+    background: rgba(var(--color-error-rgb), 0.1);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
 }
 </style>

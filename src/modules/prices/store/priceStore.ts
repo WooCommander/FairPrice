@@ -15,7 +15,8 @@ export const priceStore = {
         try {
             await PriceService.addPrice(dto)
             // Notify catalog about update to refresh recent feed
-            await catalogStore.registerPriceUpdate(dto.productId, dto.price, dto.storeName, dto.unit)
+            // We pass quantityUnit as the unit to display
+            await catalogStore.registerPriceUpdate(dto.productId, dto.price, dto.storeName, dto.quantityUnit)
         } catch (e: any) {
             error.value = e.message || 'Ошибка при добавлении цены'
             throw e

@@ -37,7 +37,8 @@ const groupedProducts = computed(() => {
 })
 
 const loadData = async () => {
-    const name = route.params.name as string
+    // We use :id in router for consistency, which holds the category name
+    const name = route.params.id as string
     if (!name) return
     categoryName.value = name
     isLoading.value = true
@@ -50,7 +51,7 @@ const loadData = async () => {
 
 onMounted(loadData)
 
-watch(() => route.params.name, loadData)
+watch(() => route.params.id, loadData)
 
 const goToAddProduct = () => {
     router.push({
@@ -64,25 +65,23 @@ const goToAddProduct = () => {
     <div class="category-view">
 
         <header class="page-header">
-            <div class="header-top">
-                <FpBackButton />
-                <div class="header-title">
-                    <h1>{{ categoryName }}</h1>
-                </div>
-                <!-- Action placeholder / Spacer -->
-                <div class="header-actions">
-                    <button class="add-btn-icon" @click="router.push(`/add-price?category=${categoryName}`)"
-                        title="Добавить товар">
-                        +
-                    </button>
-                </div>
+            <FpBackButton />
+            <div class="header-title">
+                <h1>{{ categoryName }}</h1>
             </div>
-
-            <FpBreadcrumbs :items="[
-                { label: 'Главная', to: '/' },
-                { label: categoryName }
-            ]" class="breadcrumbs-container" />
+            <div class="header-actions">
+                <button class="add-btn-icon" @click="router.push(`/add-price?category=${categoryName}`)"
+                    title="Добавить товар">
+                    +
+                </button>
+            </div>
         </header>
+
+        <FpBreadcrumbs :items="[
+            { label: 'Главная', to: '/' },
+            { label: categoryName }
+        ]" class="breadcrumbs-container" />
+
         <div v-if="isLoading" class="loading">Загрузка...</div>
 
         <div v-else-if="searchResults.length === 0" class="empty-state">

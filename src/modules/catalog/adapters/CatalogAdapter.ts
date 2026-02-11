@@ -17,7 +17,11 @@ export interface ProductModel {
     category: string;
     formattedPrice: string; // Add missing properties
     formattedAveragePrice?: string; // New field
+    averagePrice?: number; // Needed for Logic/Charts
+    formattedUnitPrice?: string; // e.g. "100 ₽/кг"
     displayName: string;
+    priceStatus: 'good' | 'neutral' | 'bad';
+    normalizedPrice?: number;
 }
 
 export interface ProductHistoryModel {
@@ -32,7 +36,20 @@ export interface ProductHistoryModel {
 }
 
 export function adaptProduct(dto: ProductDTO): ProductModel {
-    // Simple relative time
+    // Determine price status
+    let status: 'good' | 'neutral' | 'bad' = 'neutral'
+
+    if (dto.lastPrice && dto.averagePrice) {
+        // Compare normalized price if available, else raw price logic (legacy compatibility)
+        const currentCheck = dto.normalizedPrice || dto.lastPrice
+
+        // Average is now calculated based on normalized prices if they exist
+        if (currentCheck <= dto.averagePrice * 0.95) {
+            status = 'good'
+        } else if (currentCheck >= dto.averagePrice * 1.05) {
+            status = 'bad'
+        }
+    }
 
     return {
         id: dto.id,
@@ -50,6 +67,10 @@ export function adaptProduct(dto: ProductDTO): ProductModel {
         formattedPriceRange: formatPriceRange(dto.priceRange),
         formattedPrice: dto.lastPrice ? formatPrice(dto.lastPrice) : 'Нет цены',
         formattedAveragePrice: dto.averagePrice ? `~${formatPrice(dto.averagePrice)}` : undefined,
+        averagePrice: dto.averagePrice,
+        formattedUnitPrice: dto.normalizedPrice ? `~${Math.round(dto.normalizedPrice)} ₽/${getUnitBase(dto.quantityUnit)}` : undefined,
+        priceStatus: status,
+        normalizedPrice: dto.normalizedPrice,
         history: (dto.history || []).map(h => ({
             id: h.id,
             price: h.price,
@@ -82,4 +103,12 @@ function formatPriceRange(range?: { min: number; max: number }): string {
         return `${range.min.toLocaleString()} - ${range.max.toLocaleString()} ₽`
     }
     return `${range.min.toLocaleString()} ₽`
+}
+
+function getUnitBase(unit?: string): string {
+    if (!unit) return 'ед.'
+    const u = unit.toLowerCase()
+    if (u === 'g' || u === 'г' || u === 'kg' || u === 'кг') return 'кг'
+    if (u === 'ml' || u === 'мл' || u === 'l' || u === 'л') return 'л'
+    return unit
 }

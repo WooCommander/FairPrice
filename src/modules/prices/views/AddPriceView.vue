@@ -42,11 +42,44 @@ const unitItems = ref(units)
 const { searchResults, currentProduct } = catalogStore
 const { isSubmitting } = priceStore
 
+// Logic
+const quantity = ref<string | number>('')
+
+// Computed Unit Price
+const calculatedUnitPrice = computed(() => {
+    const p = Number(price.value)
+    const q = Number(quantity.value)
+
+    if (!p || !q) return null
+
+    const u = unit.value.toLowerCase()
+    let normalized = 0
+    let base = ''
+
+    if (u === 'g' || u === 'г' || u === 'ml' || u === 'мл') {
+        normalized = p / (q / 1000)
+        base = u === 'g' || u === 'г' ? 'кг' : 'л'
+    } else {
+        normalized = p / q
+        base = u
+    }
+
+    return {
+        price: Math.round(normalized),
+        unit: base
+    }
+})
+
 // Computed
 const isValid = computed(() => {
     const priceVal = Number(price.value)
-    // Relaxed validation: Store name > 1 char (e.g. "Yo" is valid)
-    return storeName.value.length > 1 && !isNaN(priceVal) && priceVal > 0
+    const storeVal = storeName.value
+    // Check if quantity is valid (optional if logic permits, but for fair price we need it)
+    // Let's make quantity required for better data, or default to 1 if empty?
+    // Better to require it for explicit "Fair Price" data.
+    const quantityVal = Number(quantity.value)
+
+    return storeVal.length > 1 && !isNaN(priceVal) && priceVal > 0 && !isNaN(quantityVal) && quantityVal > 0
 })
 
 const comboboxSearchResults = computed(() => {
@@ -173,14 +206,16 @@ const submit = async () => {
     if (!currentProduct.value) return
 
     const finalPrice = Number(price.value)
+    const finalQuantity = Number(quantity.value)
 
     try {
         await priceStore.submitPrice({
             productId: currentProduct.value.id,
             storeName: storeName.value,
             price: finalPrice,
-            currency: 'RUB', // Always send RUB
-            unit: unit.value
+            currency: 'RUB',
+            quantity: finalQuantity,
+            quantityUnit: unit.value
         })
         isSuccess.value = true
         setTimeout(() => {
@@ -286,12 +321,25 @@ onMounted(async () => {
                             @create="createStore" @focus="onStoreFocus" />
                     </div>
 
+                    <!-- Price Row -->
                     <div class="price-row">
                         <FpInput v-model="price" label="Цена (₽)" type="number" placeholder="0" class="price-input" />
+                    </div>
+
+                    <!-- Quantity Row -->
+                    <div class="quantity-row">
+                        <FpInput v-model="quantity" label="Вес/Объем" type="number" placeholder="900"
+                            class="quantity-input" />
                         <div class="unit-select">
-                            <FpCombobox v-model="unit" label="За" :items="unitItems" placeholder="кг" allow-create
+                            <FpCombobox v-model="unit" label="Ед." :items="unitItems" placeholder="г" allow-create
                                 @create="createUnit" :clearable="false" />
                         </div>
+                    </div>
+
+                    <!-- Calculated Info -->
+                    <div class="calc-info" v-if="calculatedUnitPrice">
+                        <span class="label">Цена за {{ calculatedUnitPrice.unit }}:</span>
+                        <span class="value">~{{ calculatedUnitPrice.price }} ₽</span>
                     </div>
                 </div>
 
@@ -368,13 +416,17 @@ onMounted(async () => {
     margin-top: var(--spacing-lg);
 }
 
-.price-row {
+.price-row,
+.quantity-row {
     display: flex;
-    align-items: flex-start;
-    gap: 16px;
+    gap: 12px;
 }
 
 .price-input {
+    flex: 1;
+}
+
+.quantity-input {
     flex: 2;
 }
 
@@ -469,5 +521,16 @@ onMounted(async () => {
     font-weight: 700;
     color: var(--color-primary);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.calc-info {
+    background: rgba(var(--color-primary-rgb), 0.1);
+    padding: 12px;
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--color-primary);
+    font-weight: 500;
 }
 </style>

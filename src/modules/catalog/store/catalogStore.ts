@@ -14,6 +14,8 @@ export const catalogStore = {
     recentUpdates: readonly(recentUpdates),
     currentProduct: readonly(currentProduct),
     isSearching: readonly(isSearching),
+    isLoading: readonly(isSearching), // Alias for compatibility
+    error: ref<string | null>(null), // Add error state
     favoriteProductIds: readonly(favoriteProductIds), // Expose read-only
 
     isFavorite(productId: string) {

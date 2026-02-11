@@ -9,6 +9,9 @@ interface UserStats {
     pricesSubmitted: number
     productsCreated: number
     topCategory: string
+    level: number
+    levelTitle: string
+    nextLevelThreshold: number
 }
 
 const isLoading = ref(true)
@@ -25,7 +28,10 @@ onMounted(async () => {
             user.value.role = authUser.role || 'Пользователь'
         }
 
-        stats.value = await AuthService.getUserStats()
+        const rawStats = await AuthService.getUserStats()
+        if (rawStats) {
+            stats.value = rawStats
+        }
         activityFeed.value = await AuthService.getUserActivity()
     } finally {
         isLoading.value = false
@@ -52,6 +58,20 @@ onMounted(async () => {
 
         <!-- Stats Grid -->
         <section class="stats-grid" v-if="stats">
+            <!-- Level Card -->
+            <FpCard class="stat-card level-card">
+                <div class="level-info">
+                    <span class="level-number">Lvl {{ stats.level }}</span>
+                    <span class="level-title">{{ stats.levelTitle }}</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar"
+                        :style="{ width: Math.min((stats.reputation / stats.nextLevelThreshold) * 100, 100) + '%' }">
+                    </div>
+                </div>
+                <span class="xp-text">{{ stats.reputation }} / {{ stats.nextLevelThreshold }} XP</span>
+            </FpCard>
+
             <FpCard class="stat-card">
                 <span class="stat-value">{{ stats.pricesSubmitted }}</span>
                 <span class="stat-label">Цен добавлено</span>
@@ -59,10 +79,6 @@ onMounted(async () => {
             <FpCard class="stat-card">
                 <span class="stat-value">{{ stats.productsCreated }}</span>
                 <span class="stat-label">Товаров создано</span>
-            </FpCard>
-            <FpCard class="stat-card">
-                <span class="stat-value">📅</span>
-                <span class="stat-label">С нами с {{ stats.joinedDate.toLocaleDateString() }}</span>
             </FpCard>
         </section>
 
@@ -177,6 +193,10 @@ onMounted(async () => {
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-md);
 
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+
     .stat-card {
         display: flex;
         flex-direction: column;
@@ -188,6 +208,7 @@ onMounted(async () => {
         background: var(--color-surface);
         border: 1px solid var(--color-border);
         transition: all 0.2s;
+        min-height: 120px;
 
         &:hover {
             border-color: var(--color-primary);
@@ -208,6 +229,53 @@ onMounted(async () => {
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 600;
+        }
+    }
+
+    .level-card {
+        grid-column: span 3;
+
+        @media (max-width: 768px) {
+            grid-column: span 1;
+        }
+
+        .level-info {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .level-number {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--color-primary);
+        }
+
+        .level-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--color-background);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+            transition: width 0.5s ease-out;
+        }
+
+        .xp-text {
+            font-size: 12px;
+            color: var(--color-text-secondary);
         }
     }
 }

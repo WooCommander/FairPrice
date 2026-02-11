@@ -2,10 +2,11 @@ import { supabase } from '@/api/supabase'
 
 export interface AddPriceDTO {
     productId: string
-    storeName: string // MVP: Just name for now
+    storeName: string
     price: number
     currency: 'UZS' | 'RUB'
-    unit: string
+    quantity: number      // New: Amount (e.g. 900)
+    quantityUnit: string  // New: Unit (e.g. 'ml')
 }
 
 class PriceService {
@@ -40,7 +41,37 @@ class PriceService {
             storeId = newStore.id
         }
 
-        // 2. Insert Price
+        // 2. Normalize Price (Calculate price per 1 base unit)
+        // Base units: kg, l, pcs
+        let normalizedPrice: number | null = null
+        let baseUnit = 'kg' // Default
+
+        const q = Number(dto.quantity)
+        const u = dto.quantityUnit.toLowerCase()
+
+        if (q > 0) {
+            if (u === 'g' || u === 'г') {
+                // Convert g to kg
+                normalizedPrice = dto.price / (q / 1000)
+                baseUnit = 'kg'
+            } else if (u === 'ml' || u === 'мл') {
+                // Convert ml to l
+                normalizedPrice = dto.price / (q / 1000)
+                baseUnit = 'l'
+            } else if (u === 'kg' || u === 'кг') {
+                normalizedPrice = dto.price / q
+                baseUnit = 'kg'
+            } else if (u === 'l' || u === 'л') {
+                normalizedPrice = dto.price / q
+                baseUnit = 'l'
+            } else {
+                // pcs or unknown, just price / quantity
+                normalizedPrice = dto.price / q
+                baseUnit = u
+            }
+        }
+
+        // 3. Insert Price
         const { error: priceError } = await supabase
             .from('prices')
             .insert({
@@ -48,7 +79,12 @@ class PriceService {
                 store_id: storeId,
                 price: dto.price,
                 currency: dto.currency,
-                unit: dto.unit,
+                quantity: dto.quantity,
+                quantity_unit: dto.quantityUnit,
+                normalized_price: normalizedPrice ? Math.round(normalizedPrice) : null,
+                // We store the unit user entered, but normalized_price is implicitly per base unit (kg/l)
+                // or we could add normalized_unit column. For MVP, usually kg/l implies normalized.
+
                 created_by: (await supabase.auth.getUser()).data.user?.id
             })
 

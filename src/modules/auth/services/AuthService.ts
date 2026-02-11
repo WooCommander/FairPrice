@@ -49,13 +49,26 @@ class AuthService {
             supabase.from('prices').select('id', { count: 'exact', head: true }).eq('created_by', user.id)
         ])
 
-        // Mocking 'money saved' and 'reputation' for now as we don't have logic for it yet
+        // Level Calculation
+        const totalPoints = (products.count || 0) * 20 + (prices.count || 0) * 5
+        let level = 1
+        let title = 'Новичок'
+        let nextLevelThreshold = 100
+
+        if (totalPoints >= 2500) { level = 5; title = 'Хранитель'; nextLevelThreshold = 5000 }
+        else if (totalPoints >= 1000) { level = 4; title = 'Мастер'; nextLevelThreshold = 2500 }
+        else if (totalPoints >= 500) { level = 3; title = 'Эксперт'; nextLevelThreshold = 1000 }
+        else if (totalPoints >= 100) { level = 2; title = 'Исследователь'; nextLevelThreshold = 500 }
+
         return {
             joinedDate: new Date(user.created_at || Date.now()),
-            reputation: (products.count || 0) * 10 + (prices.count || 0) * 2,
+            reputation: totalPoints,
             pricesSubmitted: prices.count || 0,
             productsCreated: products.count || 0,
-            topCategory: 'Бакалея' // Placeholder until we have aggregation
+            topCategory: 'Бакалея', // Placeholder
+            level,
+            levelTitle: title,
+            nextLevelThreshold
         }
     }
 

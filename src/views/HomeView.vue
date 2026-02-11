@@ -70,6 +70,28 @@ onMounted(async () => {
         <div class="dashboard-content">
             <!-- Main Actions -->
             <section class="actions-section">
+                <div class="quick-actions">
+                    <button class="action-card primary" @click="router.push('/add-price')">
+                        <div class="icon-container">
+                            <span>+</span>
+                        </div>
+                        <div class="text-content">
+                            <span class="title">Добавить цену</span>
+                            <span class="subtitle">Помоги другим сэкономить</span>
+                        </div>
+                    </button>
+
+                    <button class="action-card secondary" @click="router.push('/shopping-list')">
+                        <div class="icon-container list-icon">
+                            <span>📝</span>
+                        </div>
+                        <div class="text-content">
+                            <span class="title">Список покупок</span>
+                            <span class="subtitle">Планируйте поход в магазин</span>
+                        </div>
+                    </button>
+                </div>
+
                 <FpCard class="action-card" @click="router.push('/search')">
                     <div class="action-icon">🔎</div>
                     <div class="action-details">
@@ -78,15 +100,7 @@ onMounted(async () => {
                     </div>
                 </FpCard>
 
-                <FpCard class="action-card" @click="router.push('/add-price')">
-                    <div class="action-icon">📝</div>
-                    <div class="action-details">
-                        <h3>Добавить цену</h3>
-                        <span>Внести вклад в базу</span>
-                    </div>
-                </FpCard>
-
-                <FpCard class="action-card" @click="router.push('/add-price')">
+                <FpCard class="action-card" @click="router.push('/add-price?tab=favorites')">
                     <div class="action-icon">⭐</div>
                     <div class="action-details">
                         <h3>Избранное</h3>
@@ -133,7 +147,13 @@ onMounted(async () => {
                                         {{ item.category }}
                                     </span>
                                 </td>
-                                <td class="text-right text-success font-bold">{{ item.formattedPrice }}</td>
+                                <td class="text-right font-bold" :class="{
+                                    'text-success': item.priceStatus === 'good',
+                                    'text-error': item.priceStatus === 'bad',
+                                    'text-neutral': item.priceStatus === 'neutral'
+                                }">
+                                    {{ item.formattedPrice }}
+                                </td>
                                 <td class="text-right font-medium text-secondary">
                                     {{ item.formattedAveragePrice || '-' }}
                                 </td>
@@ -158,7 +178,16 @@ onMounted(async () => {
                             <div class="card-top">
                                 <span class="card-title">{{ item.displayName }}</span>
                                 <div class="price-col">
-                                    <span class="card-price">{{ item.formattedPrice }}</span>
+                                    <span class="card-price" :class="{
+                                        'text-success': item.priceStatus === 'good',
+                                        'text-error': item.priceStatus === 'bad',
+                                        'text-neutral': item.priceStatus === 'neutral'
+                                    }">
+                                        {{ item.formattedPrice }}
+                                    </span>
+                                    <span v-if="item.formattedUnitPrice" class="unit-price-badge">
+                                        {{ item.formattedUnitPrice }}
+                                    </span>
                                     <span v-if="item.formattedAveragePrice" class="avg-price-badge">
                                         {{ item.formattedAveragePrice }}
                                     </span>
@@ -300,6 +329,13 @@ onMounted(async () => {
     }
 }
 
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    height: 100%;
+}
+
 .action-card {
     display: flex !important;
     flex-direction: row; // Horizontal layout
@@ -309,9 +345,12 @@ onMounted(async () => {
     transition: all 0.2s ease;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); // Rounded corners
     box-shadow: var(--shadow-sm);
     padding: 12px 16px !important; // Compact padding
     min-height: 72px;
+    height: 100%; // Fill available height in grid
+    box-sizing: border-box;
 
     &:hover {
         transform: translateY(-2px);
@@ -320,31 +359,27 @@ onMounted(async () => {
     }
 }
 
-.action-card:nth-child(1) .action-icon {
-    background: linear-gradient(135deg, rgba(var(--color-primary-rgb), 0.1), rgba(var(--color-primary-rgb), 0.2));
-    color: var(--color-primary);
-}
+// ... existing icon styles ...
 
-.action-card:nth-child(2) .action-icon {
-    background: linear-gradient(135deg, rgba(var(--color-success-rgb), 0.1), rgba(var(--color-success-rgb), 0.2));
-    color: var(--color-success);
-}
-
-.action-card:nth-child(3) .action-icon {
-    background: linear-gradient(135deg, rgba(var(--color-warning-rgb), 0.1), rgba(var(--color-warning-rgb), 0.2));
-    color: var(--color-warning);
-}
-
-.action-icon {
-    font-size: 20px;
-    color: var(--color-primary);
-    background: rgba(var(--color-primary-rgb), 0.05);
-    padding: 8px;
-    border-radius: var(--radius-md);
+.text-content {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+
+    .title {
+        font-weight: 600;
+        font-size: var(--text-body-1);
+        color: var(--color-text-primary);
+        line-height: 1.2;
+    }
+
+    .subtitle {
+        font-size: var(--text-caption);
+        color: var(--color-text-secondary);
+        line-height: 1.2;
+        margin-top: 2px;
+    }
 }
 
 .action-details {
@@ -494,6 +529,14 @@ onMounted(async () => {
     color: var(--color-success);
 }
 
+.text-error {
+    color: var(--color-error);
+}
+
+.text-neutral {
+    color: var(--color-text-primary);
+}
+
 .text-secondary {
     color: var(--color-text-secondary);
 }
@@ -564,8 +607,19 @@ onMounted(async () => {
 
 .card-price {
     font-weight: 700;
-    color: var(--color-success);
     font-size: 18px; // Increased price size
+
+    &.text-success {
+        color: var(--color-success);
+    }
+
+    &.text-error {
+        color: var(--color-error);
+    }
+
+    &.text-neutral {
+        color: var(--color-text-primary);
+    }
 }
 
 .price-col {
@@ -573,6 +627,12 @@ onMounted(async () => {
     flex-direction: column;
     align-items: flex-end;
     gap: 2px;
+}
+
+.unit-price-badge {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    font-weight: 500;
 }
 
 .avg-price-badge {

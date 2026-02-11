@@ -11,6 +11,9 @@ export interface ProductDTO {
     lastStore?: string; // New field for recent feed
     lastStoreId?: string; // ID for navigation
     lastPrice?: number; // New field for recent feed
+    normalizedPrice?: number; // New field for fair price comparison
+    quantity?: number;
+    quantityUnit?: string;
     averagePrice?: number; // New field: Average price for current month
     created_by?: string; // Owner ID
     history?: ProductHistoryDTO[];
@@ -40,7 +43,10 @@ class CatalogService {
                     price,
                     created_at,
                     store_id,
-                    stores (name)
+                    stores (name),
+                    quantity,
+                    quantity_unit,
+                    normalized_price
                 )
             `)
             .order('created_at', { ascending: false })
@@ -88,7 +94,10 @@ class CatalogService {
                     store_id,
                     stores (name),
                     created_by,
-                    unit
+                    unit,
+                    quantity,
+                    quantity_unit,
+                    normalized_price
                 )
             `)
             .in('id', productIds)
@@ -155,8 +164,12 @@ class CatalogService {
                     created_at,
                     unit,
                     store_id,
+                    store_id,
                     stores (name),
-                    created_by
+                    created_by,
+                    quantity,
+                    quantity_unit,
+                    normalized_price
                 )
             `)
             .in('id', productIds)
@@ -176,8 +189,12 @@ class CatalogService {
                     created_at,
                     unit,
                     store_id,
+                    store_id,
                     stores (name),
-                    created_by
+                    created_by,
+                    quantity,
+                    quantity_unit,
+                    normalized_price
                 )
             `)
             .eq('category', category)
@@ -210,8 +227,12 @@ class CatalogService {
                     created_at,
                     unit,
                     store_id,
+                    store_id,
                     stores (name),
-                    created_by
+                    created_by,
+                    quantity,
+                    quantity_unit,
+                    normalized_price
                 )
             `)
             .eq('id', id)
@@ -272,6 +293,9 @@ class CatalogService {
             unit: p.unit,
             created_by: p.created_by,
             lastPrice: lastPriceObj?.price,
+            normalizedPrice: lastPriceObj?.normalized_price, // Map normalized price
+            quantity: lastPriceObj?.quantity,
+            quantityUnit: lastPriceObj?.quantity_unit,
             lastStore: lastPriceObj?.stores?.name,
             lastStoreId: lastPriceObj?.store_id, // Added field
             lastUpdate: lastPriceObj?.created_at || p.created_at, // Use price update time or product creation
@@ -376,8 +400,13 @@ class CatalogService {
 
         if (currentMonthPrices.length === 0) return undefined
 
-        const sum = currentMonthPrices.reduce((acc, p) => acc + p.price, 0)
-        return Math.round(sum / currentMonthPrices.length)
+        // Prefer normalized_price if available, otherwise fallback to price
+        const sum = currentMonthPrices.reduce((acc, p) => {
+            const val = p.normalized_price || p.price
+            return acc + val
+        }, 0)
+
+        return sum / currentMonthPrices.length
     }
 
     async getFavorites(): Promise<string[]> {
