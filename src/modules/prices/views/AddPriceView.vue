@@ -207,7 +207,13 @@ onMounted(async () => {
     }
 
     // Pre-fill from Query Params
-    if (route.query.storeName) {
+    if (route.query.storeId) {
+        const id = String(route.query.storeId)
+        // We can reuse catalogStore or priceStore to get name
+        // catalogStore.getStoreName is available
+        storeName.value = await catalogStore.getStoreName(id)
+        isStoreSelected.value = true
+    } else if (route.query.storeName) {
         storeName.value = String(route.query.storeName)
         isStoreSelected.value = true
     }
