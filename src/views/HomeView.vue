@@ -60,8 +60,7 @@ onMounted(async () => {
 
             <div class="quick-links" v-if="recentSearches.length > 0">
                 <span class="quick-link-label">Часто ищут:</span>
-                <button v-for="tag in recentSearches" :key="tag" class="tag-link"
-                    @click="router.push({ path: '/search', query: { q: tag } })">
+                <button v-for="tag in recentSearches" :key="tag" class="tag-link" @click="searchQuery = tag">
                     {{ tag }}
                 </button>
             </div>

@@ -151,13 +151,8 @@ const goToProduct = (id: string) => {
 .filters {
     display: flex;
     gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none; // Hide scrollbar for cleaner look
-
-    &::-webkit-scrollbar {
-        display: none;
-    }
+    flex-wrap: wrap; // Wrap items to next line
+    padding-bottom: 8px;
 }
 
 .filter-chip {

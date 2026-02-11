@@ -34,7 +34,7 @@ class CatalogService {
     // Mock data removed
     // private mockProducts: ProductDTO[] = []
 
-    async searchProducts(query: string, _filters?: { category?: string, sort?: string }): Promise<ProductDTO[]> {
+    async searchProducts(query: string, filters?: { category?: string, sort?: string }): Promise<ProductDTO[]> {
         let queryBuilder = supabase
             .from('products')
             .select(`
@@ -53,6 +53,10 @@ class CatalogService {
 
         if (query) {
             queryBuilder = queryBuilder.ilike('name', `%${query}%`)
+        }
+
+        if (filters?.category) {
+            queryBuilder = queryBuilder.eq('category', filters.category)
         }
 
         const { data, error } = await queryBuilder
