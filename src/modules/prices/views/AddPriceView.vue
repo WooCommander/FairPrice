@@ -205,6 +205,16 @@ onMounted(async () => {
     } else {
         catalogStore.clearSearch()
     }
+
+    // Pre-fill from Query Params
+    if (route.query.storeName) {
+        storeName.value = String(route.query.storeName)
+        isStoreSelected.value = true
+    }
+
+    if (route.query.category) {
+        newProductCategory.value = String(route.query.category)
+    }
 })
 </script>
 

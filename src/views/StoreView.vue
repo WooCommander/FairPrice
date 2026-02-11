@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpCard from '@/design-system/components/FpCard.vue'
@@ -28,11 +28,10 @@ onMounted(async () => {
 })
 
 const goToAddPrice = () => {
-    // Navigate to Add Price, pre-filling this store? 
-    // Currently Add Price flow starts with Product Selection.
-    // If we want to pre-fill store, we'd need to support that in AddPriceView.
-    // For now, just go to add price generic or maybe we can implement "Select Product -> This Store is default" future task.
-    router.push('/add-price')
+    router.push({
+        path: '/add-price',
+        query: { storeName: storeName.value }
+    })
 }
 </script>
 
@@ -42,6 +41,11 @@ const goToAddPrice = () => {
             <FpButton variant="text" size="sm" @click="router.back()">← Назад</FpButton>
             <h1>{{ storeName }}</h1>
             <p class="subtitle">Товары в этой точке</p>
+            <div class="header-actions">
+                <FpButton class="add-btn" size="sm" @click="goToAddPrice">
+                    + Добавить цену
+                </FpButton>
+            </div>
         </header>
 
         <div v-if="isLoading" class="loading">Загрузка...</div>

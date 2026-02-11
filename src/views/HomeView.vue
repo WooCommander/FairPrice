@@ -108,7 +108,15 @@ onMounted(async () => {
                                     </span>
                                 </td>
                                 <td class="text-right text-success font-bold">{{ item.formattedPrice }}</td>
-                                <td class="text-secondary">{{ item.lastStore }}</td>
+                                <td>
+                                    <span class="store" @click.stop="router.push(`/store/${item.lastStoreId}`)"
+                                        v-if="item.lastStoreId" role="link">
+                                        🏪 {{ item.lastStore }}
+                                    </span>
+                                    <span class="store" v-else>
+                                        🏪 {{ item.lastStore || 'Нет данных' }}
+                                    </span>
+                                </td>
                                 <td class="text-right text-muted text-sm">{{ item.lastUpdateRelative }}</td>
                             </tr>
                         </tbody>

@@ -8,6 +8,7 @@ export interface ProductModel {
     lastUpdate?: Date;
     lastUpdateRelative?: string;
     lastStore?: string;
+    lastStoreId?: string;
     lastPrice?: number;
     priceRange?: { min: number; max: number };
     created_by?: string;
@@ -42,6 +43,7 @@ export function adaptProduct(dto: ProductDTO): ProductModel {
         lastUpdate: dto.lastUpdate ? new Date(dto.lastUpdate) : undefined,
         lastUpdateRelative: dto.lastUpdate ? formatTimeAgo(new Date(dto.lastUpdate)) : '',
         lastStore: dto.lastStore,
+        lastStoreId: dto.lastStoreId,
         lastPrice: dto.lastPrice,
         priceRange: dto.priceRange,
         formattedPriceRange: formatPriceRange(dto.priceRange),

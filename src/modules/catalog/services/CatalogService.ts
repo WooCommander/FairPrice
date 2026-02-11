@@ -9,6 +9,7 @@ export interface ProductDTO {
     priceRange?: { min: number; max: number };
     lastUpdate?: string; // ISO string
     lastStore?: string; // New field for recent feed
+    lastStoreId?: string; // ID for navigation
     lastPrice?: number; // New field for recent feed
     created_by?: string; // Owner ID
     history?: ProductHistoryDTO[];
@@ -271,6 +272,7 @@ class CatalogService {
             created_by: p.created_by,
             lastPrice: lastPriceObj?.price,
             lastStore: lastPriceObj?.stores?.name,
+            lastStoreId: lastPriceObj?.store_id, // Added field
             lastUpdate: lastPriceObj?.created_at || p.created_at, // Use price update time or product creation
             priceRange: this.calculatePriceRange(p.prices),
             history: p.prices?.map((price: any) => ({
@@ -284,78 +286,79 @@ class CatalogService {
             }))
         }
     }
+}
 
     async updateProduct(id: string, updates: { name?: string, category?: string }) {
-        const { error } = await supabase
-            .from('products')
-            .update(updates)
-            .eq('id', id)
+    const { error } = await supabase
+        .from('products')
+        .update(updates)
+        .eq('id', id)
 
-        if (error) throw error
-    }
+    if (error) throw error
+}
 
     async deletePrice(id: string) {
-        const { error } = await supabase
-            .from('prices')
-            .delete()
-            .eq('id', id)
+    const { error } = await supabase
+        .from('prices')
+        .delete()
+        .eq('id', id)
 
-        if (error) throw error
-    }
+    if (error) throw error
+}
 
     async deleteProduct(id: string) {
-        console.log(`Attempting to delete product ${id}`)
+    console.log(`Attempting to delete product ${id}`)
 
-        // 1. Delete prices
-        const { data: deletedPrices, error: pricesError } = await supabase
-            .from('prices')
-            .delete()
-            .eq('product_id', id)
-            .select()
+    // 1. Delete prices
+    const { data: deletedPrices, error: pricesError } = await supabase
+        .from('prices')
+        .delete()
+        .eq('product_id', id)
+        .select()
 
-        if (pricesError) {
-            console.error('Error deleting product prices:', pricesError)
-            throw new Error(`Ошибка при удалении цен: ${pricesError.message}`)
-        }
-        console.log(`Deleted ${deletedPrices?.length || 0} prices`)
-
-        // 2. Delete product
-        const { data: deletedProduct, error } = await supabase
-            .from('products')
-            .delete()
-            .eq('id', id)
-            .select()
-
-        if (error) {
-            console.error('Error deleting product:', error)
-            throw new Error(`Ошибка при удалении товара: ${error.message}`)
-        }
-
-        if (!deletedProduct || deletedProduct.length === 0) {
-            console.warn('Delete operation returned 0 rows. RLS might be blocking it.')
-            throw new Error('Не удалось удалить товар. Возможно, у вас нет прав (RLS) или товар уже удален.')
-        }
-
-        console.log('Product deleted successfully')
+    if (pricesError) {
+        console.error('Error deleting product prices:', pricesError)
+        throw new Error(`Ошибка при удалении цен: ${pricesError.message}`)
     }
+    console.log(`Deleted ${deletedPrices?.length || 0} prices`)
+
+    // 2. Delete product
+    const { data: deletedProduct, error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id)
+        .select()
+
+    if (error) {
+        console.error('Error deleting product:', error)
+        throw new Error(`Ошибка при удалении товара: ${error.message}`)
+    }
+
+    if (!deletedProduct || deletedProduct.length === 0) {
+        console.warn('Delete operation returned 0 rows. RLS might be blocking it.')
+        throw new Error('Не удалось удалить товар. Возможно, у вас нет прав (RLS) или товар уже удален.')
+    }
+
+    console.log('Product deleted successfully')
+}
 
     async updateStoreName(id: string, name: string) {
-        const { error } = await supabase
-            .from('stores')
-            .update({ name })
-            .eq('id', id)
+    const { error } = await supabase
+        .from('stores')
+        .update({ name })
+        .eq('id', id)
 
-        if (error) throw error
-    }
+    if (error) throw error
+}
 
     private calculatePriceRange(prices: any[]) {
-        if (!prices || prices.length === 0) return undefined
-        const values = prices.map(p => p.price)
-        return {
-            min: Math.min(...values),
-            max: Math.max(...values)
-        }
+    if (!prices || prices.length === 0) return undefined
+    const values = prices.map(p => p.price)
+    return {
+        min: Math.min(...values),
+        max: Math.max(...values)
     }
+}
 }
 
 export const instance = new CatalogService()
