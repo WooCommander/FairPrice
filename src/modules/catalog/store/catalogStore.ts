@@ -1,6 +1,6 @@
 import { ref, readonly } from 'vue'
 import { CatalogService } from '../services/CatalogService'
-import { type ProductModel, adaptProduct } from '../adapters/CatalogAdapter'
+import { adaptProduct, type ProductModel } from '../adapters/CatalogAdapter'
 
 const searchResults = ref<ProductModel[]>([])
 const recentUpdates = ref<ProductModel[]>([])
@@ -56,7 +56,7 @@ export const catalogStore = {
         }
     },
 
-    async registerPriceUpdate(productId: string, price: number, storeName: string, unit: string) {
+    async registerPriceUpdate(productId: string, _price: number, _storeName: string, _unit: string) {
         // Validation/Logging could happen here
         await this.loadRecentProducts()
         // Also refresh specific product if it's the current one
