@@ -6,12 +6,43 @@ const searchResults = ref<ProductModel[]>([])
 const recentUpdates = ref<ProductModel[]>([])
 const currentProduct = ref<ProductModel | null>(null)
 const isSearching = ref(false)
+const favoriteProductIds = ref<Set<string>>(new Set()) // New state
+
 
 export const catalogStore = {
     searchResults: readonly(searchResults),
     recentUpdates: readonly(recentUpdates),
     currentProduct: readonly(currentProduct),
     isSearching: readonly(isSearching),
+    favoriteProductIds: readonly(favoriteProductIds), // Expose read-only
+
+    isFavorite(productId: string) {
+        return favoriteProductIds.value.has(productId)
+    },
+
+    async loadFavorites() {
+        const ids = await CatalogService.getFavorites()
+        favoriteProductIds.value = new Set(ids)
+    },
+
+    async toggleFavorite(productId: string) {
+        try {
+            const isFav = await CatalogService.toggleFavorite(productId)
+            if (isFav) {
+                favoriteProductIds.value.add(productId)
+            } else {
+                favoriteProductIds.value.delete(productId)
+            }
+            // Trigger reactivity explicitly if needed (Set is reactive in Vue 3 ref, but mutation needs care)
+            // Ideally:
+            const newSet = new Set(favoriteProductIds.value)
+            if (isFav) newSet.add(productId); else newSet.delete(productId)
+            favoriteProductIds.value = newSet
+        } catch (e) {
+            console.error('Failed to toggle favorite', e)
+        }
+    },
+
 
     async loadRecentProducts() {
         isSearching.value = true

@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import FpCard from '@/design-system/components/FpCard.vue'
-import FpButton from '@/design-system/components/FpButton.vue'
 
 const router = useRouter()
 
@@ -12,6 +11,7 @@ const { recentUpdates } = catalogStore
 
 const recentSearches = ref<string[]>([])
 const searchQuery = ref('')
+const showFavoritesOnly = ref(false)
 
 const handleSearch = () => {
     if (searchQuery.value.trim()) {
@@ -20,17 +20,31 @@ const handleSearch = () => {
 }
 
 const filteredUpdates = computed(() => {
-    if (!searchQuery.value) return recentUpdates.value
-    const q = searchQuery.value.toLowerCase()
-    return recentUpdates.value.filter(item =>
-        item.name.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q)
-    )
+    if (searchQuery.value) {
+        const q = searchQuery.value.toLowerCase()
+        return recentUpdates.value.filter(item =>
+            item.name.toLowerCase().includes(q) ||
+            item.category.toLowerCase().includes(q)
+        )
+    }
+
+    if (showFavoritesOnly.value) {
+        return recentUpdates.value.filter(p => catalogStore.isFavorite(p.id))
+    }
+
+    return recentUpdates.value
 })
 
 onMounted(async () => {
-    catalogStore.loadRecentProducts()
-    recentSearches.value = await CatalogService.getPopularSearchTerms()
+    try {
+        await Promise.all([
+            catalogStore.loadRecentProducts(),
+            catalogStore.loadFavorites(),
+            CatalogService.getPopularSearchTerms().then(res => recentSearches.value = res)
+        ])
+    } catch (e) {
+        console.error('Failed to load home data', e)
+    }
 })
 </script>
 
@@ -85,10 +99,20 @@ onMounted(async () => {
             <section class="updates-section">
                 <div class="section-header">
                     <h2>Последние обновления</h2>
-                    <FpButton variant="text" size="sm">Смотреть все</FpButton>
+                    <div class="feed-tabs">
+                        <button class="tab-btn" :class="{ active: !showFavoritesOnly }"
+                            @click="showFavoritesOnly = false">Все</button>
+                        <button class="tab-btn" :class="{ active: showFavoritesOnly }"
+                            @click="showFavoritesOnly = true">Избранное</button>
+                    </div>
                 </div>
 
-                <FpCard class="feed-table-card" padding="none">
+                <div v-if="filteredUpdates.length === 0" class="empty-state">
+                    <span v-if="showFavoritesOnly">В избранном пока пусто</span>
+                    <span v-else>Нет обновлений по вашему запросу</span>
+                </div>
+
+                <FpCard class="feed-table-card" padding="none" v-else>
                     <table class="data-table">
                         <thead>
                             <tr>
@@ -361,6 +385,41 @@ onMounted(async () => {
         margin: 0;
         color: var(--color-text-primary);
     }
+}
+
+.feed-tabs {
+    display: flex;
+    gap: 8px;
+    background: var(--color-surface);
+    padding: 4px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-border);
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-caption);
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+
+    &.active {
+        background: var(--color-primary);
+        color: white;
+        font-weight: 500;
+    }
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--color-text-secondary);
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
 }
 
 .feed-table-card {

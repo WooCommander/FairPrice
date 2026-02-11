@@ -379,6 +379,51 @@ class CatalogService {
         const sum = currentMonthPrices.reduce((acc, p) => acc + p.price, 0)
         return Math.round(sum / currentMonthPrices.length)
     }
+
+    async getFavorites(): Promise<string[]> {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return []
+
+        const { data, error } = await supabase
+            .from('favorites')
+            .select('product_id')
+            .eq('user_id', user.id)
+
+        if (error || !data) return []
+        return data.map((f: any) => f.product_id)
+    }
+
+    async toggleFavorite(productId: string): Promise<boolean> {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new Error('User not logged in')
+
+        // Check if exists
+        const { data: existing } = await supabase
+            .from('favorites')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('product_id', productId)
+            .single()
+
+        if (existing) {
+            // Delete
+            await supabase
+                .from('favorites')
+                .delete()
+                .eq('user_id', user.id)
+                .eq('product_id', productId)
+            return false // Not favorite anymore
+        } else {
+            // Insert
+            await supabase
+                .from('favorites')
+                .insert({
+                    user_id: user.id,
+                    product_id: productId
+                })
+            return true // Is favorite now
+        }
+    }
 }
 
 export const instance = new CatalogService()

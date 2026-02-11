@@ -134,7 +134,19 @@ onMounted(async () => {
 const canDelete = computed(() => {
     if (!currentProduct.value || !currentUserId.value) return false
     return currentProduct.value.created_by === currentUserId.value || !currentProduct.value.created_by
+
 })
+
+const isFavorite = computed(() => {
+    if (!currentProduct.value) return false
+    return catalogStore.isFavorite(currentProduct.value.id)
+})
+
+const toggleFavorite = async () => {
+    if (currentProduct.value) {
+        await catalogStore.toggleFavorite(currentProduct.value.id)
+    }
+}
 </script>
 
 <template>
@@ -149,8 +161,13 @@ const canDelete = computed(() => {
                 <h1>{{ currentProduct?.name || 'Товар' }}</h1>
             </div>
 
-            <!-- Spacer or Action placeholder -->
-            <div class="header-spacer"></div>
+            <div class="header-actions">
+                <button class="icon-btn star-btn" :class="{ active: isFavorite }" @click="toggleFavorite"
+                    title="В избранное">
+                    <span v-if="isFavorite">★</span>
+                    <span v-else>☆</span>
+                </button>
+            </div>
         </div>
 
         <FpBreadcrumbs :items="[
@@ -292,6 +309,20 @@ const canDelete = computed(() => {
 
     &:hover {
         background: var(--color-surface-hover);
+    }
+}
+
+.star-btn {
+    font-size: 24px;
+    color: var(--color-text-secondary);
+
+    &.active {
+        color: var(--color-warning); // Gold/Yellow
+    }
+
+    &:hover {
+        color: var(--color-warning);
+        opacity: 0.8;
     }
 }
 
