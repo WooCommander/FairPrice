@@ -3,17 +3,23 @@ import type { ProductDTO } from '../services/CatalogService'
 export interface ProductModel {
     id: string
     name: string
-    category: string
-    displayName: string
-    formattedPrice: string
-    lastUpdateRelative: string
-    storeName?: string
-    lastPrice?: number
-    unit: string
+    unit: string;
+    description?: string;
+    lastUpdate?: Date;
+    lastUpdateRelative?: string;
+    lastStore?: string;
+    lastPrice?: number;
+    priceRange?: { min: number; max: number };
+    created_by?: string;
+    formattedPriceRange?: string;
     history: ProductHistoryModel[]
+    category: string;
+    formattedPrice: string; // Add missing properties
+    displayName: string;
 }
 
 export interface ProductHistoryModel {
+    id?: string
     price: number
     date: string
     storeName: string
@@ -24,37 +30,24 @@ export interface ProductHistoryModel {
 }
 
 export function adaptProduct(dto: ProductDTO): ProductModel {
-    let formattedPrice = 'Нет цен'
-
-    if (dto.priceRange) {
-        if (dto.priceRange.min !== dto.priceRange.max) {
-            formattedPrice = `${dto.priceRange.min.toLocaleString()} - ${dto.priceRange.max.toLocaleString()} ₽`
-        } else {
-            formattedPrice = `${dto.priceRange.min.toLocaleString()} ₽`
-        }
-    } else if (dto.lastPrice) {
-        formattedPrice = `${dto.lastPrice.toLocaleString()} ₽`
-    }
-
     // Simple relative time
-    const date = dto.lastUpdate ? new Date(dto.lastUpdate) : new Date()
-    const diff = Date.now() - date.getTime()
-    let timeString = 'только что'
-    if (diff > 86400000) timeString = '1 дн. назад'
-    else if (diff > 3600000) timeString = `${Math.floor(diff / 3600000)} ч. назад`
-    else if (diff > 60000) timeString = `${Math.floor(diff / 60000)} мин. назад`
 
     return {
         id: dto.id,
         name: dto.name,
         category: dto.category,
         displayName: `${dto.name} (${dto.unit})`,
-        formattedPrice: formattedPrice,
-        lastUpdateRelative: timeString,
-        storeName: dto.lastStore || 'Неизвестно',
-        lastPrice: dto.lastPrice,
         unit: dto.unit,
+        created_by: dto.created_by,
+        lastUpdate: dto.lastUpdate ? new Date(dto.lastUpdate) : undefined,
+        lastUpdateRelative: dto.lastUpdate ? formatTimeAgo(new Date(dto.lastUpdate)) : '',
+        lastStore: dto.lastStore,
+        lastPrice: dto.lastPrice,
+        priceRange: dto.priceRange,
+        formattedPriceRange: formatPriceRange(dto.priceRange),
+        formattedPrice: dto.lastPrice ? formatPrice(dto.lastPrice) : 'Нет цены',
         history: (dto.history || []).map(h => ({
+            id: h.id,
             price: h.price,
             date: h.date,
             storeName: h.storeName,
@@ -64,4 +57,25 @@ export function adaptProduct(dto: ProductDTO): ProductModel {
             dateRelative: new Date(h.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
         }))
     }
+}
+
+function formatTimeAgo(date: Date): string {
+    const diff = Date.now() - date.getTime()
+    if (diff < 60000) return 'только что'
+    if (diff < 3600000) return `${Math.floor(diff / 60000)} мин. назад`
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)} ч. назад`
+    return new Date(date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+}
+
+function formatPrice(price?: number): string {
+    if (price === undefined || price === null) return 'Нет цен'
+    return `${price.toLocaleString()} ₽`
+}
+
+function formatPriceRange(range?: { min: number; max: number }): string {
+    if (!range) return 'Нет цен'
+    if (range.min !== range.max) {
+        return `${range.min.toLocaleString()} - ${range.max.toLocaleString()} ₽`
+    }
+    return `${range.min.toLocaleString()} ₽`
 }

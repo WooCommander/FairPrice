@@ -13,13 +13,17 @@ interface UserStats {
 
 const isLoading = ref(true)
 const stats = ref<UserStats | null>(null)
-const user = ref({ email: 'user@example.com', name: 'Demo User' }) // Mock user
+const user = ref({ email: 'user@example.com', name: 'Demo User', id: '', role: '' }) // Mock user
 
 onMounted(async () => {
     try {
         // In real app, we get user from session
         const { user: authUser } = await AuthService.getUser()
-        if (authUser?.email) user.value.email = authUser.email
+        if (authUser) {
+            user.value.email = authUser.email || ''
+            user.value.id = authUser.id
+            user.value.role = authUser.role || 'User'
+        }
 
         stats.value = await AuthService.getUserStats()
     } finally {
@@ -44,9 +48,10 @@ const activityFeed = [
             <div class="user-info">
                 <h1>{{ user.name }}</h1>
                 <p class="email">{{ user.email }}</p>
-                <div class="badges" v-if="stats">
-                    <span class="badge">⭐ {{ stats.reputation }} Rep</span>
-                    <span class="badge">📅 Member since {{ stats.joinedDate.toLocaleDateString() }}</span>
+                <div class="badges">
+                    <span class="badge" v-if="stats">⭐ {{ stats.reputation }} Rep</span>
+                    <span class="badge" v-if="user.role">🛡️ {{ user.role }}</span>
+                    <span class="badge id-badge" title="User ID">🆔 {{ user.id.slice(0, 8) }}...</span>
                 </div>
             </div>
         </section>

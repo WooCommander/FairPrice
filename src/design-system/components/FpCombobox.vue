@@ -90,6 +90,19 @@ const handleClickOutside = (e: MouseEvent) => {
     }
 }
 
+const onKeydown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+        if (showCreateOption.value) {
+            onCreate()
+            e.preventDefault()
+        } else if (filteredItems.value.length === 1) {
+            // Auto-select if only one match
+            selectItem(filteredItems.value[0])
+            e.preventDefault()
+        }
+    }
+}
+
 onMounted(() => {
     document.addEventListener('click', handleClickOutside)
 })
@@ -103,7 +116,7 @@ onUnmounted(() => {
     <div class="fp-combobox" ref="wrapperRef">
         <div class="input-wrapper" :class="{ 'is-focused': isOpen }">
             <input ref="inputRef" class="fp-input" type="text" :value="modelValue" @input="onInput" @focus="onFocus"
-                @blur="onBlur" :placeholder="isOpen ? placeholder : ''" />
+                @blur="onBlur" @keydown="onKeydown" :placeholder="isOpen ? placeholder : ''" />
             <label v-if="label" class="fp-label" :class="{ 'has-value': modelValue || isOpen }">
                 {{ label }}
             </label>

@@ -7,6 +7,7 @@ import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
+import FpBreadcrumbs from '@/design-system/components/FpBreadcrumbs.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -209,6 +210,10 @@ onMounted(async () => {
 
 <template>
     <div class="add-price-view">
+        <FpBreadcrumbs :items="[
+            { label: 'Главная', to: '/' },
+            { label: 'Добавить цену' }
+        ]" />
         <header class="page-header">
             <h1>Добавить цену</h1>
         </header>
@@ -227,7 +232,7 @@ onMounted(async () => {
                 <div v-else class="creation-form">
                     <h3>Новый товар</h3>
                     <div class="form-grid">
-                        <FpInput v-model="newProductName" label="Название" />
+                        <FpInput v-model="newProductName" label="Название" @keydown.enter="createProduct" />
 
                         <div class="select-group">
                             <FpCombobox v-model="newProductCategory" label="Категория" :items="categoryItems"
@@ -288,11 +293,6 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-.add-price-view {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
 .page-header {
     text-align: center;
     margin-bottom: var(--spacing-lg);

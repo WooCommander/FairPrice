@@ -10,10 +10,12 @@ export interface ProductDTO {
     lastUpdate?: string; // ISO string
     lastStore?: string; // New field for recent feed
     lastPrice?: number; // New field for recent feed
+    created_by?: string; // Owner ID
     history?: ProductHistoryDTO[];
 }
 
 export interface ProductHistoryDTO {
+    id?: string; // Add ID for deletion
     price: number;
     date: string;
     storeName: string;
@@ -116,6 +118,74 @@ class CatalogService {
         return categories.slice(0, 5)
     }
 
+    async getStoreDetails(id: string): Promise<{ id: string, name: string } | undefined> {
+        const { data, error } = await supabase
+            .from('stores')
+            .select('id, name')
+            .eq('id', id)
+            .single()
+
+        if (error || !data) return undefined
+        return data
+    }
+
+    async getProductsByStore(storeId: string): Promise<ProductDTO[]> {
+        // Get all prices for this store
+        const { data: prices, error } = await supabase
+            .from('prices')
+            .select('product_id')
+            .eq('store_id', storeId)
+            .order('created_at', { ascending: false })
+
+        if (error || !prices) return []
+
+        const productIds = [...new Set(prices.map(p => p.product_id))]
+
+        if (productIds.length === 0) return []
+
+        // Fetch products
+        const { data: products, error: productsError } = await supabase
+            .from('products')
+            .select(`
+                *,
+                prices (
+                    price,
+                    created_at,
+                    unit,
+                    store_id,
+                    stores (name),
+                    created_by
+                )
+            `)
+            .in('id', productIds)
+
+        if (productsError || !products) return []
+
+        return products.map(p => this.mapToDTO(p))
+    }
+
+    async getProductsByCategory(category: string): Promise<ProductDTO[]> {
+        const { data: products, error } = await supabase
+            .from('products')
+            .select(`
+                *,
+                prices (
+                    price,
+                    created_at,
+                    unit,
+                    store_id,
+                    stores (name),
+                    created_by
+                )
+            `)
+            .eq('category', category)
+            .order('name')
+
+        if (error || !products) return []
+
+        return products.map(p => this.mapToDTO(p))
+    }
+
     async registerPriceUpdate(_productId: string, _price: number, _store: string, _unit: string) {
         // In DB mode, PriceService writes to DB. CatalogService just reads.
         // But if we need to trigger a refresh or something... 
@@ -137,6 +207,7 @@ class CatalogService {
                     price,
                     created_at,
                     unit,
+                    store_id,
                     stores (name),
                     created_by
                 )
@@ -150,6 +221,17 @@ class CatalogService {
     }
 
     async createProduct(data: { name: string, category: string, unit: string }): Promise<ProductDTO> {
+        // Check for duplicates (case-insensitive)
+        const { data: existing } = await supabase
+            .from('products')
+            .select('id')
+            .ilike('name', data.name)
+            .single()
+
+        if (existing) {
+            throw new Error('Товар с таким названием уже существует')
+        }
+
         const { data: newProduct, error } = await supabase
             .from('products')
             .insert({
@@ -186,13 +268,14 @@ class CatalogService {
             name: p.name,
             category: p.category,
             unit: p.unit,
+            created_by: p.created_by,
             lastPrice: lastPriceObj?.price,
             lastStore: lastPriceObj?.stores?.name,
             lastUpdate: lastPriceObj?.created_at || p.created_at, // Use price update time or product creation
             priceRange: this.calculatePriceRange(p.prices),
             history: p.prices?.map((price: any) => ({
+                id: price.id,
                 price: price.price,
-                date: price.created_at,
                 date: price.created_at,
                 storeName: price.stores?.name || 'Неизвестно',
                 storeId: price.store_id,
@@ -211,13 +294,49 @@ class CatalogService {
         if (error) throw error
     }
 
-    async deleteProduct(id: string) {
+    async deletePrice(id: string) {
         const { error } = await supabase
-            .from('products')
+            .from('prices')
             .delete()
             .eq('id', id)
 
         if (error) throw error
+    }
+
+    async deleteProduct(id: string) {
+        console.log(`Attempting to delete product ${id}`)
+
+        // 1. Delete prices
+        const { data: deletedPrices, error: pricesError } = await supabase
+            .from('prices')
+            .delete()
+            .eq('product_id', id)
+            .select()
+
+        if (pricesError) {
+            console.error('Error deleting product prices:', pricesError)
+            throw new Error(`Ошибка при удалении цен: ${pricesError.message}`)
+        }
+        console.log(`Deleted ${deletedPrices?.length || 0} prices`)
+
+        // 2. Delete product
+        const { data: deletedProduct, error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', id)
+            .select()
+
+        if (error) {
+            console.error('Error deleting product:', error)
+            throw new Error(`Ошибка при удалении товара: ${error.message}`)
+        }
+
+        if (!deletedProduct || deletedProduct.length === 0) {
+            console.warn('Delete operation returned 0 rows. RLS might be blocking it.')
+            throw new Error('Не удалось удалить товар. Возможно, у вас нет прав (RLS) или товар уже удален.')
+        }
+
+        console.log('Product deleted successfully')
     }
 
     async updateStoreName(id: string, name: string) {

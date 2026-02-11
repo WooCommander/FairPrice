@@ -22,6 +22,7 @@ const navigate = (path: string) => {
 }
 
 const isMenuOpen = ref(false)
+const isMobileMenuOpen = ref(false)
 const authControls = ref<HTMLElement | null>(null)
 
 // Close menu when clicking outside
@@ -52,11 +53,16 @@ const handleLogout = async () => {
 	<div class="main-layout">
 		<header class="top-nav">
 			<div class="nav-container">
-				<div class="logo" @click="router.push('/')">
-					Fair Price
+				<div class="logo-area">
+					<button class="icon-btn hamburger-btn" @click="isMobileMenuOpen = !isMobileMenuOpen">
+						☰
+					</button>
+					<div class="logo" @click="router.push('/')">
+						Fair Price
+					</div>
 				</div>
 
-				<nav class="nav-links">
+				<nav class="nav-links desktop-only">
 					<a v-for="item in navItems" :key="item.path" class="nav-link"
 						:class="{ active: currentPath === item.path }" @click.prevent="navigate(item.path)">
 						{{ item.label }}
@@ -97,6 +103,17 @@ const handleLogout = async () => {
 					</div>
 				</div>
 			</div>
+
+			<!-- Mobile Menu Overlay -->
+			<transition name="slide-down">
+				<nav v-if="isMobileMenuOpen" class="mobile-menu">
+					<a v-for="item in navItems" :key="item.path" class="mobile-nav-link"
+						:class="{ active: currentPath === item.path }"
+						@click.prevent="navigate(item.path); isMobileMenuOpen = false">
+						{{ item.label }}
+					</a>
+				</nav>
+			</transition>
 		</header>
 
 		<main class="page-content">
@@ -175,6 +192,72 @@ const handleLogout = async () => {
 			box-shadow: var(--shadow-1);
 		}
 	}
+}
+
+.logo-area {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.hamburger-btn {
+	display: none;
+	background: none;
+	border: none;
+	font-size: 24px;
+	cursor: pointer;
+	color: var(--color-text-primary);
+	padding: 4px;
+
+	@media (max-width: 768px) {
+		display: block;
+	}
+}
+
+.desktop-only {
+	@media (max-width: 768px) {
+		display: none !important;
+	}
+}
+
+.mobile-menu {
+	background: var(--color-surface);
+	border-top: 1px solid var(--color-border);
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	box-shadow: var(--shadow-2);
+}
+
+.mobile-nav-link {
+	padding: 12px 16px;
+	border-radius: var(--radius-sm);
+	color: var(--color-text-primary);
+	font-weight: 500;
+	cursor: pointer;
+	transition: background 0.2s;
+
+	&:hover,
+	&.active {
+		background: rgba(var(--color-primary-rgb), 0.1);
+		color: var(--color-primary);
+	}
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+	transition: all 0.3s ease;
+	max-height: 300px;
+	overflow: hidden;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+	max-height: 0;
+	opacity: 0;
+	padding-top: 0;
+	padding-bottom: 0;
 }
 
 .page-content {

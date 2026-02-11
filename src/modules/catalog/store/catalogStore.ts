@@ -84,9 +84,44 @@ export const catalogStore = {
         }
     },
 
+    async deletePrice(id: string) {
+        await CatalogService.deletePrice(id)
+        if (currentProduct.value) {
+            await this.loadProductById(currentProduct.value.id)
+        }
+    },
+
     async deleteProduct(id: string) {
         await CatalogService.deleteProduct(id)
         currentProduct.value = null
+        // Remove from local state
+        searchResults.value = searchResults.value.filter(p => p.id !== id)
+        recentUpdates.value = recentUpdates.value.filter(p => p.id !== id)
+    },
+
+    async loadProductsByStore(storeId: string) {
+        isSearching.value = true
+        try {
+            const dtos = await CatalogService.getProductsByStore(storeId)
+            searchResults.value = dtos.map(adaptProduct)
+        } finally {
+            isSearching.value = false
+        }
+    },
+
+    async loadProductsByCategory(category: string) {
+        isSearching.value = true
+        try {
+            const dtos = await CatalogService.getProductsByCategory(category)
+            searchResults.value = dtos.map(adaptProduct)
+        } finally {
+            isSearching.value = false
+        }
+    },
+
+    async getStoreName(id: string): Promise<string> {
+        const store = await CatalogService.getStoreDetails(id)
+        return store?.name || 'Магазин'
     }
 }
 

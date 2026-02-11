@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
@@ -19,6 +19,15 @@ const handleSearch = () => {
     }
 }
 
+const filteredUpdates = computed(() => {
+    if (!searchQuery.value) return recentUpdates.value
+    const q = searchQuery.value.toLowerCase()
+    return recentUpdates.value.filter(item =>
+        item.name.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q)
+    )
+})
+
 onMounted(async () => {
     catalogStore.loadRecentProducts()
     recentSearches.value = await CatalogService.getPopularSearchTerms()
@@ -29,9 +38,6 @@ onMounted(async () => {
     <div class="home-dashboard">
         <!-- Header / Hero Section -->
         <header class="dashboard-header">
-            <h1 class="page-title">Справедливая цена</h1>
-            <p class="page-subtitle">Сравните цены в магазинах и на рынках.</p>
-
             <div class="search-bar-container">
                 <input v-model="searchQuery" type="text" class="search-input" placeholder="Поиск товара..."
                     @keyup.enter="handleSearch" />
@@ -86,17 +92,23 @@ onMounted(async () => {
                         <thead>
                             <tr>
                                 <th>Товар</th>
+                                <th>Категория</th>
                                 <th class="text-right">Цена</th>
                                 <th>Магазин</th>
                                 <th class="text-right">Время</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="item in recentUpdates" :key="item.id" class="feed-row"
+                            <tr v-for="item in filteredUpdates" :key="item.id" class="feed-row"
                                 @click="router.push(`/product/${item.id}`)">
                                 <td class="font-medium">{{ item.displayName }}</td>
+                                <td>
+                                    <span class="category-tag" @click.stop="router.push(`/category/${item.category}`)">
+                                        {{ item.category }}
+                                    </span>
+                                </td>
                                 <td class="text-right text-success font-bold">{{ item.formattedPrice }}</td>
-                                <td class="text-secondary">{{ item.storeName }}</td>
+                                <td class="text-secondary">{{ item.lastStore }}</td>
                                 <td class="text-right text-muted text-sm">{{ item.lastUpdateRelative }}</td>
                             </tr>
                         </tbody>
@@ -109,61 +121,60 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .home-dashboard {
-    /* max-width removed to use global layout */
-    margin: 0 auto;
-    padding: var(--spacing-xl) 0;
+    /* max-width handled by MainLayout */
+    padding-bottom: var(--spacing-lg);
 }
 
 .dashboard-header {
-    margin-bottom: var(--spacing-2xl);
+    margin-bottom: var(--spacing-xl); // Reduced bottom margin
     text-align: center;
 }
 
 .page-title {
     font-family: var(--font-heading);
-    font-size: var(--text-h1); // Larger title
+    font-size: var(--text-h3); // Much smaller title
     font-weight: 700;
-    margin: 0 0 var(--spacing-sm);
-    color: var(--color-primary); // Use primary color
+    margin: 0 0 var(--spacing-xs);
+    color: var(--color-primary);
     letter-spacing: -0.5px;
 }
 
 .page-subtitle {
-    font-size: var(--text-h5);
+    font-size: var(--text-body-1); // Smaller subtitle
     color: var(--color-text-secondary);
-    margin: 0 0 var(--spacing-xl);
-    font-weight: 300;
+    margin: 0 0 var(--spacing-lg); // Reduced margin
+    font-weight: 400;
 }
 
 .search-bar-container {
     position: relative;
-    max-width: 500px;
-    margin: 0 auto var(--spacing-lg);
+    max-width: 600px; // Slightly wider for better look
+    margin: 0 auto var(--spacing-md);
 }
 
 .search-input {
     width: 100%;
-    padding: 18px 24px 18px 52px;
+    padding: 12px 20px 12px 48px; // Compact padding
     font-size: var(--text-body-1);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill); // Pill shape for classic modern feel
+    border-radius: var(--radius-pill);
     outline: none;
     transition: all 0.2s ease;
     box-shadow: var(--shadow-sm);
 
     &:focus {
         border-color: var(--color-primary);
-        box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.1);
+        box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
     }
 }
 
 .search-icon {
     position: absolute;
-    left: 20px;
+    left: 16px;
     top: 50%;
     transform: translateY(-50%);
     opacity: 0.5;
-    font-size: 18px;
+    font-size: 16px;
     cursor: pointer;
     transition: opacity 0.2s;
 
@@ -214,16 +225,19 @@ onMounted(async () => {
 // Actions Section
 .actions-section {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); // Strict 3 columns
-    gap: var(--spacing-lg);
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md); // Reduced gap
+    max-width: 900px; // Slightly wider for desktop
+    margin: 0 auto; // Center it
 
-    @media (max-width: 768px) {
+    @media (max-width: 600px) {
         grid-template-columns: 1fr;
     }
 }
 
 .action-card {
     display: flex !important;
+    flex-direction: row; // Horizontal layout
     align-items: center;
     gap: var(--spacing-md);
     cursor: pointer;
@@ -231,7 +245,8 @@ onMounted(async () => {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-sm);
-    padding: var(--spacing-lg) !important;
+    padding: 12px 16px !important; // Compact padding
+    min-height: 72px;
 
     &:hover {
         transform: translateY(-2px);
@@ -241,32 +256,36 @@ onMounted(async () => {
 }
 
 .action-icon {
-    font-size: 24px;
+    font-size: 20px;
     color: var(--color-primary);
     background: rgba(var(--color-primary-rgb), 0.05);
-    padding: 12px;
+    padding: 8px;
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .action-details {
     display: flex;
     flex-direction: column;
+    justify-content: center;
 
     h3 {
         margin: 0;
         font-family: var(--font-heading);
-        font-size: 18px;
+        font-size: var(--text-body-1); // Smaller text
         font-weight: 600;
         color: var(--color-text-primary);
+        line-height: 1.2;
     }
 
     span {
-        font-size: var(--text-body-2);
+        font-size: var(--text-caption); // Smaller details
         color: var(--color-text-secondary);
         margin-top: 2px;
+        line-height: 1.2;
     }
 }
 
@@ -360,5 +379,20 @@ onMounted(async () => {
 
 .text-sm {
     font-size: var(--text-caption);
+}
+
+.category-tag {
+    background: rgba(var(--color-primary-rgb), 0.1);
+    color: var(--color-primary);
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+        background: rgba(var(--color-primary-rgb), 0.2);
+    }
 }
 </style>
