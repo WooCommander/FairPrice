@@ -160,24 +160,25 @@ const addToShoppingList = async () => {
                     </div>
                 </div>
 
+                <!-- Primary Action -->
                 <div class="primary-action">
-                    <button class="nudge-btn" @click="goToAddPrice">
+                    <FpButton size="md" width="full" @click="goToAddPrice">
                         Обновить цену
-                    </button>
+                    </FpButton>
                 </div>
             </div>
 
             <!-- SECONDARY ACTIONS -->
             <div class="secondary-actions">
-                <button class="action-chip" @click="addToShoppingList">
+                <FpButton variant="outline" size="sm" @click="addToShoppingList">
                     📝 В список
-                </button>
-                <button class="action-chip" @click="router.push(`/category/${currentProduct.category}`)">
+                </FpButton>
+                <FpButton variant="outline" size="sm" @click="router.push(`/category/${currentProduct.category}`)">
                     📂 В категорию
-                </button>
+                </FpButton>
             </div>
 
-            <!-- HISTORY TIMELINE -->
+            <!-- HISTORY LIST (Compact) -->
             <div class="history-section">
                 <h3 class="section-label">Динамика цен</h3>
 
@@ -186,14 +187,15 @@ const addToShoppingList = async () => {
                     <PriceChart :data="chartData" :average-price="currentProduct.averagePrice" />
                 </div>
 
-                <div class="timeline-list">
-                    <div v-for="(item, idx) in latestHistory" :key="idx" class="timeline-item">
-                        <div class="timeline-left">
-                            <div class="price-point">{{ item.price }} ₽</div>
-                            <div class="store-point">{{ item.storeName }}</div>
+                <div class="history-cards-list">
+                    <div v-for="(item, idx) in latestHistory" :key="idx" class="history-card-item">
+                        <div class="h-card-left">
+                            <div class="h-price">{{ item.price }} ₽</div>
+                            <div class="h-store">{{ item.storeName }}</div>
                         </div>
-                        <div class="timeline-right">
-                            <div class="date-point">{{ item.dateRelative }}</div>
+                        <div class="h-card-right">
+                            <div class="h-date">{{ item.dateRelative }}</div>
+                            <!-- Optional: Trend arrow or indicator could go here -->
                         </div>
                     </div>
                 </div>
@@ -291,6 +293,11 @@ const addToShoppingList = async () => {
 
 .content-body {
     padding: 16px;
+
+    @media (max-width: 600px) {
+        padding: 0.5rem; // User requested exactly this
+    }
+
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -299,51 +306,156 @@ const addToShoppingList = async () => {
 // VALUE CARD
 .value-card {
     background: var(--color-surface);
-    border-radius: 24px;
-    padding: 24px;
+    border-radius: 20px; // Slightly smaller radius
+    padding: 20px; // Reduced padding
     text-align: center;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
     border: 1px solid var(--color-border);
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .card-top-info {
     display: flex;
     justify-content: center;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 8px;
+    margin-bottom: 8px; // Tighter
     font-size: 13px;
     color: var(--color-text-secondary);
+    align-items: center;
 }
 
 .store-badge {
     font-weight: 500;
     color: var(--color-text-primary);
+    background: var(--color-background);
+    padding: 4px 8px;
+    border-radius: 8px;
 }
 
 .price-hero {
-    margin-bottom: 16px;
+    margin-bottom: 12px; // Tighter
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .main-price {
-    font-size: 48px;
-    font-weight: 800; // Heavy weight for impact
+    font-size: 40px; // Reduced from 48
+    font-weight: 800;
     color: var(--color-text-primary);
     line-height: 1;
     letter-spacing: -1px;
 }
 
 .unit-label {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--color-text-tertiary);
-    margin-top: 4px;
+    margin-top: 2px;
+}
+
+.value-analysis {
+    display: flex;
+    align-items: center; // Horizontal alignment if possible, or tight vertical
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px; // Tighter
+    flex-wrap: wrap;
+}
+
+.analysis-pill {
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+
+    &.good {
+        background: rgba(var(--color-success-rgb), 0.1);
+        color: var(--color-success);
+    }
+
+    &.bad {
+        background: rgba(var(--color-error-rgb), 0.1);
+        color: var(--color-error);
+    }
 }
 
 .badge-bad {
     color: var(--color-error);
     background: rgba(var(--color-error-rgb), 0.1);
-    padding: 2px 6px;
-    border-radius: var(--radius-sm);
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.avg-ref {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+}
+
+// SECONDARY ACTIONS
+.secondary-actions {
+    display: flex;
+    gap: 8px; // Reduced gap
+    justify-content: center; // Center on screen
+    flex-wrap: wrap;
+}
+
+// HISTORY - COMPACT STYLE
+.history-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; // Reduced gap
+}
+
+.history-card-item {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px; // Smaller radius
+    padding: 8px 12px; // Compact padding
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    // Removed shadow for flatter, less "heavy" look
+    transition: transform 0.1s;
+
+    &:active {
+        transform: scale(0.99);
+        background: var(--color-surface-hover);
+    }
+}
+
+.h-card-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0; // Tighter
+}
+
+.h-price {
+    font-size: 16px; // Smaller price
+    font-weight: 700;
+    color: var(--color-text-primary);
+    line-height: 1.2;
+}
+
+.h-store {
+    font-size: 12px; // Smaller store
+    color: var(--color-text-secondary);
+    font-weight: 400;
+}
+
+.h-card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.h-date {
+    font-size: 11px; // Smaller date
+    color: var(--color-text-tertiary);
 }
 </style>
