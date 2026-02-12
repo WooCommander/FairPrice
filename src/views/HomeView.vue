@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import FpCard from '@/design-system/components/FpCard.vue'
+import FpSearchInput from '@/design-system/components/FpSearchInput.vue'
 
 const router = useRouter()
 
@@ -53,9 +54,8 @@ onMounted(async () => {
         <!-- Header / Hero Section -->
         <header class="dashboard-header">
             <div class="search-bar-container">
-                <input v-model="searchQuery" type="text" class="search-input" placeholder="Поиск товара..."
-                    @keyup.enter="handleSearch" />
-                <div class="search-icon" @click="handleSearch">🔍</div>
+                <FpSearchInput v-model="searchQuery" placeholder="Поиск товара..." @keyup.enter="handleSearch"
+                    @search="handleSearch" />
             </div>
 
             <div class="quick-links">
@@ -245,36 +245,7 @@ onMounted(async () => {
     margin: 0 auto var(--spacing-md);
 }
 
-.search-input {
-    width: 100%;
-    padding: 12px 20px 12px 48px; // Compact padding
-    font-size: 18px; // Increased for better readability
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    outline: none;
-    transition: all 0.2s ease;
-    box-shadow: var(--shadow-sm);
-
-    &:focus {
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
-    }
-}
-
-.search-icon {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0.5;
-    font-size: 16px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-
-    &:hover {
-        opacity: 1;
-    }
-}
+// Legacy search styles removed (replaced by FpSearchInput)
 
 .quick-links {
     display: flex;

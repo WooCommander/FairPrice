@@ -5,6 +5,7 @@ import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpBackButton from '@/design-system/components/FpBackButton.vue'
+import FpSearchInput from '@/design-system/components/FpSearchInput.vue'
 
 const router = useRouter()
 const { searchResults, isSearching, hasMore } = catalogStore
@@ -84,9 +85,8 @@ const goToProduct = (id: string) => {
             <div class="search-bar">
                 <FpBackButton />
                 <div class="input-container">
-                    <input v-model="query" type="text" class="search-input" placeholder="Поиск товаров..."
-                        @input="handleSearch" autofocus />
-                    <span v-if="query" class="clear-btn" @click="query = ''; handleSearch()">✕</span>
+                    <FpSearchInput v-model="query" placeholder="Поиск товаров..." :autofocus="true"
+                        @update:modelValue="handleSearch" />
                 </div>
             </div>
 
@@ -135,7 +135,6 @@ const goToProduct = (id: string) => {
 <style scoped lang="scss">
 .search-view {
     padding-bottom: 80px; // Space for bottom nav if present
-    height: 100vh;
     display: flex;
     flex-direction: column;
 }
@@ -162,30 +161,6 @@ const goToProduct = (id: string) => {
     position: relative;
     display: flex;
     align-items: center;
-}
-
-.search-input {
-    width: 100%;
-    padding: 10px 16px;
-    padding-right: 40px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    font-size: var(--text-body-1);
-    outline: none;
-    background: var(--color-surface);
-    color: var(--color-text-primary);
-
-    &:focus {
-        border-color: var(--color-primary);
-    }
-}
-
-.clear-btn {
-    position: absolute;
-    right: 12px;
-    cursor: pointer;
-    color: var(--color-text-secondary);
-    font-weight: bold;
 }
 
 .filters {
@@ -231,8 +206,6 @@ const goToProduct = (id: string) => {
 .results-list {
     padding: var(--spacing-md);
     flex: 1;
-    overflow-y: auto;
-    /* Scroll ONLY the list */
 }
 
 .loading-trigger {
