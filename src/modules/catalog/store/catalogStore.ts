@@ -15,6 +15,26 @@ const hasMore = ref(false)
 const currentQuery = ref('')
 const currentFilters = ref<{ category?: string, sort?: string }>({})
 
+// Search History
+const searchHistory = ref<string[]>(JSON.parse(localStorage.getItem('fp_search_history') || '[]'))
+
+function addToHistory(term: string) {
+    if (!term.trim()) return
+    const set = new Set([term, ...searchHistory.value])
+    searchHistory.value = Array.from(set).slice(0, 10) // Keep last 10
+    localStorage.setItem('fp_search_history', JSON.stringify(searchHistory.value))
+}
+
+function removeFromHistory(term: string) {
+    searchHistory.value = searchHistory.value.filter(t => t !== term)
+    localStorage.setItem('fp_search_history', JSON.stringify(searchHistory.value))
+}
+
+function clearHistory() {
+    searchHistory.value = []
+    localStorage.removeItem('fp_search_history')
+}
+
 
 export const catalogStore = {
     searchResults: readonly(searchResults),
@@ -26,6 +46,10 @@ export const catalogStore = {
     isLoading: readonly(isSearching), // Alias for compatibility
     error: ref<string | null>(null), // Add error state
     favoriteProductIds: readonly(favoriteProductIds), // Expose read-only
+    searchHistory: readonly(searchHistory),
+    addToHistory,
+    removeFromHistory,
+    clearHistory,
 
     isFavorite(productId: string) {
         return favoriteProductIds.value.has(productId)
@@ -81,6 +105,10 @@ export const catalogStore = {
             searchResults.value = []
             currentQuery.value = query
             currentFilters.value = filters || {}
+
+            if (query) {
+                addToHistory(query)
+            }
         }
 
         try {

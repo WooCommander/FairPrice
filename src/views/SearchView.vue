@@ -100,6 +100,19 @@ const goToProduct = (id: string) => {
 
         <div class="results-list">
 
+            <div v-if="!query && catalogStore.searchHistory.value.length > 0" class="history-section">
+                <div class="history-header">
+                    <span>История поиска</span>
+                    <button class="clear-history-btn" @click="catalogStore.clearHistory()">Очистить</button>
+                </div>
+                <div class="history-chips">
+                    <button v-for="term in catalogStore.searchHistory.value" :key="term" class="history-chip"
+                        @click="query = term; handleSearch()">
+                        {{ term }}
+                    </button>
+                </div>
+            </div>
+
             <div v-if="searchResults.length > 0" class="results-grid">
                 <FpCard v-for="item in searchResults" :key="item.id" class="result-card" @click="goToProduct(item.id)">
                     <div class="card-content">
@@ -169,17 +182,8 @@ const goToProduct = (id: string) => {
 .filters {
     display: flex;
     gap: 8px;
-    overflow-x: auto;
-    /* Allow horizontal scroll if many categories */
-
+    flex-wrap: wrap; // Wrap tags to see them all
     padding-bottom: 8px;
-    /* Hide scrollbar */
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-        display: none;
-    }
 }
 
 .filter-chip {
@@ -336,6 +340,68 @@ const goToProduct = (id: string) => {
         &:hover {
             background: rgba(var(--color-primary-rgb), 0.1);
         }
+    }
+}
+
+.history-section {
+    padding-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+
+    span {
+        font-size: var(--text-caption);
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+    }
+}
+
+.clear-history-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-tertiary);
+    font-size: var(--text-caption);
+    cursor: pointer;
+
+    &:hover {
+        color: var(--color-error);
+    }
+}
+
+.history-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.history-chip {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: 6px 12px;
+    border-radius: var(--radius-lg); // More rounded for history
+    font-size: var(--text-body-2);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    &::before {
+        content: '🕒';
+        font-size: 10px;
+        opacity: 0.5;
+    }
+
+    &:hover {
+        border-color: var(--color-primary);
+        background: rgba(var(--color-primary-rgb), 0.05);
     }
 }
 </style>
