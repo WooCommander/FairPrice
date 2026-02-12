@@ -17,6 +17,9 @@ const navItems = [
 
 const currentPath = computed(() => route.path)
 
+// ... (keep existing setup code) ...
+
+// Keep existing methods
 const navigate = (path: string) => {
 	router.push(path)
 }
@@ -25,6 +28,7 @@ const isMenuOpen = ref(false)
 const isMobileMenuOpen = ref(false)
 const authControls = ref<HTMLElement | null>(null)
 
+// ... (keep existing lifecycle hooks) ...
 // Close menu when clicking outside
 import { onMounted, onUnmounted } from 'vue'
 
@@ -129,6 +133,8 @@ const handleLogout = async () => {
 </template>
 
 <style scoped lang="scss">
+// ... existing styles ...
+
 .main-layout {
 	display: flex;
 	flex-direction: column;
@@ -144,6 +150,12 @@ const handleLogout = async () => {
 	top: 0;
 	z-index: 100;
 	padding: 0 var(--spacing-lg);
+	padding-top: env(safe-area-inset-top, 0px); // Handle notch/safe area
+
+	@media (max-width: 768px) {
+		padding-left: 8px; // 0.5rem
+		padding-right: 8px; // 0.5rem
+	}
 
 	.nav-container {
 		max-width: var(--layout-max-width);
@@ -275,6 +287,10 @@ const handleLogout = async () => {
 	display: flex;
 	flex-direction: column;
 	width: 100%; // Ensure width
+
+	@media (max-width: 768px) {
+		padding: 0; // Remove side padding (border-to-border)
+	}
 }
 
 .icon-btn {
@@ -475,4 +491,3 @@ const handleLogout = async () => {
 	}
 }
 </style>
-```

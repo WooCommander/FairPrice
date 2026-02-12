@@ -2,16 +2,16 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
-import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpSearchInput from '@/design-system/components/FpSearchInput.vue'
 
 const router = useRouter()
+// ... existing setup ...
+
 
 const { recentUpdates } = catalogStore
 
 // Use a subset for HomeView
-const categories = PRODUCT_CATEGORIES.slice(0, 5)
 const searchQuery = ref('')
 const showFavoritesOnly = ref(false)
 
@@ -57,61 +57,52 @@ onMounted(async () => {
                 <FpSearchInput v-model="searchQuery" placeholder="Поиск товара..." @keyup.enter="handleSearch"
                     @search="handleSearch" />
             </div>
-
-            <div class="quick-links">
-                <span class="quick-link-label">Категории:</span>
-                <button v-for="tag in categories" :key="tag" class="tag-link" @click="router.push(`/category/${tag}`)">
-                    {{ tag }}
-                </button>
-            </div>
         </header>
 
         <div class="dashboard-content">
             <!-- Main Actions -->
             <section class="actions-section">
-                <div class="quick-actions">
-                    <button class="action-card primary" @click="router.push('/add-price')">
-                        <div class="icon-container">
-                            <span>+</span>
-                        </div>
-                        <div class="text-content">
-                            <span class="title">Добавить цену</span>
-                            <span class="subtitle">Помоги другим сэкономить</span>
-                        </div>
-                    </button>
+                <!-- Card 1: Add Price -->
+                <button class="action-card primary" @click="router.push('/add-price')">
+                    <div class="icon-container">
+                        <span>+</span>
+                    </div>
+                    <div class="text-content">
+                        <span class="title">Добавить</span>
+                    </div>
+                </button>
 
-                    <button class="action-card secondary" @click="router.push('/shopping-list')">
-                        <div class="icon-container list-icon">
-                            <span>📝</span>
-                        </div>
-                        <div class="text-content">
-                            <span class="title">Список покупок</span>
-                            <span class="subtitle">Планируйте поход в магазин</span>
-                        </div>
-                    </button>
-                </div>
+                <!-- Card 2: Shopping List -->
+                <button class="action-card secondary" @click="router.push('/shopping-list')">
+                    <div class="icon-container list-icon">
+                        <span>📝</span>
+                    </div>
+                    <div class="text-content">
+                        <span class="title">Список</span>
+                    </div>
+                </button>
 
-                <FpCard class="action-card" @click="router.push('/search')">
+                <!-- Card 3: Find Product -->
+                <button class="action-card" @click="router.push('/search')">
                     <div class="action-icon">🔎</div>
-                    <div class="action-details">
-                        <h3>Найти товар</h3>
-                        <span>Поиск лучших цен</span>
+                    <div class="text-content">
+                        <span class="title">Найти</span>
                     </div>
-                </FpCard>
+                </button>
 
-                <FpCard class="action-card" @click="router.push('/add-price?tab=favorites')">
+                <!-- Card 4: Favorites -->
+                <button class="action-card" @click="router.push('/add-price?tab=favorites')">
                     <div class="action-icon">⭐</div>
-                    <div class="action-details">
-                        <h3>Избранное</h3>
-                        <span>Ваши списки</span>
+                    <div class="text-content">
+                        <span class="title">Избранное</span>
                     </div>
-                </FpCard>
+                </button>
             </section>
 
             <!-- Recent Updates Feed -->
             <section class="updates-section">
                 <div class="section-header">
-                    <h2>Последние обновления</h2>
+
                     <div class="feed-tabs">
                         <button class="tab-btn" :class="{ active: !showFavoritesOnly }"
                             @click="showFavoritesOnly = false">Все</button>
@@ -182,6 +173,8 @@ onMounted(async () => {
                     <div class="mobile-feed">
                         <div v-for="item in filteredUpdates" :key="item.id" class="mobile-feed-card"
                             @click="router.push(`/product/${item.id}`)">
+
+                            <!-- Row 1: Title & Price -->
                             <div class="card-top">
                                 <span class="card-title">{{ item.displayName }}</span>
                                 <div class="price-col">
@@ -192,24 +185,27 @@ onMounted(async () => {
                                     }">
                                         {{ item.formattedPrice }}
                                     </span>
-                                    <span v-if="item.formattedUnitPrice" class="unit-price-badge">
-                                        {{ item.formattedUnitPrice }}
-                                    </span>
-                                    <span v-if="item.formattedAveragePrice" class="avg-price-badge">
-                                        {{ item.formattedAveragePrice }}
-                                    </span>
                                 </div>
                             </div>
+
+                            <!-- Row 2: Unit Price & Store -->
                             <div class="card-middle">
-                                <span class="category-tag" @click.stop="router.push(`/category/${item.category}`)">
-                                    {{ item.category }}
+                                <span v-if="item.formattedUnitPrice" class="unit-price-badge">
+                                    {{ item.formattedUnitPrice }}
                                 </span>
+                                <span v-else></span> <!-- Spacer -->
+
                                 <span class="store-text" @click.stop="router.push(`/store/${item.lastStoreId}`)"
                                     v-if="item.lastStoreId">
                                     🏪 {{ item.lastStore }}
                                 </span>
                             </div>
+
+                            <!-- Row 3: Category & Time -->
                             <div class="card-bottom">
+                                <span class="category-tag" @click.stop="router.push(`/category/${item.category}`)">
+                                    {{ item.category }}
+                                </span>
                                 <span class="last-update">{{ item.lastUpdateRelative }}</span>
                             </div>
                         </div>
@@ -227,107 +223,52 @@ onMounted(async () => {
 }
 
 .dashboard-header {
-    margin-bottom: var(--spacing-xl); // Reduced bottom margin
+    margin-bottom: var(--spacing-lg); // Compact margin
     text-align: center;
-}
-
-.page-title {
-    font-family: var(--font-heading);
-    font-size: var(--text-h3); // Much smaller title
-    font-weight: 700;
-    margin: 0 0 var(--spacing-xs);
-    color: var(--color-primary);
-    letter-spacing: -0.5px;
-}
-
-.page-subtitle {
-    font-size: var(--text-body-1); // Smaller subtitle
-    color: var(--color-text-secondary);
-    margin: 0 0 var(--spacing-lg); // Reduced margin
-    font-weight: 400;
 }
 
 .search-bar-container {
     position: relative;
-    max-width: 600px; // Slightly wider for better look
-    margin: 0 auto var(--spacing-md);
-}
-
-// Legacy search styles removed (replaced by FpSearchInput)
-
-.quick-links {
-    display: flex;
-    justify-content: center;
-    gap: var(--spacing-md);
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.quick-link-label {
-    font-size: var(--text-caption);
-    color: var(--color-text-disabled);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
-}
-
-.tag-link {
-    background: white;
-    border: 1px solid var(--color-border);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    font-size: var(--text-caption);
-    padding: 6px 12px;
-    border-radius: var(--radius-sm);
-    transition: all 0.2s;
-    font-weight: 500;
-
-    &:hover {
-        border-color: var(--color-primary);
-        color: var(--color-primary);
-        background: white;
-    }
+    max-width: 600px;
+    margin: var(--spacing-sm);
 }
 
 .dashboard-content {
-    display: grid;
-    gap: var(--spacing-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
 }
 
 // Actions Section
 .actions-section {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-md); // Reduced gap
-    max-width: 900px; // Slightly wider for desktop
-    margin: 0 auto; // Center it
+    grid-template-columns: repeat(4, 1fr); // 4 columns on desktop
+    gap: 12px;
+    max-width: 900px;
+    margin: 0 auto;
 
     @media (max-width: 600px) {
-        grid-template-columns: 1fr;
+        display: flex; // Flex row on mobile
+        justify-content: space-evenly; // Distribute evenly
+        gap: 8px;
     }
 }
 
-.quick-actions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    height: 100%;
-}
-
 .action-card {
-    display: flex !important;
-    flex-direction: row; // Horizontal layout
+    display: flex;
+    flex-direction: column; // Vertical layout
     align-items: center;
-    gap: var(--spacing-md);
+    justify-content: center;
+    gap: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg); // Rounded corners
+    border-radius: 16px;
     box-shadow: var(--shadow-sm);
-    padding: 12px 16px !important; // Compact padding
-    min-height: 72px;
-    height: 100%; // Fill available height in grid
+    padding: 16px 8px;
+    height: 100px; // Fixed height for desktop
+    width: 100%;
     box-sizing: border-box;
 
     &:hover {
@@ -335,15 +276,45 @@ onMounted(async () => {
         box-shadow: var(--shadow-md);
         border-color: rgba(var(--color-primary-rgb), 0.5);
     }
+
+    @media (max-width: 600px) {
+        width: 60px;
+        height: 60px;
+        padding: 0;
+        border-radius: 50%; // Circular buttons
+        gap: 0; // No gap since no text
+    }
 }
 
-// ... existing icon styles ...
+.icon-container,
+.action-icon {
+    font-size: 24px;
+    background: var(--color-background);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-primary);
+
+    @media (max-width: 600px) {
+        background: transparent; // Clean look
+        width: 100%;
+        height: 100%;
+        font-size: 24px;
+    }
+}
 
 .text-content {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
+    align-items: center;
+    text-align: center;
+
+    @media (max-width: 600px) {
+        display: none; // Hide text on mobile
+    }
 
     .title {
         font-weight: 600;
@@ -360,34 +331,12 @@ onMounted(async () => {
     }
 }
 
-.action-details {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    h3 {
-        margin: 0;
-        font-family: var(--font-heading);
-        font-size: 18px; // Increased title size
-        font-weight: 600;
-        color: var(--color-text-primary);
-        line-height: 1.2;
-    }
-
-    span {
-        font-size: 14px; // Increased details size
-        color: var(--color-text-secondary);
-        margin-top: 2px;
-        line-height: 1.2;
-    }
-}
-
 // Updates Section
 .section-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    margin-bottom: var(--spacing-md);
+    // margin-bottom: var(--spacing-md);
     padding-bottom: var(--spacing-sm);
     border-bottom: 2px solid var(--color-border);
 
@@ -567,7 +516,7 @@ onMounted(async () => {
 .mobile-feed {
     display: none;
     flex-direction: column;
-    gap: var(--spacing-sm);
+    gap: 8px; // Reduced gap between cards
 
     @media (max-width: 600px) {
         display: flex;
@@ -580,32 +529,55 @@ onMounted(async () => {
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--color-border);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
     cursor: pointer;
     transition: all 0.2s;
 
+    // Grid Layout
+    display: grid;
+    grid-template-columns: 1fr auto; // Content space | Price space
+    grid-template-rows: auto auto auto; // Name | Details | Meta
+    gap: 4px 12px; // row-gap col-gap
+
     &:active {
         transform: scale(0.98);
+        background-color: var(--color-surface-hover);
     }
 }
 
+// Row 1: Name and Price
 .card-top {
+    grid-column: 1 / -1;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 2px;
 }
 
 .card-title {
     font-weight: 600;
-    font-size: var(--text-body-1);
+    font-size: 15px; // Slightly smaller but bolder
+    line-height: 1.3;
     color: var(--color-text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2; // Max 2 lines
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.price-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0; // Prevent price shrinking
 }
 
 .card-price {
-    font-weight: 700;
-    font-size: 18px; // Increased price size
+    font-weight: 800; // Extra bold
+    font-size: 18px;
+    line-height: 1.2;
+    white-space: nowrap;
 
     &.text-success {
         color: var(--color-success);
@@ -620,50 +592,56 @@ onMounted(async () => {
     }
 }
 
-.price-col {
+// Row 2: Secondary Info (Unit Price + Store)
+.card-middle {
+    grid-column: 1 / -1;
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2px;
 }
 
 .unit-price-badge {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--color-text-secondary);
-    font-weight: 500;
-}
-
-.avg-price-badge {
-    font-size: 11px;
-    background: var(--color-background);
-    color: var(--color-text-secondary);
-    padding: 2px 6px;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-}
-
-.card-middle {
-    display: flex;
-    align-items: center;
-    gap: 12px;
 }
 
 .store-text {
-    font-size: var(--text-caption);
-    color: var(--color-text-secondary);
+    font-size: 13px;
+    color: var(--color-text-primary);
+    font-weight: 500;
     display: flex;
     align-items: center;
     gap: 4px;
+    background: var(--color-background);
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
+// Row 3: Meta (Category + Time)
 .card-bottom {
+    grid-column: 1 / -1;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border); // Separator
+}
+
+.category-tag {
+    // Override existing slightly for mobile context
+    font-size: 11px;
+    padding: 2px 8px;
 }
 
 .last-update {
-    font-size: 12px; // Increased from 10px
-    color: var(--color-text-disabled);
-    text-transform: uppercase;
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+}
+
+// Hide elements not used in new design if needed
+.avg-price-badge {
+    display: none; // Hide average price to reduce clutter on mobile
 }
 </style>
