@@ -108,10 +108,11 @@ const avgLineY = computed(() => {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 1rem;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    margin-bottom: var(--spacing-md)
 }
 
 .chart-svg {

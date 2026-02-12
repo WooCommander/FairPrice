@@ -180,7 +180,7 @@ const addToShoppingList = async () => {
 
             <!-- HISTORY LIST (Compact) -->
             <div class="history-section">
-                <h3 class="section-label">Динамика цен</h3>
+                <!-- <h3 class="section-label">Динамика цен</h3> -->
 
                 <!-- Chart (Simplified) -->
                 <div class="chart-mini" v-if="chartData.length > 1">
