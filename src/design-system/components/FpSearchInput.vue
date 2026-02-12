@@ -24,6 +24,9 @@ const inputRef = ref<HTMLInputElement | null>(null)
 function onInput(e: Event) {
     const value = (e.target as HTMLInputElement).value
     emit('update:modelValue', value)
+}
+
+function onEnter() {
     emit('search')
 }
 
@@ -45,11 +48,11 @@ onMounted(() => {
     <div class="fp-search-input">
         <div class="input-wrapper">
             <input ref="inputRef" :value="modelValue" type="text" class="search-field" :placeholder="placeholder"
-                @input="onInput" />
+                @input="onInput" @keyup.enter="onEnter" />
             <button v-if="modelValue" class="clear-btn" @click="clear" aria-label="Очистить">
                 ✕
             </button>
-            <span v-else class="search-icon">🔍</span>
+            <span v-else class="search-icon" @click="onEnter">🔍</span>
         </div>
     </div>
 </template>
@@ -113,6 +116,7 @@ onMounted(() => {
     right: 16px;
     font-size: 16px;
     opacity: 0.5;
-    pointer-events: none;
+    cursor: pointer; // Make clickable
+    pointer-events: auto; // Enable clicks
 }
 </style>
