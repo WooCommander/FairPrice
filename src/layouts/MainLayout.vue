@@ -262,13 +262,19 @@ const handleLogout = async () => {
 
 .page-content {
 	flex: 1;
-	overflow-y: auto;
+	overflow-y: auto; // Global scroll for normal pages
+	display: flex;
+	flex-direction: column;
 }
 
 .content-container {
 	max-width: var(--layout-max-width);
 	margin: 0 auto;
 	padding: var(--spacing-lg);
+	flex: 1; // Take available height
+	display: flex;
+	flex-direction: column;
+	width: 100%; // Ensure width
 }
 
 .icon-btn {

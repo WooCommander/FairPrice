@@ -134,9 +134,12 @@ const goToProduct = (id: string) => {
 
 <style scoped lang="scss">
 .search-view {
-    padding-bottom: 80px; // Space for bottom nav if present
+    padding-bottom: 0; // Padding handled by layout or bottom nav
+    flex: 1; // Fill container
     display: flex;
     flex-direction: column;
+    overflow: hidden; // Prevent document scroll trigger
+    max-height: 100%; // Constrain to parent
 }
 
 .search-header {
@@ -206,6 +209,8 @@ const goToProduct = (id: string) => {
 .results-list {
     padding: var(--spacing-md);
     flex: 1;
+    overflow-y: auto; // Internal scroll
+    padding-bottom: 80px; // Extra space for mobile nav/fab
 }
 
 .loading-trigger {

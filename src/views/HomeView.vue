@@ -121,8 +121,16 @@ onMounted(async () => {
                 </div>
 
                 <div v-if="filteredUpdates.length === 0" class="empty-state">
-                    <span v-if="showFavoritesOnly">В избранном пока пусто</span>
-                    <span v-else>Нет обновлений по вашему запросу</span>
+                    <template v-if="searchQuery">
+                        <p class="empty-text">В последних обновлениях не найдено</p>
+                        <button class="search-global-btn" @click="handleSearch">
+                            Искать "{{ searchQuery }}" во всем каталоге
+                        </button>
+                    </template>
+                    <template v-else>
+                        <span v-if="showFavoritesOnly">В избранном пока пусто</span>
+                        <span v-else>Нет последних обновлений</span>
+                    </template>
                 </div>
 
                 <FpCard class="feed-table-card" padding="none" v-else>
@@ -425,6 +433,26 @@ onMounted(async () => {
     background: var(--color-surface);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.search-global-btn {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+        background: var(--color-primary-dark, #0056b3); // Fallback if var missing
+        filter: brightness(0.9);
+    }
 }
 
 .feed-table-card {
