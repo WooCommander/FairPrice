@@ -34,7 +34,11 @@ class CatalogService {
     // Mock data removed
     // private mockProducts: ProductDTO[] = []
 
-    async searchProducts(query: string, filters?: { category?: string, sort?: string }): Promise<ProductDTO[]> {
+    async searchProducts(query: string, filters?: { category?: string, sort?: string }, page: number = 1, limit: number = 20): Promise<{ items: ProductDTO[], total: number }> {
+        // Calculate range
+        const from = (page - 1) * limit
+        const to = from + limit - 1
+
         let queryBuilder = supabase
             .from('products')
             .select(`
@@ -48,7 +52,7 @@ class CatalogService {
                     quantity_unit,
                     normalized_price
                 )
-            `)
+            `, { count: 'estimated' })
             .order('created_at', { ascending: false })
 
         if (query) {
@@ -59,14 +63,29 @@ class CatalogService {
             queryBuilder = queryBuilder.eq('category', filters.category)
         }
 
-        const { data, error } = await queryBuilder
+        // Sorting logic (if needed) - currently default is created_at desc
+        if (filters?.sort) {
+            // TODO: Add dynamic sorting if requested
+            if (filters.sort === 'price_asc') {
+                // Sorting by price is tricky because price is in a joined table or computed.
+                // For MVP/Supabase, we might need a derived column or client-side sort (bad for large data).
+                // Alternatively, use an RPC or specific index. 
+                // For now, keep default sort or improve later.
+            }
+        }
+
+        const { data, error, count } = await queryBuilder
+            .range(from, to)
 
         if (error) {
             console.error('Error searching products:', error)
-            return []
+            return { items: [], total: 0 }
         }
 
-        return data.map((p: any) => this.mapToDTO(p))
+        return {
+            items: data.map((p: any) => this.mapToDTO(p)),
+            total: count || 0
+        }
     }
 
     async getRecentProducts(): Promise<ProductDTO[]> {

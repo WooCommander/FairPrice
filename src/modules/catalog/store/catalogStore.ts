@@ -6,7 +6,14 @@ const searchResults = ref<ProductModel[]>([])
 const recentUpdates = ref<ProductModel[]>([])
 const currentProduct = ref<ProductModel | null>(null)
 const isSearching = ref(false)
-const favoriteProductIds = ref<Set<string>>(new Set()) // New state
+const favoriteProductIds = ref<Set<string>>(new Set())
+
+// Pagination State
+const currentPage = ref(1)
+const totalResults = ref(0)
+const hasMore = ref(false)
+const currentQuery = ref('')
+const currentFilters = ref<{ category?: string, sort?: string }>({})
 
 
 export const catalogStore = {
@@ -14,6 +21,8 @@ export const catalogStore = {
     recentUpdates: readonly(recentUpdates),
     currentProduct: readonly(currentProduct),
     isSearching: readonly(isSearching),
+    currentPage: readonly(currentPage),
+    hasMore: readonly(hasMore),
     isLoading: readonly(isSearching), // Alias for compatibility
     error: ref<string | null>(null), // Add error state
     favoriteProductIds: readonly(favoriteProductIds), // Expose read-only
@@ -65,13 +74,33 @@ export const catalogStore = {
         }
     },
 
-    async searchProducts(query: string, filters?: { category?: string, sort?: string }) {
-        // Always run search to allow showing all products if query is empty
+    async searchProducts(query: string, filters?: { category?: string, sort?: string }, isLoadMore = false) {
+        if (!isLoadMore) {
+            isSearching.value = true
+            currentPage.value = 1
+            searchResults.value = []
+            currentQuery.value = query
+            currentFilters.value = filters || {}
+        }
 
-        isSearching.value = true
         try {
-            const dtos = await CatalogService.searchProducts(query, filters)
-            searchResults.value = dtos.map(adaptProduct)
+            const { items, total } = await CatalogService.searchProducts(
+                currentQuery.value,
+                currentFilters.value,
+                currentPage.value,
+                20 // Limit
+            )
+
+            const adapted = items.map(adaptProduct)
+
+            if (isLoadMore) {
+                searchResults.value = [...searchResults.value, ...adapted]
+            } else {
+                searchResults.value = adapted
+            }
+
+            totalResults.value = total
+            hasMore.value = searchResults.value.length < total
         } finally {
             isSearching.value = false
         }
@@ -107,6 +136,12 @@ export const catalogStore = {
         if (currentProduct.value && currentProduct.value.id === id) {
             await this.loadProductById(id)
         }
+    },
+
+    async loadMore() {
+        if (!hasMore.value || isSearching.value) return
+        currentPage.value++
+        await this.searchProducts(currentQuery.value, currentFilters.value, true)
     },
 
     async updateStoreName(id: string, name: string) {

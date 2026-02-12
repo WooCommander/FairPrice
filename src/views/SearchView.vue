@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
@@ -7,10 +7,12 @@ import FpCard from '@/design-system/components/FpCard.vue'
 import FpBackButton from '@/design-system/components/FpBackButton.vue'
 
 const router = useRouter()
-const { searchResults, isSearching } = catalogStore
+const { searchResults, isSearching, hasMore } = catalogStore
 
 const query = ref('')
 const selectedCategory = ref<string | null>(null)
+const observerTarget = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
 let debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined
 
 const categories = PRODUCT_CATEGORIES
@@ -28,6 +30,11 @@ const performSearch = async () => {
     })
 }
 
+const loadMore = async () => {
+    if (isSearching.value || !hasMore.value) return
+    await catalogStore.loadMore()
+}
+
 const selectCategory = (cat: string) => {
     if (selectedCategory.value === cat) {
         selectedCategory.value = null
@@ -37,9 +44,33 @@ const selectCategory = (cat: string) => {
     performSearch()
 }
 
+// Infinite Scroll Observer
+const setupObserver = () => {
+    if (observer) observer.disconnect()
+
+    observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore.value && !isSearching.value) {
+            loadMore()
+        }
+    }, {
+        root: null,
+        rootMargin: '100px', // Load before reaching bottom
+        threshold: 0.1
+    })
+
+    if (observerTarget.value) {
+        observer.observe(observerTarget.value)
+    }
+}
+
 // Initial search on mount (empty or if coming with params?)
 onMounted(() => {
     performSearch()
+    setupObserver()
+})
+
+onUnmounted(() => {
+    if (observer) observer.disconnect()
 })
 
 const goToProduct = (id: string) => {
@@ -68,12 +99,8 @@ const goToProduct = (id: string) => {
         </header>
 
         <div class="results-list">
-            <div v-if="isSearching" class="loading-state">
-                <div class="spinner"></div>
-                <span>Поиск...</span>
-            </div>
 
-            <div v-else-if="searchResults.length > 0" class="results-grid">
+            <div v-if="searchResults.length > 0" class="results-grid">
                 <FpCard v-for="item in searchResults" :key="item.id" class="result-card" @click="goToProduct(item.id)">
                     <div class="card-content">
                         <div class="main-info">
@@ -88,10 +115,18 @@ const goToProduct = (id: string) => {
                 </FpCard>
             </div>
 
-            <div v-else class="empty-state">
+            <!-- Loading Indicator / Observer Target -->
+            <div ref="observerTarget" class="loading-trigger">
+                <div v-if="isSearching" class="spinner"></div>
+                <!-- Optional: Text like "Loading more..." -->
+            </div>
+
+            <div v-if="!isSearching && searchResults.length === 0" class="empty-state">
                 <span class="empty-icon">🔍</span>
                 <p>Ничего не найдено</p>
-                <button class="add-btn" @click="router.push('/add-price')">Добавить этот товар</button>
+                <div class="wrapper">
+                    <button class="add-btn" @click="router.push('/add-price')">Добавить этот товар</button>
+                </div>
             </div>
         </div>
     </div>
@@ -100,6 +135,9 @@ const goToProduct = (id: string) => {
 <style scoped lang="scss">
 .search-view {
     padding-bottom: 80px; // Space for bottom nav if present
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .search-header {
@@ -109,6 +147,7 @@ const goToProduct = (id: string) => {
     z-index: 10;
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0; // Don't shrink header
 }
 
 .search-bar {
@@ -133,6 +172,8 @@ const goToProduct = (id: string) => {
     border-radius: var(--radius-pill);
     font-size: var(--text-body-1);
     outline: none;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
 
     &:focus {
         border-color: var(--color-primary);
@@ -150,19 +191,28 @@ const goToProduct = (id: string) => {
 .filters {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap; // Wrap items to next line
+    overflow-x: auto;
+    /* Allow horizontal scroll if many categories */
+
     padding-bottom: 8px;
+    /* Hide scrollbar */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 .filter-chip {
     white-space: nowrap;
-    padding: 6px 12px;
-    border-radius: var(--radius-sm); // Match HomeView
+    padding: 6px 16px;
+    border-radius: var(--radius-pill);
     border: 1px solid var(--color-border);
-    background: white; // Match HomeView
+    background: var(--color-surface);
     color: var(--color-text-secondary);
     font-size: var(--text-caption);
-    font-weight: 500; // Match HomeView
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
 
@@ -180,6 +230,16 @@ const goToProduct = (id: string) => {
 
 .results-list {
     padding: var(--spacing-md);
+    flex: 1;
+    overflow-y: auto;
+    /* Scroll ONLY the list */
+}
+
+.loading-trigger {
+    display: flex;
+    justify-content: center;
+    padding: var(--spacing-md);
+    min-height: 50px;
 }
 
 .loading-state {
@@ -193,12 +253,12 @@ const goToProduct = (id: string) => {
 }
 
 .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid var(--color-border);
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--color-border);
     border-top-color: var(--color-primary);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -216,6 +276,7 @@ const goToProduct = (id: string) => {
 .result-card {
     cursor: pointer;
     transition: transform 0.1s;
+    background: var(--color-surface);
 
     &:active {
         transform: scale(0.98);
@@ -233,6 +294,7 @@ const goToProduct = (id: string) => {
         margin: 0;
         font-size: var(--text-body-1);
         font-weight: 500;
+        color: var(--color-text-primary);
     }
 
     .category {
@@ -249,6 +311,7 @@ const goToProduct = (id: string) => {
     .price {
         font-weight: 700;
         color: var(--color-primary);
+        font-size: var(--text-body-1);
     }
 
     .store {
@@ -258,14 +321,18 @@ const goToProduct = (id: string) => {
 }
 
 .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 100px;
     text-align: center;
-    padding: var(--spacing-2xl);
 
     .empty-icon {
         font-size: 48px;
         display: block;
         margin-bottom: var(--spacing-md);
-        opacity: 0.3;
+        opacity: 0.5;
     }
 
     p {
@@ -273,12 +340,24 @@ const goToProduct = (id: string) => {
         margin-bottom: var(--spacing-lg);
     }
 
+    .wrapper {
+        display: flex;
+        justify-content: center;
+    }
+
     .add-btn {
         background: none;
-        border: none;
+        border: 1px solid var(--color-primary);
+        padding: 8px 16px;
+        border-radius: var(--radius-sm);
         color: var(--color-primary);
         font-weight: 600;
         cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            background: rgba(var(--color-primary-rgb), 0.1);
+        }
     }
 }
 </style>

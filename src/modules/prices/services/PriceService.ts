@@ -87,11 +87,12 @@ class PriceService {
         }
     }
 
-    async getStores(query: string = ''): Promise<{ id: string, name: string }[]> {
+    async getStores(query: string = '', limit: number = 50): Promise<{ id: string, name: string }[]> {
         let queryBuilder = supabase
             .from('stores')
             .select('id, name')
             .order('name')
+            .limit(limit)
 
         if (query) {
             queryBuilder = queryBuilder.ilike('name', `%${query}%`)
