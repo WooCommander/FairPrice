@@ -171,13 +171,13 @@ const addToShoppingList = async () => {
 		</header>
 
 		<div v-if="currentProduct" class="content-body">
-			<!-- NEW HERO HEADER -->
-			<div class="product-hero-header">
-				<span class="hero-category">{{ currentProduct.category }}</span>
-				<h1 class="hero-title">{{ currentProduct.name }}</h1>
-			</div>
 			<!-- VALUE CARD -->
 			<div class="value-card">
+				<div class="card-header-info">
+					<span class="card-category">{{ currentProduct.category }}</span>
+					<h1 class="card-title">{{ currentProduct.name }}</h1>
+				</div>
+
 				<div class="card-top-info">
 					<span class="store-badge" v-if="latestHistory[0]?.storeName">
 						📍 {{ latestHistory[0].storeName }}
@@ -200,17 +200,18 @@ const addToShoppingList = async () => {
 						Math.round(currentProduct.averagePrice) }} ₽</span>
 				</div>
 
-				<!-- INTEGRATED CHART -->
-				<div class="integrated-chart" v-if="chartData.length > 1">
-					<PriceChart :data="chartData" :average-price="currentProduct.averagePrice" :height="100" />
-				</div>
-
-				<!-- Primary Action -->
+				<!-- Primary Action (Update Price) -->
 				<div class="primary-action">
 					<FpButton size="md" width="full" @click="goToAddPrice">
 						Обновить цену
 					</FpButton>
 				</div>
+			</div>
+
+			<!-- SEPARATE CHART BLOCK -->
+			<div class="chart-card" v-if="chartData.length > 1">
+				<div class="chart-title">Динамика цен</div>
+				<PriceChart :data="chartData" :average-price="currentProduct.averagePrice" :height="120" />
 			</div>
 
 			<!-- SECONDARY ACTIONS -->
@@ -333,37 +334,6 @@ const addToShoppingList = async () => {
 	gap: 0;
 }
 
-.product-hero-header {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	text-align: center;
-	gap: 12px;
-	margin-bottom: 24px;
-	margin-top: 8px;
-}
-
-.hero-category {
-	font-size: 11px;
-	text-transform: uppercase;
-	letter-spacing: 1.5px;
-	font-weight: 700;
-	color: var(--color-primary);
-	background: rgba(var(--color-primary-rgb), 0.1); // Fallback if var not set, or use surface-hover
-	background: var(--color-surface-hover);
-	padding: 6px 12px;
-	border-radius: 20px;
-}
-
-.hero-title {
-	font-size: 26px;
-	font-weight: 800;
-	line-height: 1.2;
-	color: var(--color-text-primary);
-	margin: 0;
-	font-family: var(--font-heading); // Use the serif font for elegance
-}
-
 .content-body {
 	padding: 16px;
 
@@ -376,13 +346,11 @@ const addToShoppingList = async () => {
 	gap: 16px; // Adjusted gap
 }
 
-// Removed .product-page-title as it's back in header
-
 // VALUE CARD
 .value-card {
 	background: var(--color-surface);
-	border-radius: 20px; // Slightly smaller radius
-	padding: 20px; // Reduced padding
+	border-radius: 20px;
+	padding: 24px 20px; // Slightly more vertical padding
 	text-align: center;
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 	border: 1px solid var(--color-border);
@@ -393,11 +361,39 @@ const addToShoppingList = async () => {
 	align-items: center;
 }
 
+.card-header-info {
+	margin-bottom: 20px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+}
+
+.card-category {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 1.5px;
+	font-weight: 700;
+	color: var(--color-primary);
+	background: var(--color-surface-hover);
+	padding: 6px 12px;
+	border-radius: 20px;
+}
+
+.card-title {
+	font-size: 22px; // Standard legible size
+	font-weight: 700; // Bold sans-serif
+	line-height: 1.3;
+	color: var(--color-text-primary);
+	margin: 0;
+	// No serif font here
+}
+
 .card-top-info {
 	display: flex;
 	justify-content: center;
 	gap: 8px;
-	margin-bottom: 8px; // Tighter
+	margin-bottom: 8px;
 	font-size: 13px;
 	color: var(--color-text-secondary);
 	align-items: center;
@@ -487,11 +483,22 @@ const addToShoppingList = async () => {
 	flex-wrap: wrap;
 }
 
-// HISTORY - COMPACT STYLE
-.integrated-chart {
-	width: 100%;
-	margin: 8px 0 16px 0;
-	/* Negative margin to pull it closer if needed */
+// CHART CARD
+.chart-card {
+	background: var(--color-surface);
+	border-radius: 20px;
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.chart-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--color-text-secondary);
+	margin-bottom: 12px;
+	text-align: left;
+	padding-left: 4px;
 }
 
 .history-cards-list {
