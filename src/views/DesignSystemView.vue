@@ -112,7 +112,7 @@ const handleCreate = (val: string) => {
 .design-system-view {
     // max-width: 800px;
     // margin: 0 auto;
-    padding: var(--spacing-lg);
+    padding: var(--spacing-sm);
 }
 
 .ds-header {

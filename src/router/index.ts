@@ -54,6 +54,11 @@ const routes = [
         name: 'ShoppingList',
         component: () => import('@/views/ShoppingListView.vue'),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/quick-calc',
+        name: 'QuickCalc',
+        component: () => import('@/views/QuickCalcView.vue')
     }
 ]
 

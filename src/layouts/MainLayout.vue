@@ -20,31 +20,12 @@ const currentPath = computed(() => route.path)
 // ... (keep existing setup code) ...
 
 // Keep existing methods
+// Keep existing methods
 const navigate = (path: string) => {
 	router.push(path)
 }
 
 const isMenuOpen = ref(false)
-const isMobileMenuOpen = ref(false)
-const authControls = ref<HTMLElement | null>(null)
-
-// ... (keep existing lifecycle hooks) ...
-// Close menu when clicking outside
-import { onMounted, onUnmounted } from 'vue'
-
-const closeMenu = (e: MouseEvent) => {
-	if (authControls.value && !authControls.value.contains(e.target as Node)) {
-		isMenuOpen.value = false
-	}
-}
-
-onMounted(() => {
-	document.addEventListener('click', closeMenu)
-})
-
-onUnmounted(() => {
-	document.removeEventListener('click', closeMenu)
-})
 
 const handleLogout = async () => {
 	isMenuOpen.value = false
@@ -58,49 +39,19 @@ const handleLogout = async () => {
 		<header class="top-nav">
 			<div class="nav-container">
 				<div class="logo-area">
-					<button class="icon-btn hamburger-btn" @click="isMobileMenuOpen = !isMobileMenuOpen">
-						☰
+					<button class="hamburger-btn" @click="isMenuOpen = !isMenuOpen">
+						<span v-if="!isMenuOpen">☰</span>
+						<span v-else>✕</span>
 					</button>
 					<div class="logo" @click="router.push('/')">
 						Fair Price
 					</div>
 				</div>
 
-				<nav class="nav-links desktop-only">
-					<a v-for="item in navItems" :key="item.path" class="nav-link"
-						:class="{ active: currentPath === item.path }" @click.prevent="navigate(item.path)">
-						{{ item.label }}
-					</a>
-				</nav>
-
 				<div class="actions">
-					<button class="icon-btn theme-toggle" @click="toggleTheme">
-						{{ isDark ? '🌞' : '🌙' }}
-					</button>
-
-					<div v-if="authStore.user.value" class="auth-controls" ref="authControls">
-						<button class="avatar-btn" @click="isMenuOpen = !isMenuOpen">
-							{{ authStore.user.value.email?.charAt(0).toUpperCase() }}
-						</button>
-
-						<transition name="fade">
-							<div v-if="isMenuOpen" class="user-menu">
-								<div class="menu-header">
-									<span class="user-email">{{ authStore.user.value.email }}</span>
-								</div>
-								<div class="menu-items">
-									<button class="menu-item" @click="navigate('/profile'); isMenuOpen = false">
-										👤 Профиль
-									</button>
-									<div class="divider"></div>
-									<button class="menu-item logout" @click="handleLogout">
-										🚪 Выйти
-									</button>
-								</div>
-							</div>
-						</transition>
-					</div>
-					<div v-else>
+					<!-- Quick action for calculator on desktop? Maybe just keep in menu to be simple -->
+					<!-- Keep login button visible if not logged in -->
+					<div v-if="!authStore.user.value">
 						<button class="login-btn" @click="router.push('/login')">
 							<span class="btn-text">Войти</span>
 						</button>
@@ -108,15 +59,38 @@ const handleLogout = async () => {
 				</div>
 			</div>
 
-			<!-- Mobile Menu Overlay -->
-			<transition name="slide-down">
-				<nav v-if="isMobileMenuOpen" class="mobile-menu">
-					<a v-for="item in navItems" :key="item.path" class="mobile-nav-link"
-						:class="{ active: currentPath === item.path }"
-						@click.prevent="navigate(item.path); isMobileMenuOpen = false">
-						{{ item.label }}
-					</a>
-				</nav>
+			<!-- Full Screen Menu Overlay -->
+			<transition name="fade">
+				<div v-if="isMenuOpen" class="menu-overlay" @click.self="isMenuOpen = false">
+					<div class="menu-content">
+						<!-- Navigation Links -->
+						<a v-for="item in navItems" :key="item.path" class="menu-link"
+							:class="{ active: currentPath === item.path }"
+							@click.prevent="navigate(item.path); isMenuOpen = false">
+							{{ item.label }}
+						</a>
+
+						<!-- Quick Calculator Link -->
+						<a class="menu-link" :class="{ active: currentPath === '/quick-calc' }"
+							@click.prevent="navigate('/quick-calc'); isMenuOpen = false">
+							🔢 Быстрый расчет
+						</a>
+
+						<div class="menu-footer">
+							<button class="theme-toggle-menu" @click="toggleTheme">
+								<span>{{ isDark ? '🌞 Светлая тема' : '🌙 Темная тема' }}</span>
+							</button>
+
+							<div v-if="authStore.user.value" class="user-info-menu">
+								{{ authStore.user.value.email }}
+							</div>
+
+							<button v-if="authStore.user.value" class="logout-link" @click="handleLogout">
+								Выйти
+							</button>
+						</div>
+					</div>
+				</div>
 			</transition>
 		</header>
 
@@ -143,66 +117,37 @@ const handleLogout = async () => {
 }
 
 .top-nav {
-	background-color: var(--color-surface-translucent);
+	background-color: var(--color-surface-translucent); // Keep translucent
 	backdrop-filter: blur(12px);
 	border-bottom: 1px solid var(--color-border);
 	position: sticky;
 	top: 0;
 	z-index: 100;
 	padding: 0 var(--spacing-lg);
-	padding-top: env(safe-area-inset-top, 0px); // Handle notch/safe area
+	padding-top: env(safe-area-inset-top, 0px);
 
 	@media (max-width: 768px) {
-		padding-left: 8px; // 0.5rem
-		padding-right: 8px; // 0.5rem
+		padding-left: 8px;
+		padding-right: 8px;
 	}
 
 	.nav-container {
 		max-width: var(--layout-max-width);
 		margin: 0 auto;
-		height: 80px; // Taller header
+		height: 64px; // Standard height
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 	}
 
 	.logo {
-		font-size: 24px;
+		font-size: 20px;
 		font-weight: 700;
 		color: var(--color-text-primary);
 		cursor: pointer;
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		letter-spacing: -0.5px;
-	}
-
-	.nav-links {
-		display: flex;
-		gap: 8px;
-		background: var(--color-background);
-		padding: 4px;
-		border-radius: var(--radius-pill);
-	}
-
-	.nav-link {
-		color: var(--color-text-secondary);
-		font-weight: 600;
-		cursor: pointer;
-		padding: 10px 24px;
-		border-radius: var(--radius-pill);
-		transition: all 0.2s ease;
-		font-size: 14px;
-
-		&:hover {
-			color: var(--color-text-primary);
-		}
-
-		&.active {
-			background-color: var(--color-surface);
-			color: var(--color-primary);
-			box-shadow: var(--shadow-1);
-		}
 	}
 }
 
@@ -213,68 +158,142 @@ const handleLogout = async () => {
 }
 
 .hamburger-btn {
-	display: none;
 	background: none;
 	border: none;
 	font-size: 24px;
 	cursor: pointer;
 	color: var(--color-text-primary);
 	padding: 4px;
-
-	@media (max-width: 768px) {
-		display: block;
-	}
+	z-index: 1002; // Above menu overlay
+	position: relative; // For z-index to work
 }
 
-.desktop-only {
-	@media (max-width: 768px) {
-		display: none !important;
-	}
-}
-
-.mobile-menu {
-	background: var(--color-surface);
-	border-top: 1px solid var(--color-border);
-	padding: 16px;
+// Full Screen Menu Overlay
+.menu-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: var(--color-surface); // Solid background or very high opacity
+	// If using dark theme, surface is dark. If light, it's light.
+	// User requested "semi-transparent", but it looks messy.
+	// Let's try high opacity blur.
+	// background: rgba(var(--color-surface-rgb), 0.98);
+	backdrop-filter: blur(20px);
+	z-index: 1001;
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
-	box-shadow: var(--shadow-2);
+	justify-content: center;
+	align-items: center;
+	transition: opacity 0.3s ease;
 }
 
-.mobile-nav-link {
-	padding: 12px 16px;
-	border-radius: var(--radius-sm);
+.menu-content {
+	display: flex;
+	flex-direction: column;
+	gap: 32px; // More space
+	text-align: center;
+	width: 100%;
+	max-width: 400px;
+	padding: 40px 20px;
+}
+
+.menu-link {
+	font-size: 2rem; // Larger
+	font-weight: 700;
 	color: var(--color-text-primary);
-	font-weight: 500;
-	cursor: pointer;
-	transition: background 0.2s;
+	text-decoration: none;
+	padding: 8px;
+	position: relative;
+	transition: color 0.3s;
 
 	&:hover,
 	&.active {
-		background: rgba(var(--color-primary-rgb), 0.1);
 		color: var(--color-primary);
+		background: none; // Remove boxy background
+	}
+
+	// Underline effect
+	&::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 0;
+		height: 2px;
+		background: var(--color-primary);
+		transition: width 0.3s;
+	}
+
+	&:hover::after,
+	&.active::after {
+		width: 40px;
 	}
 }
 
-.slide-down-enter-active,
-.slide-down-leave-active {
-	transition: all 0.2s ease;
-	max-height: 300px;
-	overflow: hidden;
+.menu-footer {
+	margin-top: 60px;
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	align-items: center;
 }
 
-.slide-down-enter-from,
-.slide-down-leave-to {
-	max-height: 0;
+.user-info-menu {
+	color: var(--color-text-secondary);
+	font-size: 1rem;
+	font-weight: 500;
+}
+
+.theme-toggle-menu {
+	background: var(--color-background);
+	border: 1px solid var(--color-border);
+	color: var(--color-text-primary);
+	padding: 12px 24px;
+	border-radius: 30px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	font-size: 1rem;
+	font-weight: 500;
+	transition: transform 0.2s;
+
+	&:active {
+		transform: scale(0.95);
+	}
+}
+
+.logout-link {
+	color: var(--color-error);
+	background: none;
+	border: none;
+	font-size: 1.1rem;
+	font-weight: 500;
+	cursor: pointer;
+	padding: 12px;
+
+	&:hover {
+		opacity: 0.8;
+	}
+}
+
+// Transitions
+.fade-enter-active,
+.fade-leave-active {
+	transition: opacity 0.1s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
 	opacity: 0;
-	padding-top: 0;
-	padding-bottom: 0;
 }
 
 .page-content {
 	flex: 1;
-	overflow-y: auto; // Global scroll for normal pages
+	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
 }
@@ -283,211 +302,13 @@ const handleLogout = async () => {
 	max-width: var(--layout-max-width);
 	margin: 0 auto;
 	padding: var(--spacing-lg);
-	flex: 1; // Take available height
+	flex: 1;
 	display: flex;
 	flex-direction: column;
-	width: 100%; // Ensure width
+	width: 100%;
 
 	@media (max-width: 768px) {
-		padding: 0; // Remove side padding (border-to-border)
-	}
-}
-
-.icon-btn {
-	background: var(--color-surface);
-	border: 1px solid var(--color-border);
-	cursor: pointer;
-	font-size: 20px;
-	width: 44px;
-	height: 44px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 50%;
-	transition: all 0.2s;
-	color: var(--color-text-secondary);
-
-	&:hover {
-		border-color: var(--color-primary);
-		color: var(--color-primary);
-		transform: rotate(15deg);
-	}
-}
-
-.fade-enter-active,
-.fade-leave-active {
-	transition: opacity 0.15s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-	opacity: 0;
-}
-
-.actions {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-}
-
-.auth-controls {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	position: relative;
-}
-
-.avatar-btn {
-	width: 40px;
-	height: 40px;
-	border-radius: 50%;
-	background: var(--color-primary);
-	color: white;
-	border: none;
-	cursor: pointer;
-	font-weight: 700;
-	font-size: 16px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: transform 0.2s;
-	box-shadow: var(--shadow-1);
-
-	&:hover {
-		transform: scale(1.05);
-	}
-}
-
-.user-menu {
-	position: absolute;
-	top: 120%;
-	right: 0;
-	width: 200px;
-	background: var(--color-surface);
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-md);
-	box-shadow: var(--shadow-3);
-	overflow: hidden;
-	z-index: 1000;
-	transform-origin: top right;
-}
-
-.menu-header {
-	padding: 12px 16px;
-	border-bottom: 1px solid var(--color-border);
-	background: var(--color-background);
-}
-
-.user-email {
-	font-size: 1rem;
-	color: var(--color-text-secondary);
-	word-break: break-all;
-	display: block; // Force block
-}
-
-.menu-items {
-	padding: 4px 0;
-}
-
-.menu-item {
-	width: 100%;
-	text-align: left;
-	padding: 10px 16px;
-	background: none;
-	border: none;
-	color: var(--color-text-primary);
-	cursor: pointer;
-	font-size: 14px;
-	transition: background 0.2s;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-
-	&:hover {
-		background: var(--color-surface-hover);
-	}
-
-	&.logout {
-		color: var(--color-error);
-
-		&:hover {
-			background: rgba(var(--color-error-rgb), 0.1);
-		}
-	}
-}
-
-.divider {
-	height: 1px;
-	background: var(--color-border);
-	margin: 4px 0;
-}
-
-.user-info {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-.avatar {
-	width: 28px;
-	height: 28px;
-	border-radius: 50%;
-	background: var(--color-primary);
-	color: white;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: 700;
-	font-size: 1rem;
-}
-
-.user-email-short {
-	font-size: 1rem;
-	font-weight: 600;
-	color: var(--color-text-primary);
-	max-width: 100px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-
-	display: none;
-
-	@media (min-width: 768px) {
-		display: block;
-	}
-}
-
-.login-btn {
-	background: var(--color-primary);
-	color: white;
-	border: none;
-	padding: 10px 20px;
-	border-radius: var(--radius-pill);
-	font-weight: 600;
-	cursor: pointer;
-	font-size: 14px;
-	transition: 0.2s;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-
-	&:hover {
-		opacity: 0.9;
-		transform: translateY(-1px);
-	}
-}
-
-.logout-btn {
-	width: 32px;
-	height: 32px;
-	font-size: 16px;
-	color: var(--color-text-secondary);
-	border-color: transparent;
-	background: transparent;
-
-	&:hover {
-		background: rgba(var(--color-error-rgb), 0.1);
-		color: var(--color-error);
+		padding: 0;
 	}
 }
 </style>
