@@ -259,7 +259,7 @@ const handleLogout = async () => {
 
 .slide-down-enter-active,
 .slide-down-leave-active {
-	transition: all 0.3s ease;
+	transition: all 0.2s ease;
 	max-height: 300px;
 	overflow: hidden;
 }
@@ -316,7 +316,7 @@ const handleLogout = async () => {
 
 .fade-enter-active,
 .fade-leave-active {
-	transition: opacity 0.3s ease;
+	transition: opacity 0.15s ease;
 }
 
 .fade-enter-from,
