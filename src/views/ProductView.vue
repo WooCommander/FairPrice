@@ -127,8 +127,7 @@ const addToShoppingList = async () => {
 						</svg>
 					</button>
 					<div class="header-content">
-						<span class="header-category" v-if="currentProduct">{{ currentProduct.category }}</span>
-
+						<!-- Empty for spacing or future use -->
 					</div>
 					<div class="header-controls">
 						<button class="nav-btn" @click="toggleFavorite">
@@ -166,14 +165,17 @@ const addToShoppingList = async () => {
 					</div>
 				</div>
 
-				<div v-if="currentProduct" style="font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
-					width: 100%; text-align: center; font-weight: bold;">{{ currentProduct.name
-					}}</div>
+
 
 			</div>
 		</header>
 
 		<div v-if="currentProduct" class="content-body">
+			<!-- NEW HERO HEADER -->
+			<div class="product-hero-header">
+				<span class="hero-category">{{ currentProduct.category }}</span>
+				<h1 class="hero-title">{{ currentProduct.name }}</h1>
+			</div>
 			<!-- VALUE CARD -->
 			<div class="value-card">
 				<div class="card-top-info">
@@ -324,45 +326,42 @@ const addToShoppingList = async () => {
 
 .header-content {
 	flex: 1;
-	text-align: center;
-	overflow: hidden;
-	padding: 0 4px; // Reduce padding to give more width
-	display: flex;
-	flex-direction: column; // Stack category and title
-	justify-content: center;
-	align-items: center;
-	line-height: 1.2;
-}
-
-.header-category {
-	// font-size: 10px; // Keep small
-	text-transform: uppercase;
-	color: var(--color-text-tertiary);
-	letter-spacing: 1px;
-	font-weight: 600;
-	display: block;
-	margin-bottom: 2px;
-}
-
-.header-title {
-	font-size: 16px; // Readable but fits header
-	font-weight: 700;
-	margin: 0;
-	color: var(--color-text-primary);
-
-	// Multi-line truncation
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	line-clamp: 2; // Standard property
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-	text-align: center;
-	word-break: break-word;
 }
 
 .header-controls {
 	display: flex;
 	gap: 0;
+}
+
+.product-hero-header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 12px;
+	margin-bottom: 24px;
+	margin-top: 8px;
+}
+
+.hero-category {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 1.5px;
+	font-weight: 700;
+	color: var(--color-primary);
+	background: rgba(var(--color-primary-rgb), 0.1); // Fallback if var not set, or use surface-hover
+	background: var(--color-surface-hover);
+	padding: 6px 12px;
+	border-radius: 20px;
+}
+
+.hero-title {
+	font-size: 26px;
+	font-weight: 800;
+	line-height: 1.2;
+	color: var(--color-text-primary);
+	margin: 0;
+	font-family: var(--font-heading); // Use the serif font for elegance
 }
 
 .content-body {
