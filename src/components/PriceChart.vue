@@ -160,8 +160,8 @@ const avgLineY = computed(() => {
     display: flex;
     justify-content: space-between;
     margin-top: 4px;
-    font-size: 12px; // Increased from 10px
-    color: var(--color-text-secondary); // Darker color for readability
+    font-size: 14px; // Increased from 12px for visibility
+    color: var(--color-text-secondary);
     font-weight: 500;
 }
 </style>

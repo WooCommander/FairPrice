@@ -2,6 +2,7 @@
 import { onMounted, computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import FpButton from '@/design-system/components/FpButton.vue'
+import FpInput from '@/design-system/components/FpInput.vue'
 import FpConfirmationModal from '@/design-system/components/FpConfirmationModal.vue'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { shoppingListStore } from '@/modules/shopping-list/store/shoppingListStore'
@@ -196,15 +197,30 @@ const addToShoppingList = async () => {
                 </div>
             </div>
 
-            <!-- Edit Modal (Hidden by default, simplistic implementation for now) -->
-            <div v-if="isEditingProduct" class="edit-modal-overlay">
-                <div class="edit-modal">
-                    <h3>Редактировать</h3>
-                    <input v-model="productForm.name" class="modal-input" placeholder="Название" />
+            <!-- Edit Modal (Overlay) -->
+            <div v-if="isEditingProduct" class="edit-modal-overlay" @click.self="cancelEditProduct">
+                <div class="edit-modal-card">
+                    <h3 class="modal-title">Редактирование</h3>
+
+                    <div class="modal-form">
+                        <FpInput v-model="productForm.name" label="Название товара" placeholder="Введите название" />
+                        <!-- Optional: Category Input if needed, using simple input or FpInput -->
+                        <FpInput v-model="productForm.category" label="Категория" placeholder="Категория" />
+                    </div>
+
                     <div class="modal-actions">
-                        <FpButton size="sm" @click="saveProduct">Сохранить</FpButton>
-                        <FpButton size="sm" variant="text" @click="cancelEditProduct">Отмена</FpButton>
-                        <button class="danger-link" @click="confirmDeleteProduct">Удалить товар</button>
+                        <FpButton size="md" width="full" @click="saveProduct">
+                            Сохранить
+                        </FpButton>
+                        <FpButton size="md" variant="text" width="full" @click="cancelEditProduct">
+                            Отмена
+                        </FpButton>
+
+                        <div class="delete-action">
+                            <FpButton size="sm" variant="danger" width="full" @click="confirmDeleteProduct">
+                                Удалить товар
+                            </FpButton>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -239,20 +255,21 @@ const addToShoppingList = async () => {
 }
 
 .nav-btn {
-    background: none;
+    background: transparent; // Clean background
     border: none;
-    font-size: 24px;
+    font-size: 28px; // Larger icon
     color: var(--color-text-primary);
-    width: 40px;
-    height: 40px;
+    width: 44px; // Larger touch target
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     cursor: pointer;
+    margin-right: 8px; // Space from title
 
     &:active {
-        background: var(--color-background);
+        background: var(--color-surface-hover);
     }
 }
 
@@ -323,6 +340,12 @@ const addToShoppingList = async () => {
     align-items: center;
 }
 
+.date-badge {
+    font-size: 14px; // Increased for readability
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
 .store-badge {
     font-weight: 500;
     color: var(--color-text-primary);
@@ -388,8 +411,9 @@ const addToShoppingList = async () => {
 }
 
 .avg-ref {
-    font-size: 12px;
-    color: var(--color-text-tertiary);
+    font-size: 14px; // Increased
+    color: var(--color-text-secondary);
+    font-weight: 500;
 }
 
 // SECONDARY ACTIONS
@@ -459,5 +483,70 @@ const addToShoppingList = async () => {
 .h-date {
     font-size: 11px; // Smaller date
     color: var(--color-text-tertiary);
+}
+
+// MODAL STYLES
+.edit-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6); // Dimmed background
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    padding: 16px;
+}
+
+.edit-modal-card {
+    background: var(--color-surface);
+    border-radius: 24px;
+    padding: 24px;
+    width: 100%;
+    max-width: 340px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: modal-pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modal-pop {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    margin: 0 0 24px 0;
+    color: var(--color-text-primary);
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.delete-action {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-border);
 }
 </style>
