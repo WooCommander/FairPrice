@@ -133,6 +133,10 @@ const goToAddProduct = () => {
 </template>
 
 <style scoped lang="scss">
+.category-view {
+    padding: 0 0.5rem;
+}
+
 .store-group {
     margin-bottom: var(--spacing-lg);
 }
@@ -152,10 +156,8 @@ const goToAddProduct = () => {
     top: 0;
     z-index: 10;
     border-bottom: 1px solid var(--color-border);
-    margin: 0 calc(var(--spacing-md) * -1) var(--spacing-md); // Negative margin to overflow padding if parent has padding
-    // Check if parent has padding. Default layout usually has padding.
-    // If not, we might need to adjust. Assuming standard view padding.
-    margin: -1rem -1rem var(--spacing-md) -1rem; // Hardcoded to match common padding 1rem
+    // Negative margin to overflow the 0.5rem padding
+    margin: 0 -0.5rem var(--spacing-md) -0.5rem;
     padding: 12px 16px;
     display: flex;
     justify-content: center;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { shoppingListStore } from '@/modules/shopping-list/store/shoppingListStore'
-import FpBreadcrumbs from '@/design-system/components/FpBreadcrumbs.vue'
+
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
@@ -42,10 +42,22 @@ const deleteChecked = () => {
 
 <template>
     <div class="shopping-list-view">
-        <FpBreadcrumbs :items="[{ label: 'Главная', to: '/' }, { label: 'Список покупок' }]" />
-
-        <header class="page-header">
-            <h1>Список покупок</h1>
+        <header class="ergo-header">
+            <div class="header-inner">
+                <button class="nav-btn" @click="$router.push('/')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <div class="header-title">
+                    Список покупок
+                </div>
+                <div class="header-controls">
+                    <div style="width: 40px;"></div> <!-- Spacer -->
+                </div>
+            </div>
         </header>
 
         <section class="add-section">
@@ -101,13 +113,52 @@ const deleteChecked = () => {
 </template>
 
 <style scoped lang="scss">
-.page-header {
-    text-align: center;
-    margin-bottom: var(--spacing-lg);
+.shopping-list-view {
+    padding: 0 0.5rem;
+    max-width: var(--layout-max-width);
+    // margin: 0 auto;
+}
 
-    h1 {
-        font-size: var(--text-h3);
-        margin: 0;
+.ergo-header {
+    background: var(--color-surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--color-border);
+    margin: 0 -0.5rem var(--spacing-md) -0.5rem;
+    padding: 12px 16px;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.header-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-align: center;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+
+    &:active {
+        background: var(--color-surface-hover);
+        color: var(--color-text-primary);
     }
 }
 

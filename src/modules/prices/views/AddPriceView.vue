@@ -261,6 +261,28 @@ onMounted(async () => {
         newProductCategory.value = String(route.query.category)
     }
 })
+
+const headerTitle = computed(() => {
+    if (step.value === 2 && currentProduct.value) {
+        return currentProduct.value.name
+    }
+    if (isCreating.value) {
+        return 'Новый товар'
+    }
+    return 'Добавить цену'
+})
+
+const goBack = () => {
+    if (step.value === 2) {
+        step.value = 1
+        return
+    }
+    if (isCreating.value) {
+        isCreating.value = false
+        return
+    }
+    router.back()
+}
 </script>
 
 <template>
@@ -268,7 +290,7 @@ onMounted(async () => {
         <!-- Header -->
         <header class="ergo-header">
             <div class="header-inner">
-                <button class="nav-btn" @click="router.back()">
+                <button class="nav-btn" @click="goBack">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -276,12 +298,9 @@ onMounted(async () => {
                     </svg>
                 </button>
                 <div class="header-title">
-                    Добавить цену
+                    {{ headerTitle }}
                 </div>
-                <div class="header-controls">
-                    <!-- Placeholder for balance -->
-                    <div style="width: 40px;"></div>
-                </div>
+
             </div>
         </header>
 
@@ -306,10 +325,6 @@ onMounted(async () => {
                                 placeholder="Выберите категорию" allow-create @create="createCategory" />
                         </div>
 
-                        <div class="select-group">
-                            <FpCombobox v-model="newProductUnit" label="Ед. изм." :items="unitItems"
-                                placeholder="шт, кг..." allow-create @create="createUnit" />
-                        </div>
                     </div>
 
                     <div class="actions-row">
@@ -324,7 +339,7 @@ onMounted(async () => {
         <section v-else class="step-section">
             <FpCard>
                 <div class="product-summary" v-if="currentProduct">
-                    <h3>{{ currentProduct.name }}</h3>
+                    <!-- Title moved to header -->
                     <span class="category">{{ currentProduct.category }}</span>
                     <button class="change-btn" @click="step = 1">Изменить</button>
                 </div>
@@ -375,8 +390,8 @@ onMounted(async () => {
 <style scoped lang="scss">
 .add-price-view {
     padding: 0 0.5rem; // User requested 0.5rem from edge
-    max-width: 600px; // Harmonize with other views
-    margin: 0 auto;
+
+
 }
 
 .ergo-header {

@@ -110,8 +110,8 @@ const handleCreate = (val: string) => {
 
 <style scoped lang="scss">
 .design-system-view {
-    max-width: 800px;
-    margin: 0 auto;
+    // max-width: 800px;
+    // margin: 0 auto;
     padding: var(--spacing-lg);
 }
 

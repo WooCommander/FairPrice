@@ -229,7 +229,6 @@ onMounted(async () => {
 
 .search-bar-container {
     position: relative;
-    max-width: 600px;
     margin: var(--spacing-sm);
 }
 
@@ -244,8 +243,8 @@ onMounted(async () => {
     display: grid;
     grid-template-columns: repeat(4, 1fr); // 4 columns on desktop
     gap: 12px;
-    max-width: 900px;
-    margin: 0 auto;
+    // max-width: 900px;
+    // margin: 0 auto;
 
     @media (max-width: 600px) {
         display: flex; // Flex row on mobile
