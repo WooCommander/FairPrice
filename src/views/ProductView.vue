@@ -131,33 +131,33 @@ const addToShoppingList = async () => {
         </header>
 
         <div v-if="currentProduct" class="content-body">
-            <!-- MAIN VALUE CARD -->
+            <!-- VALUE CARD -->
             <div class="value-card">
                 <div class="card-top-info">
-                    <span class="store-badge" v-if="currentProduct.lastStore">
-                        📍 {{ currentProduct.lastStore }}
+                    <span class="store-badge" v-if="latestHistory[0]?.storeName">
+                        📍 {{ latestHistory[0].storeName }}
                     </span>
-                    <span class="date-badge">{{ currentProduct.lastUpdateRelative }}</span>
+                    <span class="date-badge" v-if="latestHistory[0]?.dateRelative">
+                        {{ latestHistory[0].dateRelative }}
+                    </span>
                 </div>
 
                 <div class="price-hero">
-                    <div class="main-price">
-                        {{ currentProduct.formattedPrice }}
-                    </div>
-                    <div class="unit-label" v-if="currentProduct.unit">
-                        за 1 {{ currentProduct.unit }}
-                    </div>
+                    <span class="main-price">{{ currentProduct.formattedPrice }}</span>
+                    <span class="unit-label" v-if="currentProduct.unit">за {{ currentProduct.unit }}</span>
                 </div>
 
-                <!-- Psychology: Value Anchor -->
                 <div class="value-analysis" v-if="currentProduct.priceStatus !== 'neutral'">
-                    <div class="analysis-pill" :class="currentProduct.priceStatus">
-                        <span v-if="currentProduct.priceStatus === 'good'">🔥 Отличная цена</span>
-                        <span v-if="currentProduct.priceStatus === 'bad'">⚠️ Дороговато</span>
-                    </div>
-                    <div class="avg-ref" v-if="currentProduct.formattedAveragePrice">
-                        Средняя: {{ currentProduct.formattedAveragePrice }}
-                    </div>
+                    <span class="analysis-pill" :class="currentProduct.priceStatus">
+                        {{ currentProduct.priceStatus === 'good' ? '🔥 Отличная цена' : '⚠️ Дороговато' }}
+                    </span>
+                    <span class="avg-ref" v-if="currentProduct.averagePrice">Средняя: ~{{
+                        Math.round(currentProduct.averagePrice) }} ₽</span>
+                </div>
+
+                <!-- INTEGRATED CHART -->
+                <div class="integrated-chart" v-if="chartData.length > 1">
+                    <PriceChart :data="chartData" :average-price="currentProduct.averagePrice" :height="100" />
                 </div>
 
                 <!-- Primary Action -->
@@ -180,12 +180,7 @@ const addToShoppingList = async () => {
 
             <!-- HISTORY LIST (Compact) -->
             <div class="history-section">
-                <!-- <h3 class="section-label">Динамика цен</h3> -->
-
-                <!-- Chart (Simplified) -->
-                <div class="chart-mini" v-if="chartData.length > 1">
-                    <PriceChart :data="chartData" :average-price="currentProduct.averagePrice" />
-                </div>
+                <!-- Chart moved up -->
 
                 <div class="history-cards-list">
                     <div v-for="(item, idx) in latestHistory" :key="idx" class="history-card-item">
@@ -406,10 +401,17 @@ const addToShoppingList = async () => {
 }
 
 // HISTORY - COMPACT STYLE
+.integrated-chart {
+    width: 100%;
+    margin: 8px 0 16px 0;
+    /* Negative margin to pull it closer if needed */
+}
+
 .history-cards-list {
     display: flex;
     flex-direction: column;
     gap: 8px; // Reduced gap
+    margin-top: 16px; // Space from secondary actions
 }
 
 .history-card-item {

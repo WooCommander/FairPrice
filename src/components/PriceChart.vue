@@ -105,14 +105,12 @@ const avgLineY = computed(() => {
 .price-chart-container {
     width: 100%;
     position: relative;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 1rem;
+    /* Removed background/border for cleaner look */
+    /* padding: 0; Reduced to zero */
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    margin-bottom: var(--spacing-md)
+    margin-bottom: 8px; // Reduced margin
 }
 
 .chart-svg {
@@ -123,7 +121,7 @@ const avgLineY = computed(() => {
 
 .chart-line {
     stroke: var(--color-primary);
-    stroke-width: 2px;
+    stroke-width: 3px; // Thicker line for visibility
     stroke-linecap: round;
     stroke-linejoin: round;
 }
@@ -134,9 +132,10 @@ const avgLineY = computed(() => {
     stroke-width: 2px;
     cursor: pointer;
     transition: r 0.2s;
+    r: 3; // Larger points
 
     &:hover {
-        r: 3px;
+        r: 5;
     }
 }
 
@@ -144,6 +143,7 @@ const avgLineY = computed(() => {
     stroke: var(--color-text-tertiary);
     stroke-width: 1px;
     stroke-dasharray: 4;
+    opacity: 0.5;
 }
 
 .chart-empty {
@@ -159,8 +159,9 @@ const avgLineY = computed(() => {
 .chart-labels {
     display: flex;
     justify-content: space-between;
-    margin-top: 8px;
-    font-size: 10px;
-    color: var(--color-text-tertiary);
+    margin-top: 4px;
+    font-size: 12px; // Increased from 10px
+    color: var(--color-text-secondary); // Darker color for readability
+    font-weight: 500;
 }
 </style>
