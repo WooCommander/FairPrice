@@ -89,11 +89,16 @@ const avgLineY = computed(() => {
             <polyline :points="polylinePoints" fill="none" class="chart-line" vector-effect="non-scaling-stroke" />
 
             <!-- Points -->
-            <circle v-for="(p, i) in points" :key="i" :cx="p.x" :cy="p.y" r="1.5" class="chart-point"
-                vector-effect="non-scaling-stroke">
-                <title>{{ p.price }} ₽ ({{ p.date.toLocaleDateString() }})</title>
-            </circle>
+            <!-- Circles removed to avoid distortion from aspect-ratio scaling -->
         </svg>
+
+        <!-- HTML Overlay for Points (Guarantees roundness) -->
+        <div class="points-overlay" v-if="points.length >= 2">
+            <div v-for="(p, i) in points" :key="i" class="chart-point" :style="{ left: p.x + '%', top: p.y + '%' }"
+                :title="`${p.price} ₽ (${p.date.toLocaleDateString()})`">
+            </div>
+        </div>
+
         <div class="chart-labels" v-if="points.length >= 2">
             <span>{{ new Date(props.data[0].date).toLocaleDateString() }}</span>
             <span>{{ new Date(props.data[props.data.length - 1].date).toLocaleDateString() }}</span>
@@ -113,9 +118,20 @@ const avgLineY = computed(() => {
     margin-bottom: 8px; // Reduced margin
 }
 
+.chart-wrapper {
+    flex: 1; // Take remaining space after labels
+    position: relative;
+    width: 100%;
+    min-height: 0; // Crucial for nested flex scrolling/sizing
+}
+
 .chart-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
+    display: block;
     overflow: visible;
 }
 
@@ -126,16 +142,32 @@ const avgLineY = computed(() => {
     stroke-linejoin: round;
 }
 
+.points-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; // Let clicks pass through if needed, but points have pointer-events auto
+}
+
 .chart-point {
-    fill: white;
-    stroke: var(--color-primary);
-    stroke-width: 2px;
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border: 2px solid var(--color-primary);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
     cursor: pointer;
-    transition: r 0.2s;
-    r: 3; // Larger points
+    transition: transform 0.2s;
+    pointer-events: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
     &:hover {
-        r: 5;
+        transform: translate(-50%, -50%) scale(1.5);
+        z-index: 10;
+        background: var(--color-primary);
     }
 }
 

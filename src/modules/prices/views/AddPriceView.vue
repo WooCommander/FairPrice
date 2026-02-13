@@ -7,7 +7,7 @@ import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
-import FpBreadcrumbs from '@/design-system/components/FpBreadcrumbs.vue'
+
 
 const route = useRoute()
 const router = useRouter()
@@ -265,17 +265,29 @@ onMounted(async () => {
 
 <template>
     <div class="add-price-view">
-        <FpBreadcrumbs :items="[
-            { label: 'Главная', to: '/' },
-            { label: 'Добавить цену' }
-        ]" />
-        <header class="page-header">
-            <h1>Добавить цену</h1>
+        <!-- Header -->
+        <header class="ergo-header">
+            <div class="header-inner">
+                <button class="nav-btn" @click="router.back()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <div class="header-title">
+                    Добавить цену
+                </div>
+                <div class="header-controls">
+                    <!-- Placeholder for balance -->
+                    <div style="width: 40px;"></div>
+                </div>
+            </div>
         </header>
 
         <!-- Step 1: Select Product -->
         <section v-if="step === 1" class="step-section">
-            <FpCard>
+            <FpCard class="m-4">
                 <div v-if="!isCreating">
                     <h3>Выберите товар</h3>
                     <FpCombobox v-model="searchQuery" label="Поиск товара" placeholder="Например: Молоко"
@@ -361,13 +373,51 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-.page-header {
-    text-align: center;
-    margin-bottom: var(--spacing-lg);
+.add-price-view {
+    padding: 0 0.5rem; // User requested 0.5rem from edge
+    max-width: 600px; // Harmonize with other views
+    margin: 0 auto;
+}
 
-    h1 {
-        font-size: var(--text-h3);
-        margin: 0;
+.ergo-header {
+    background: var(--color-surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--color-border);
+    margin: 0 -0.5rem var(--spacing-md) -0.5rem; // Negative margin to overflow padding
+    padding: 12px 16px;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+
+    &:active {
+        background: var(--color-surface-hover);
+        color: var(--color-text-primary);
     }
 }
 

@@ -274,7 +274,7 @@ onMounted(async () => {
         }
 
         .xp-text {
-            font-size: 12px;
+            font-size: 1rem;
             color: var(--color-text-secondary);
         }
     }

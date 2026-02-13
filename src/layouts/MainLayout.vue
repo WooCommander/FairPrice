@@ -379,7 +379,7 @@ const handleLogout = async () => {
 }
 
 .user-email {
-	font-size: 13px;
+	font-size: 1rem;
 	color: var(--color-text-secondary);
 	word-break: break-all;
 	display: block; // Force block
@@ -438,11 +438,11 @@ const handleLogout = async () => {
 	align-items: center;
 	justify-content: center;
 	font-weight: 700;
-	font-size: 12px;
+	font-size: 1rem;
 }
 
 .user-email-short {
-	font-size: 13px;
+	font-size: 1rem;
 	font-weight: 600;
 	color: var(--color-text-primary);
 	max-width: 100px;

@@ -20,7 +20,7 @@ const priceColorClass = computed(() => {
       <span class="category">{{ item.category }}</span>
       <span class="date">{{ item.lastUpdateRelative }}</span>
     </div>
-    
+
     <div class="main-content">
       <h3 class="name">{{ item.displayName }}</h3>
       <div class="price-block">
@@ -28,7 +28,7 @@ const priceColorClass = computed(() => {
         <span class="unit" v-if="item.formattedUnitPrice">{{ item.formattedUnitPrice }}</span>
       </div>
     </div>
-    
+
     <div class="footer">
       <div class="store" v-if="item.lastStore">
         <span class="store-icon">🏪</span>
@@ -43,7 +43,7 @@ const priceColorClass = computed(() => {
   background: var(--color-surface);
   padding: 16px;
   border-radius: 16px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03); // Very subtle shadow
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03); // Very subtle shadow
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -59,7 +59,7 @@ const priceColorClass = computed(() => {
 .top-row {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 1rem;
   color: var(--color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -93,7 +93,7 @@ const priceColorClass = computed(() => {
 }
 
 .unit {
-  font-size: 11px;
+  font-size: 1rem;
   color: var(--color-text-secondary);
 }
 
@@ -102,14 +102,22 @@ const priceColorClass = computed(() => {
 }
 
 .store {
-  font-size: 12px;
+  font-size: 1rem;
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.text-success { color: var(--color-success); }
-.text-error { color: var(--color-error); }
-.text-neutral { color: var(--color-text-primary); }
+.text-success {
+  color: var(--color-success);
+}
+
+.text-error {
+  color: var(--color-error);
+}
+
+.text-neutral {
+  color: var(--color-text-primary);
+}
 </style>

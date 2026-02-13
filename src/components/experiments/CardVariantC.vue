@@ -2,15 +2,15 @@
 import { computed } from 'vue'
 
 interface Props {
-  item: any
+    item: any
 }
 
 const props = defineProps<Props>()
 
 const priceColorClass = computed(() => {
-  if (props.item.priceStatus === 'good') return 'bg-success'
-  if (props.item.priceStatus === 'bad') return 'bg-error'
-  return 'bg-neutral'
+    if (props.item.priceStatus === 'good') return 'bg-success'
+    if (props.item.priceStatus === 'bad') return 'bg-error'
+    return 'bg-neutral'
 })
 
 // Visual placeholder for category
@@ -24,53 +24,53 @@ const getCategoryIcon = (cat: string) => {
 </script>
 
 <template>
-  <div class="card-visual">
-    <div class="icon-area">
-        {{ getCategoryIcon(item.category) }}
-    </div>
-    
-    <div class="content-area">
-        <div class="header">
-            <h3 class="name">{{ item.displayName }}</h3>
-            <div class="price-tag" :class="priceColorClass">
-                {{ item.formattedPrice }}
+    <div class="card-visual">
+        <div class="icon-area">
+            {{ getCategoryIcon(item.category) }}
+        </div>
+
+        <div class="content-area">
+            <div class="header">
+                <h3 class="name">{{ item.displayName }}</h3>
+                <div class="price-tag" :class="priceColorClass">
+                    {{ item.formattedPrice }}
+                </div>
+            </div>
+
+            <div class="details">
+                <div class="store-badge" v-if="item.lastStore">
+                    🏪 {{ item.lastStore }}
+                </div>
+                <span class="unit" v-if="item.formattedUnitPrice">{{ item.formattedUnitPrice }}</span>
             </div>
         </div>
-        
-        <div class="details">
-            <div class="store-badge" v-if="item.lastStore">
-                🏪 {{ item.lastStore }}
-            </div>
-            <span class="unit" v-if="item.formattedUnitPrice">{{ item.formattedUnitPrice }}</span>
-        </div>
     </div>
-  </div>
 </template>
 
 <style scoped lang="scss">
 .card-visual {
-  background: var(--color-surface);
-  border-radius: 20px; // Very rounded
-  padding: 12px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-  border: 1px solid var(--color-border);
-  position: relative;
-  overflow: hidden;
+    background: var(--color-surface);
+    border-radius: 20px; // Very rounded
+    padding: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--color-border);
+    position: relative;
+    overflow: hidden;
 
-  // Decor element
-  &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      background: var(--color-primary);
-      opacity: 0.5;
-  }
+    // Decor element
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--color-primary);
+        opacity: 0.5;
+    }
 }
 
 .icon-area {
@@ -116,15 +116,23 @@ const getCategoryIcon = (cat: string) => {
     white-space: nowrap;
 }
 
-.bg-success { background: var(--color-success); }
-.bg-error { background: var(--color-error); }
-.bg-neutral { background: var(--color-text-secondary); }
+.bg-success {
+    background: var(--color-success);
+}
+
+.bg-error {
+    background: var(--color-error);
+}
+
+.bg-neutral {
+    background: var(--color-text-secondary);
+}
 
 .details {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 11px;
+    font-size: 1rem;
 }
 
 .store-badge {

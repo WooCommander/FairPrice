@@ -4,8 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
-import FpBackButton from '@/design-system/components/FpBackButton.vue'
-import FpBreadcrumbs from '@/design-system/components/FpBreadcrumbs.vue'
+
+import { FpSpinner } from '@/design-system'
 
 const route = useRoute()
 const router = useRouter()
@@ -64,25 +64,34 @@ const goToAddProduct = () => {
 <template>
     <div class="category-view">
 
-        <header class="page-header">
-            <FpBackButton />
-            <div class="header-title">
-                <h1>{{ categoryName }}</h1>
-            </div>
-            <div class="header-actions">
-                <button class="add-btn-icon" @click="router.push(`/add-price?category=${categoryName}`)"
-                    title="Добавить товар">
-                    +
+        <header class="ergo-header">
+            <div class="header-inner">
+                <button class="nav-btn" @click="router.back()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
                 </button>
+                <div class="header-title">
+                    {{ categoryName }}
+                </div>
+                <div class="header-controls">
+                    <button class="nav-btn add-btn" @click="router.push(`/add-price?category=${categoryName}`)"
+                        title="Добавить товар">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </header>
 
-        <FpBreadcrumbs :items="[
-            { label: 'Главная', to: '/' },
-            { label: categoryName }
-        ]" class="breadcrumbs-container" />
-
-        <div v-if="isLoading" class="loading">Загрузка...</div>
+        <div v-if="isLoading" class="loading">
+            <FpSpinner />
+        </div>
 
         <div v-else-if="searchResults.length === 0" class="empty-state">
             <p>В этой категории пока нет товаров.</p>
@@ -137,55 +146,57 @@ const goToAddProduct = () => {
     padding-bottom: 4px;
 }
 
-.page-header {
-    margin-bottom: var(--spacing-lg);
+.ergo-header {
+    background: var(--color-surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--color-border);
+    margin: 0 calc(var(--spacing-md) * -1) var(--spacing-md); // Negative margin to overflow padding if parent has padding
+    // Check if parent has padding. Default layout usually has padding.
+    // If not, we might need to adjust. Assuming standard view padding.
+    margin: -1rem -1rem var(--spacing-md) -1rem; // Hardcoded to match common padding 1rem
+    padding: 12px 16px;
+    display: flex;
+    justify-content: center;
+}
 
-    .header-top {
-        display: grid;
-        grid-template-columns: 48px 1fr 48px;
-        align-items: center;
-        margin-bottom: var(--spacing-sm);
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: var(--layout-max-width);
+}
+
+.header-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-transform: capitalize;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+
+    &:active {
+        background: var(--color-surface-hover);
+        color: var(--color-text-primary);
     }
+}
 
-    .header-title h1 {
-        margin: 0;
-        font-size: 24px;
-        text-align: center;
-        text-transform: capitalize;
-        line-height: 1.2;
-    }
-
-    .breadcrumbs-container {
-        display: flex;
-        justify-content: center;
-    }
-
-    .header-actions {
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    .add-btn-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--color-primary);
-        color: white;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: var(--shadow-sm);
-        transition: all 0.2s;
-
-        &:hover {
-            background: var(--color-primary-variant);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-    }
+.add-btn {
+    color: var(--color-primary); // Make add button colored
 }
 
 .products-grid {

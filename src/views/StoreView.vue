@@ -5,6 +5,7 @@ import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpBackButton from '@/design-system/components/FpBackButton.vue'
+import { FpSpinner } from '@/design-system'
 
 const route = useRoute()
 const router = useRouter()
@@ -100,7 +101,9 @@ const saveEdit = async () => {
             </div>
         </header>
 
-        <div v-if="isLoading" class="loading">Загрузка...</div>
+        <div v-if="isLoading" class="loading">
+            <FpSpinner />
+        </div>
 
         <div v-else-if="searchResults.length === 0" class="empty-state">
             <p>Здесь пока нет товаров с ценами.</p>
@@ -259,7 +262,7 @@ const saveEdit = async () => {
 }
 
 .date {
-    font-size: 12px;
+    font-size: 1rem;
     color: var(--color-text-tertiary);
 }
 

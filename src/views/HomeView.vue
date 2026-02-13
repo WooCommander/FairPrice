@@ -433,7 +433,7 @@ onMounted(async () => {
     }
 
     th {
-        font-size: 12px; // Increased header size
+        font-size: 1rem; // Increased header size
         color: var(--color-text-secondary);
         font-weight: 700;
         text-transform: uppercase;
@@ -602,12 +602,12 @@ onMounted(async () => {
 }
 
 .unit-price-badge {
-    font-size: 12px;
+    font-size: 1rem;
     color: var(--color-text-secondary);
 }
 
 .store-text {
-    font-size: 13px;
+    font-size: 1rem;
     color: var(--color-text-primary);
     font-weight: 500;
     display: flex;
@@ -631,12 +631,12 @@ onMounted(async () => {
 
 .category-tag {
     // Override existing slightly for mobile context
-    font-size: 11px;
+    font-size: 1rem;
     padding: 2px 8px;
 }
 
 .last-update {
-    font-size: 11px;
+    font-size: 1rem;
     color: var(--color-text-tertiary);
 }
 

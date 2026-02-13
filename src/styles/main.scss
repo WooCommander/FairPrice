@@ -7,6 +7,11 @@
     box-sizing: border-box;
 }
 
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+}
+
 :root {
     // --- Colors ---
     // Primary (Brand) - Electric Violet
@@ -41,42 +46,44 @@
     --font-family: 'Outfit', sans-serif;
     --font-heading: 'Lora', serif;
 
-    --text-h1: 36px;
-    --text-h2: 30px;
-    --text-h3: 24px;
-    --text-h4: 20px;
-    --text-h5: 18px;
-    --text-h6: 16px;
+    // Minimum 1rem (16px) enforcing
+    --text-h1: 3rem; // 48px
+    --text-h2: 2.5rem; // 40px
+    --text-h3: 2rem; // 32px
+    --text-h4: 1.75rem; // 28px
+    --text-h5: 1.5rem; // 24px
+    --text-h6: 1.25rem; // 20px
 
-    --text-body-1: 16px;
-    --text-body-2: 14px;
+    --text-body-1: 1.125rem; // 18px
+    --text-body-2: 1rem; // 16px (Base minimum)
 
-    --text-button: 14px;
-    --text-caption: 12px;
-    --text-overline: 10px;
+    --text-button: 1rem; // 16px
+    --text-caption: 1rem; // 16px (Enforced min)
+    --text-overline: 0.875rem; // Exception for overly small text? No, user said "минимум 1rem". Keep strict. -> 1rem.
+    --text-overline: 1rem;
 
-    // --- Spacing & Sizing ---
-    --spacing-xs: 8px;
-    --spacing-sm: 12px;
-    --spacing-md: 20px;
-    --spacing-lg: 32px;
-    --spacing-xl: 48px;
-    --spacing-2xl: 64px;
+    // --- Spacing & Sizing (remapped logic: xs=0.5rem) ---
+    --spacing-xs: 0.5rem; // 8px
+    --spacing-sm: 0.75rem; // 12px
+    --spacing-md: 1.25rem; // 20px
+    --spacing-lg: 2rem; // 32px
+    --spacing-xl: 3rem; // 48px
+    --spacing-2xl: 4rem; // 64px
 
     // --- Radii ---
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
-    --radius-pill: 999px;
+    --radius-sm: 0.5rem; // 8px
+    --radius-md: 0.75rem; // 12px
+    --radius-lg: 1.25rem; // 20px
+    --radius-pill: 62.5rem; // 1000px appx
 
-    // --- Shadows ---
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-1: 0px 8px 16px -4px rgba(27, 29, 33, 0.04);
-    --shadow-2: 0px 12px 32px -8px rgba(108, 93, 211, 0.15); // Violet tint
-    --shadow-3: 0px 16px 40px -8px rgba(108, 93, 211, 0.25);
+    // --- Shadows (using rem for offsets) ---
+    --shadow-sm: 0 0.0625rem 0.125rem 0 rgba(0, 0, 0, 0.05);
+    --shadow-1: 0px 0.5rem 1rem -0.25rem rgba(27, 29, 33, 0.04);
+    --shadow-2: 0px 0.75rem 2rem -0.5rem rgba(108, 93, 211, 0.15); // Violet tint
+    --shadow-3: 0px 1rem 2.5rem -0.5rem rgba(108, 93, 211, 0.25);
 
     // --- Layout ---
-    --layout-max-width: 1200px;
+    --layout-max-width: 75rem; // 1200px
 }
 
 body.dark-theme {
@@ -95,9 +102,9 @@ body.dark-theme {
 
     --color-border: #2D304A;
 
-    --shadow-1: 0px 8px 16px -4px rgba(0, 0, 0, 0.2);
-    --shadow-2: 0px 12px 32px -8px rgba(0, 0, 0, 0.3);
-    --shadow-3: 0px 16px 40px -8px rgba(0, 0, 0, 0.4);
+    --shadow-1: 0px 0.5rem 1rem -0.25rem rgba(0, 0, 0, 0.2);
+    --shadow-2: 0px 0.75rem 2rem -0.5rem rgba(0, 0, 0, 0.3);
+    --shadow-3: 0px 1rem 2.5rem -0.5rem rgba(0, 0, 0, 0.4);
 }
 
 body {
@@ -107,6 +114,7 @@ body {
     color: var(--color-text-primary);
     transition: background-color 0.3s, color 0.3s;
     line-height: 1.5;
+    font-size: var(--text-body-2); // Set base size to 1rem
 }
 
 h1,

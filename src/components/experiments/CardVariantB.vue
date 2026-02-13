@@ -67,7 +67,7 @@ const priceColorClass = computed(() => {
 }
 
 .meta {
-  font-size: 12px;
+  font-size: 1rem;
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;

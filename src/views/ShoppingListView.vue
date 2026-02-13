@@ -5,6 +5,7 @@ import FpBreadcrumbs from '@/design-system/components/FpBreadcrumbs.vue'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
+import { FpSpinner } from '@/design-system'
 
 const newItemText = ref('')
 
@@ -58,7 +59,9 @@ const deleteChecked = () => {
         </section>
 
         <section class="list-section">
-            <div v-if="isLoading" class="loading">Загрузка...</div>
+            <div v-if="isLoading" class="loading">
+                <FpSpinner />
+            </div>
 
             <div v-else-if="uncheckedItems.length === 0 && checkedItems.length === 0" class="empty-state">
                 Ваш список пуст. Добавьте что-нибудь!
