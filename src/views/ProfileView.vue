@@ -113,7 +113,7 @@ onMounted(async () => {
     gap: var(--spacing-xl);
     padding: 0 0.5rem; // Add horizontal padding for mobile
     max-width: var(--layout-max-width);
-    margin: 0 auto;
+    margin: .5rem auto;
     width: 100%;
 }
 
