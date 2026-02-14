@@ -111,6 +111,10 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xl);
+    padding: 0 0.5rem; // Add horizontal padding for mobile
+    max-width: var(--layout-max-width);
+    margin: 0 auto;
+    width: 100%;
 }
 
 .profile-header {
@@ -139,8 +143,8 @@ onMounted(async () => {
     }
 
     .avatar-placeholder {
-        width: 100px;
-        height: 100px;
+        min-width: 4rem;
+        min-height: 4rem;
         background: linear-gradient(135deg, var(--color-primary), var(--color-primary-variant));
         color: white;
         border-radius: var(--radius-md); // Squircle

@@ -17,11 +17,34 @@ interface CalcItem {
     unitPrice: number // Price per 1 unit (1 kg/l or 1 pc)
 }
 
+// ... imports
+
+const STORAGE_KEY = 'fp-quick-calc-items'
+
 const price = ref<string>('')
 const amount = ref<string>('')
-const unit = ref<'g' | 'kg'>('g') // Default to grams for quick entry (often entering 450g, 900ml etc)
+const unit = ref<'g' | 'kg'>('g')
 
 const items = ref<CalcItem[]>([])
+
+// Load from storage on mount
+const loadItems = () => {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY)
+        if (stored) {
+            items.value = JSON.parse(stored)
+        }
+    } catch (e) {
+        console.error('Failed to load calc items', e)
+    }
+}
+
+// Save to storage helper
+const saveItems = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.value))
+}
+
+loadItems()
 
 const calculate = () => {
     const p = parseFloat(price.value)
@@ -50,20 +73,20 @@ const calculate = () => {
     }
 
     items.value.unshift(newItem)
+    saveItems()
 
-    // Clear inputs for next entry? Or keep for adjustment?
-    // User said "enter price and weight, add line down". Often weight changes or price changes.
-    // Let's clear price, keep weight? Or clear both. Let's clear both for fresh entry.
     price.value = ''
     amount.value = ''
 }
 
 const removeItem = (id: string) => {
     items.value = items.value.filter(i => i.id !== id)
+    saveItems()
 }
 
 const clearAll = () => {
     items.value = []
+    saveItems()
 }
 
 // Helper to format currency

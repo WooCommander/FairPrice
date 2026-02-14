@@ -9,18 +9,30 @@ const route = useRoute()
 const { isDark, toggleTheme } = useTheme()
 
 const navItems = [
-	{ label: 'Главная', path: '/' },
-	{ label: 'Поиск', path: '/search' },
-	{ label: 'Профиль', path: '/profile' },
-	{ label: 'Стенд', path: '/design-system' }
+	{
+		label: 'Главная',
+		path: '/',
+		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>'
+	},
+	{
+		label: 'Поиск',
+		path: '/search',
+		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'
+	},
+	{
+		label: 'Профиль',
+		path: '/profile',
+		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
+	},
+	{
+		label: 'Стенд',
+		path: '/design-system',
+		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88z"></path><path d="M2 12l10 10 10-10"></path></svg>'
+	}
 ]
 
 const currentPath = computed(() => route.path)
 
-// ... (keep existing setup code) ...
-
-// Keep existing methods
-// Keep existing methods
 const navigate = (path: string) => {
 	router.push(path)
 }
@@ -39,9 +51,13 @@ const handleLogout = async () => {
 		<header class="top-nav">
 			<div class="nav-container">
 				<div class="logo-area">
-					<button class="hamburger-btn" @click="isMenuOpen = !isMenuOpen">
-						<span v-if="!isMenuOpen">☰</span>
-						<span v-else>✕</span>
+					<button class="hamburger-btn" @click="isMenuOpen = true">
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+							stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<line x1="3" y1="12" x2="21" y2="12"></line>
+							<line x1="3" y1="6" x2="21" y2="6"></line>
+							<line x1="3" y1="18" x2="21" y2="18"></line>
+						</svg>
 					</button>
 					<div class="logo" @click="router.push('/')">
 						Fair Price
@@ -49,8 +65,6 @@ const handleLogout = async () => {
 				</div>
 
 				<div class="actions">
-					<!-- Quick action for calculator on desktop? Maybe just keep in menu to be simple -->
-					<!-- Keep login button visible if not logged in -->
 					<div v-if="!authStore.user.value">
 						<button class="login-btn" @click="router.push('/login')">
 							<span class="btn-text">Войти</span>
@@ -59,36 +73,92 @@ const handleLogout = async () => {
 				</div>
 			</div>
 
-			<!-- Full Screen Menu Overlay -->
+			<!-- Backdrop -->
 			<transition name="fade">
-				<div v-if="isMenuOpen" class="menu-overlay" @click.self="isMenuOpen = false">
-					<div class="menu-content">
-						<!-- Navigation Links -->
-						<a v-for="item in navItems" :key="item.path" class="menu-link"
-							:class="{ active: currentPath === item.path }"
-							@click.prevent="navigate(item.path); isMenuOpen = false">
-							{{ item.label }}
-						</a>
+				<div v-if="isMenuOpen" class="menu-backdrop" @click="isMenuOpen = false"></div>
+			</transition>
 
-						<!-- Quick Calculator Link -->
-						<a class="menu-link" :class="{ active: currentPath === '/quick-calc' }"
-							@click.prevent="navigate('/quick-calc'); isMenuOpen = false">
-							🔢 Быстрый расчет
-						</a>
-
-						<div class="menu-footer">
-							<button class="theme-toggle-menu" @click="toggleTheme">
-								<span>{{ isDark ? '🌞 Светлая тема' : '🌙 Темная тема' }}</span>
-							</button>
-
-							<div v-if="authStore.user.value" class="user-info-menu">
-								{{ authStore.user.value.email }}
+			<!-- Side Drawer -->
+			<transition name="slide-right">
+				<div v-if="isMenuOpen" class="menu-drawer">
+					<div class="drawer-header">
+						<div class="drawer-user" v-if="authStore.user.value">
+							<div class="drawer-avatar">
+								{{ authStore.user.value.email?.charAt(0).toUpperCase() }}
 							</div>
-
-							<button v-if="authStore.user.value" class="logout-link" @click="handleLogout">
-								Выйти
-							</button>
+							<div class="drawer-user-info">
+								<span class="drawer-email">{{ authStore.user.value.email }}</span>
+								<span class="drawer-status">Online</span>
+							</div>
 						</div>
+						<div class="drawer-user guest" v-else>
+							<div class="drawer-avatar guest-avatar">
+								?
+							</div>
+							<div class="drawer-user-info">
+								<span class="drawer-email">Гость</span>
+								<button class="link-btn"
+									@click="router.push('/login'); isMenuOpen = false">Войти</button>
+							</div>
+						</div>
+
+						<button class="close-btn" @click="isMenuOpen = false">
+							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+								stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<line x1="18" y1="6" x2="6" y2="18"></line>
+								<line x1="6" y1="6" x2="18" y2="18"></line>
+							</svg>
+						</button>
+					</div>
+
+					<div class="drawer-content">
+						<div class="nav-group">
+							<span class="nav-label">Меню</span>
+							<a v-for="item in navItems" :key="item.path" class="drawer-link"
+								:class="{ active: currentPath === item.path }"
+								@click.prevent="navigate(item.path); isMenuOpen = false">
+								<span class="link-icon" v-html="item.icon"></span>
+								{{ item.label }}
+							</a>
+						</div>
+
+						<div class="nav-group">
+							<span class="nav-label">Инструменты</span>
+							<a class="drawer-link" :class="{ active: currentPath === '/quick-calc' }"
+								@click.prevent="navigate('/quick-calc'); isMenuOpen = false">
+								<span class="link-icon">
+									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+										stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+										<line x1="8" y1="6" x2="16" y2="6"></line>
+										<line x1="16" y1="14" x2="16" y2="14"></line>
+										<line x1="8" y1="14" x2="8" y2="14"></line>
+										<line x1="12" y1="14" x2="12" y2="14"></line>
+										<line x1="16" y1="18" x2="16" y2="18"></line>
+										<line x1="8" y1="18" x2="8" y2="18"></line>
+										<line x1="12" y1="18" x2="12" y2="18"></line>
+									</svg>
+								</span>
+								Быстрый расчет
+							</a>
+						</div>
+					</div>
+
+					<div class="drawer-footer">
+						<button class="theme-toggle-drawer" @click="toggleTheme">
+							<span class="icon">{{ isDark ? '🌞' : '🌙' }}</span>
+							<span>{{ isDark ? 'Светлая тема' : 'Темная тема' }}</span>
+						</button>
+
+						<button v-if="authStore.user.value" class="logout-drawer" @click="handleLogout">
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+								stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+								<polyline points="16 17 21 12 16 7"></polyline>
+								<line x1="21" y1="12" x2="9" y2="12"></line>
+							</svg>
+							Выйти
+						</button>
 					</div>
 				</div>
 			</transition>
@@ -107,8 +177,6 @@ const handleLogout = async () => {
 </template>
 
 <style scoped lang="scss">
-// ... existing styles ...
-
 .main-layout {
 	display: flex;
 	flex-direction: column;
@@ -164,123 +232,210 @@ const handleLogout = async () => {
 	cursor: pointer;
 	color: var(--color-text-primary);
 	padding: 4px;
-	z-index: 1002; // Above menu overlay
-	position: relative; // For z-index to work
+	z-index: 1002;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-// Full Screen Menu Overlay
-.menu-overlay {
+.menu-backdrop {
 	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100vw;
 	height: 100vh;
-	background: var(--color-surface); // Solid background or very high opacity
-	// If using dark theme, surface is dark. If light, it's light.
-	// User requested "semi-transparent", but it looks messy.
-	// Let's try high opacity blur.
-	// background: rgba(var(--color-surface-rgb), 0.98);
-	backdrop-filter: blur(20px);
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 1000;
+	backdrop-filter: blur(4px);
+}
+
+.menu-drawer {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 85%;
+	max-width: 320px;
+	height: 100vh;
+	background: var(--color-surface);
 	z-index: 1001;
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	transition: opacity 0.3s ease;
+	box-shadow: var(--shadow-3);
+	border-right: 1px solid var(--color-border);
 }
 
-.menu-content {
+.drawer-header {
+	padding: 24px 20px;
+	border-bottom: 1px solid var(--color-border);
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+}
+
+.drawer-user {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.drawer-avatar {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	background: var(--color-primary);
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.25rem;
+	font-weight: 700;
+}
+
+.guest-avatar {
+	background: var(--color-text-tertiary);
+}
+
+.drawer-user-info {
 	display: flex;
 	flex-direction: column;
-	gap: 32px; // More space
-	text-align: center;
-	width: 100%;
-	max-width: 400px;
-	padding: 40px 20px;
+	gap: 4px;
 }
 
-.menu-link {
-	font-size: 2rem; // Larger
-	font-weight: 700;
+.drawer-email {
+	font-weight: 600;
 	color: var(--color-text-primary);
-	text-decoration: none;
-	padding: 8px;
-	position: relative;
-	transition: color 0.3s;
+	font-size: 0.95rem;
+}
 
-	&:hover,
-	&.active {
-		color: var(--color-primary);
-		background: none; // Remove boxy background
-	}
+.drawer-status {
+	font-size: 0.8rem;
+	color: var(--color-success);
+}
 
-	// Underline effect
-	&::after {
-		content: '';
-		position: absolute;
-		bottom: 0;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 0;
-		height: 2px;
-		background: var(--color-primary);
-		transition: width 0.3s;
-	}
+.link-btn {
+	background: none;
+	border: none;
+	padding: 0;
+	color: var(--color-primary);
+	font-weight: 600;
+	cursor: pointer;
+	text-align: left;
+}
 
-	&:hover::after,
-	&.active::after {
-		width: 40px;
+.close-btn {
+	background: none;
+	border: none;
+	color: var(--color-text-secondary);
+	cursor: pointer;
+	padding: 4px;
+
+	&:hover {
+		color: var(--color-text-primary);
 	}
 }
 
-.menu-footer {
-	margin-top: 60px;
+.drawer-content {
+	flex: 1;
+	overflow-y: auto;
+	padding: 24px 0;
 	display: flex;
 	flex-direction: column;
 	gap: 24px;
+}
+
+.nav-group {
+	display: flex;
+	flex-direction: column;
+}
+
+.nav-label {
+	padding: 0 24px 8px;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--color-text-tertiary);
+	font-weight: 700;
+}
+
+.drawer-link {
+	display: flex;
 	align-items: center;
-}
-
-.user-info-menu {
-	color: var(--color-text-secondary);
-	font-size: 1rem;
-	font-weight: 500;
-}
-
-.theme-toggle-menu {
-	background: var(--color-background);
-	border: 1px solid var(--color-border);
-	color: var(--color-text-primary);
+	gap: 16px;
 	padding: 12px 24px;
-	border-radius: 30px;
-	cursor: pointer;
+	color: var(--color-text-secondary);
+	text-decoration: none;
+	font-weight: 500;
+	transition: all 0.2s;
+	border-left: 3px solid transparent;
+
+	.link-icon {
+		display: flex;
+		align-items: center;
+		color: var(--color-text-tertiary);
+		transition: color 0.2s;
+	}
+
+	&:hover,
+	&.active {
+		background: var(--color-surface-hover);
+		color: var(--color-text-primary);
+
+		.link-icon {
+			color: var(--color-primary);
+		}
+	}
+
+	&.active {
+		border-left-color: var(--color-primary);
+		background: rgba(var(--color-primary-rgb), 0.05);
+	}
+}
+
+.drawer-footer {
+	padding: 20px;
+	border-top: 1px solid var(--color-border);
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.theme-toggle-drawer,
+.logout-drawer {
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	font-size: 1rem;
-	font-weight: 500;
-	transition: transform 0.2s;
-
-	&:active {
-		transform: scale(0.95);
-	}
-}
-
-.logout-link {
-	color: var(--color-error);
+	width: 100%;
+	padding: 12px;
 	background: none;
 	border: none;
-	font-size: 1.1rem;
-	font-weight: 500;
+	border-radius: var(--radius-md);
 	cursor: pointer;
-	padding: 12px;
+	font-weight: 500;
+	color: var(--color-text-secondary);
+	transition: background 0.2s;
 
 	&:hover {
-		opacity: 0.8;
+		background: var(--color-surface-hover);
+		color: var(--color-text-primary);
 	}
 }
 
-// Transitions
+.logout-drawer:hover {
+	color: var(--color-error);
+	background: rgba(var(--color-error-rgb), 0.05);
+}
+
+// Right slide transition
+.slide-right-enter-active,
+.slide-right-leave-active {
+	transition: transform 0.3s ease;
+}
+
+.slide-right-enter-from,
+.slide-right-leave-to {
+	transform: translateX(-100%);
+}
+
 .fade-enter-active,
 .fade-leave-active {
 	transition: opacity 0.1s ease;
