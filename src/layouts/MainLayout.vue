@@ -150,6 +150,21 @@ const handleLogout = async () => {
 								Быстрый расчет
 							</a>
 						</div>
+
+						<div class="nav-group">
+							<span class="nav-label">Разработчику</span>
+							<a class="drawer-link" :class="{ active: currentPath === '/design-system' }"
+								@click.prevent="navigate('/design-system'); isMenuOpen = false">
+								<span class="link-icon">
+									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+										stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88z"></path>
+										<path d="M2 12l10 10 10-10"></path>
+									</svg>
+								</span>
+								Стенд
+							</a>
+						</div>
 					</div>
 
 					<div class="drawer-footer">
@@ -264,6 +279,7 @@ const handleLogout = async () => {
 	width: 85%;
 	max-width: 320px;
 	height: 100vh;
+	height: 100dvh; // Dynamic viewport height for mobile browsers
 	background: var(--color-surface);
 	z-index: 1001;
 	display: flex;
