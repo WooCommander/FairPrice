@@ -45,6 +45,7 @@ class CatalogService {
             .select(`
                 *,
                 prices (
+                    id,
                     price,
                     created_at,
                     store_id,
@@ -113,6 +114,7 @@ class CatalogService {
             .select(`
                 *,
                 prices (
+                    id,
                     price,
                     created_at,
                     store_id,
@@ -184,6 +186,7 @@ class CatalogService {
             .select(`
                 *,
                 prices (
+                    id,
                     price,
                     created_at,
                     unit,
@@ -209,6 +212,7 @@ class CatalogService {
             .select(`
                 *,
                 prices (
+                    id,
                     price,
                     created_at,
                     unit,
@@ -247,6 +251,7 @@ class CatalogService {
             .select(`
                 *,
                 prices (
+                    id,
                     price,
                     created_at,
                     unit,

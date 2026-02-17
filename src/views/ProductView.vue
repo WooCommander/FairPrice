@@ -35,9 +35,6 @@ onMounted(async () => {
 
 const latestHistory = computed(() => {
 	if (!currentProduct.value?.history) return []
-	// Debug logging
-	console.log('Current User ID:', authStore.user.value?.id)
-	console.log('History items:', currentProduct.value.history.map(h => ({ id: h.id, createdBy: h.createdBy, isOwner: h.createdBy === authStore.user.value?.id })))
 	return currentProduct.value.history
 })
 
@@ -274,8 +271,8 @@ const addToShoppingList = async () => {
 							<div class="h-date">{{ item.dateRelative }}</div>
 							<!-- Delete Btn -->
 
-							<button v-if="item.createdBy === currentUserId" class="delete-price-btn"
-								@click.stop="confirmDeletePrice(item.storeId)">
+							<button v-if="item.createdBy === currentUserId && item.id" class="delete-price-btn"
+								@click.stop="confirmDeletePrice(item.id)">
 								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
 									stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 									<polyline points="3 6 5 6 21 6"></polyline>

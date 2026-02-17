@@ -272,14 +272,21 @@ const headerTitle = computed(() => {
 })
 
 const goBack = () => {
-    if (step.value === 2) {
-        step.value = 1
-        return
-    }
     if (isCreating.value) {
         isCreating.value = false
         return
     }
+
+    if (step.value === 2) {
+        // If we entered directly with an ID (from Product View), go back to Product View
+        if (route.params.id) {
+            router.back()
+            return
+        }
+        step.value = 1
+        return
+    }
+
     router.back()
 }
 </script>
