@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="fp-card" :class="[`padding-${props.padding}`, { 'is-flat': props.flat }]">
+  <div class="fp-card" :class="[`p-${props.padding}`, { 'is-flat': props.flat }]">
     <slot />
   </div>
 </template>
@@ -46,10 +46,6 @@ const props = withDefaults(defineProps<Props>(), {
     padding: var(--spacing-lg);
   }
 
-  &:hover {
-    // Optional hover effect if clickable class is added or parent handles it
-    // transform: translateY(-2px); 
-    // box-shadow: var(--shadow-hover);
-  }
+
 }
 </style>

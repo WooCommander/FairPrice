@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { priceStore } from '../store/priceStore'
 import FpInput from '@/design-system/components/FpInput.vue'
-import FpButton from '@/design-system/components/FpButton.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
 
@@ -301,6 +300,19 @@ const goBack = () => {
                     {{ headerTitle }}
                 </div>
 
+                <div class="header-actions">
+                    <template v-if="isCreating">
+                        <button class="action-btn cancel" @click="cancelCreation">Отмена</button>
+                        <button class="action-btn primary" :disabled="!newProductName" @click="createProduct">
+                            Создать
+                        </button>
+                    </template>
+                    <template v-else-if="step === 2 && !isSuccess">
+                        <button class="action-btn primary" :disabled="!isValid || isSubmitting" @click="submit">
+                            Сохранить
+                        </button>
+                    </template>
+                </div>
             </div>
         </header>
 
@@ -327,10 +339,7 @@ const goBack = () => {
 
                     </div>
 
-                    <div class="actions-row">
-                        <FpButton variant="secondary" @click="cancelCreation">Отмена</FpButton>
-                        <FpButton :loading="catalogStore.isSearching.value" @click="createProduct">Создать</FpButton>
-                    </div>
+
                 </div>
             </FpCard>
         </section>
@@ -374,12 +383,8 @@ const goBack = () => {
                     </div>
                 </div>
 
-                <div class="actions" v-if="!isSuccess">
-                    <FpButton :loading="isSubmitting" :disabled="!isValid" size="full" @click="submit">
-                        Сохранить
-                    </FpButton>
-                </div>
-                <div v-else class="success-message">
+
+                <div v-if="isSuccess" class="success-message">
                     ✅ Цена успешно добавлена!
                 </div>
             </FpCard>
@@ -415,6 +420,53 @@ const goBack = () => {
     font-size: 18px;
     font-weight: 600;
     color: var(--color-text-primary);
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 8px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+    min-width: 40px;
+    justify-content: flex-end;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    transition: background 0.2s;
+
+    &.primary {
+        color: var(--color-primary);
+        background: rgba(var(--color-primary-rgb), 0.1);
+
+        &:disabled {
+            opacity: 0.5;
+            background: transparent;
+            cursor: not-allowed;
+        }
+
+        &:not(:disabled):hover {
+            background: rgba(var(--color-primary-rgb), 0.2);
+        }
+    }
+
+    &.cancel {
+        color: var(--color-text-secondary);
+
+        &:hover {
+            background: var(--color-surface-hover);
+        }
+    }
 }
 
 .nav-btn {
