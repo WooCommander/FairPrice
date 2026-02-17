@@ -6,6 +6,7 @@ import { priceStore } from '../store/priceStore'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
+import FpButton from '@/design-system/components/FpButton.vue'
 
 
 const route = useRoute()
@@ -315,9 +316,9 @@ const goBack = () => {
                         </button>
                     </template>
                     <template v-else-if="step === 2 && !isSuccess">
-                        <button class="action-btn primary" :disabled="!isValid || isSubmitting" @click="submit">
+                        <FpButton :disabled="!isValid || isSubmitting" @click="submit">
                             Сохранить
-                        </button>
+                        </FpButton>
                     </template>
                 </div>
             </div>

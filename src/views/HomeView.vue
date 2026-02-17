@@ -217,6 +217,10 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
+.updates-section {
+    margin: 0rem 1.25rem;
+}
+
 .home-dashboard {
     /* max-width handled by MainLayout */
     padding-bottom: var(--spacing-lg);
@@ -337,7 +341,7 @@ onMounted(async () => {
     align-items: center;
     // margin-bottom: var(--spacing-md);
     padding-bottom: var(--spacing-sm);
-    border-bottom: 2px solid var(--color-border);
+
 
     h2 {
         font-family: var(--font-heading);
