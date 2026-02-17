@@ -27,6 +27,7 @@ export interface ProductHistoryDTO {
     storeId: string;
     author: string;
     unit: string;
+    createdBy?: string; // Add createdBy
 }
 
 class CatalogService {
@@ -331,7 +332,8 @@ class CatalogService {
                 storeName: price.stores?.name || 'Неизвестно',
                 storeId: price.store_id,
                 unit: price.unit || p.unit,
-                author: 'User' // TODO: Join with profiles if available
+                author: 'User', // TODO: Join with profiles if available
+                createdBy: price.created_by // Map created_by
             }))
         }
     }

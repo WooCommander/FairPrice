@@ -33,6 +33,7 @@ export interface ProductHistoryModel {
     author: string
     unit: string
     dateRelative: string
+    createdBy?: string
 }
 
 export function adaptProduct(dto: ProductDTO): ProductModel {
@@ -79,7 +80,8 @@ export function adaptProduct(dto: ProductDTO): ProductModel {
             storeId: h.storeId,
             author: h.author,
             unit: h.unit,
-            dateRelative: new Date(h.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+            dateRelative: new Date(h.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
+            createdBy: h.createdBy
         }))
     }
 }

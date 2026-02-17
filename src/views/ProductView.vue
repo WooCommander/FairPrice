@@ -7,6 +7,7 @@ import FpConfirmationModal from '@/design-system/components/FpConfirmationModal.
 import { FpSpinner } from '@/design-system'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { shoppingListStore } from '@/modules/shopping-list/store/shoppingListStore'
+import { authStore } from '@/modules/auth/store/authStore'
 
 import PriceChart from '@/components/PriceChart.vue'
 
@@ -18,7 +19,14 @@ const { currentProduct } = catalogStore
 const isEditingProduct = ref(false)
 const productForm = ref({ name: '', category: '' })
 
+const currentUserId = computed(() => authStore.user.value?.id)
+
 onMounted(async () => {
+	// Ensure auth is init
+	if (!authStore.user.value) {
+		await authStore.init()
+	}
+
 	const id = route.params.id as string
 	if (id) {
 		await catalogStore.loadProductById(id)
@@ -27,10 +35,13 @@ onMounted(async () => {
 
 const latestHistory = computed(() => {
 	if (!currentProduct.value?.history) return []
+	// Debug logging
+	console.log('Current User ID:', authStore.user.value?.id)
+	console.log('History items:', currentProduct.value.history.map(h => ({ id: h.id, createdBy: h.createdBy, isOwner: h.createdBy === authStore.user.value?.id })))
 	return currentProduct.value.history
 })
 
-// History grouping removed in favor of simple timeline
+// ... (chartData computed) ...
 
 const chartData = computed(() => {
 	if (!latestHistory.value) return []
@@ -83,6 +94,29 @@ const handleDeleteConfirm = async () => {
 		}
 	}
 }
+
+// --- Price Deletion ---
+const showDeletePriceModal = ref(false)
+const priceToDeleteId = ref<string | null>(null)
+
+const confirmDeletePrice = (priceId: string) => {
+	priceToDeleteId.value = priceId
+	showDeletePriceModal.value = true
+}
+
+const handleDeletePrice = async () => {
+	if (priceToDeleteId.value) {
+		try {
+			await catalogStore.deletePrice(priceToDeleteId.value)
+			showDeletePriceModal.value = false
+			priceToDeleteId.value = null
+		} catch (e: any) {
+			console.error('Failed to delete price:', e)
+			alert(`Не удалось удалить цену: ${e.message || e}`)
+		}
+	}
+}
+
 // Store editing removed from this view for simplicity
 
 const goToAddPrice = () => {
@@ -238,7 +272,18 @@ const addToShoppingList = async () => {
 						</div>
 						<div class="h-card-right">
 							<div class="h-date">{{ item.dateRelative }}</div>
-							<!-- Optional: Trend arrow or indicator could go here -->
+							<!-- Delete Btn -->
+
+							<button v-if="item.createdBy === currentUserId" class="delete-price-btn"
+								@click.stop="confirmDeletePrice(item.storeId)">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+									stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="3 6 5 6 21 6"></polyline>
+									<path
+										d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+									</path>
+								</svg>
+							</button>
 						</div>
 					</div>
 				</div>
@@ -276,6 +321,10 @@ const addToShoppingList = async () => {
 		<FpConfirmationModal :visible="showDeleteModal" title="Удаление товара" message="Удалить товар навсегда?"
 			confirm-text="Да, удалить" variant="danger" @update:visible="showDeleteModal = $event"
 			@confirm="handleDeleteConfirm" />
+
+		<FpConfirmationModal :visible="showDeletePriceModal" title="Удаление цены"
+			message="Удалить эту цену из истории?" confirm-text="Да, удалить" variant="danger"
+			@update:visible="showDeletePriceModal = $event" @confirm="handleDeletePrice" />
 	</div>
 </template>
 
@@ -550,11 +599,30 @@ const addToShoppingList = async () => {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-end;
+	gap: 4px;
 }
 
 .h-date {
 	font-size: 1rem; // Smaller date
 	color: var(--color-text-tertiary);
+}
+
+.delete-price-btn {
+	background: transparent;
+	border: none;
+	color: var(--color-text-tertiary);
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: color 0.2s, background 0.2s;
+
+	&:hover {
+		color: var(--color-error);
+		background: rgba(var(--color-error-rgb), 0.1);
+	}
 }
 
 // MODAL STYLES

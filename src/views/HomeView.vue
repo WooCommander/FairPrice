@@ -530,6 +530,7 @@ onMounted(async () => {
     border: 1px solid var(--color-border);
     cursor: pointer;
     transition: all 0.2s;
+    margin: 0rem .5rem;
 
     // Grid Layout
     display: grid;
