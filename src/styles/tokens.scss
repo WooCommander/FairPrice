@@ -1,0 +1,170 @@
+// --- Colors ---
+// Primary (Brand) - Electric Violet
+$color-primary: #6C5DD3;
+$color-primary-variant: #5b4cc4;
+$color-on-primary: #ffffff;
+
+// Secondary (Accent) - Neon Mint & Coral
+$color-secondary: #00D2A0; // Mint for "Good Price"
+$color-accent-warm: #FF8585; // Coral for "Bad Price" / Alerts
+
+// Backgrounds & Surfaces (Light)
+$color-background: #F0F3F8; // Cool gray-ish white
+$color-surface: #ffffff;
+$color-surface-translucent: rgba(255, 255, 255, 0.7);
+$color-surface-hover: #F8FAFC; // Light hover
+
+// Status
+$color-success: #00D2A0;
+$color-error: #FF5757;
+
+// Text / Content
+$color-text-primary: #1B1D21;
+$color-text-secondary: #808191;
+$color-text-disabled: #B2B3BD;
+$color-text-tertiary: #9CA3AF;
+
+// Borders
+$color-border: #E4E4E4;
+
+// --- Typography ---
+$font-family: 'Outfit', sans-serif;
+$font-heading: 'Lora', serif;
+
+$text-h1: 3rem; // 48px
+$text-h2: 2.5rem; // 40px
+$text-h3: 2rem; // 32px
+$text-h4: 1.75rem; // 28px
+$text-h5: 1.5rem; // 24px
+$text-h6: 1.25rem; // 20px
+
+$text-body-1: 1.125rem; // 18px
+$text-body-2: 1rem; // 16px (Base minimum)
+
+$text-button: 1rem; // 16px
+$text-caption: 1rem; // 16px (Enforced min)
+$text-overline: 1rem;
+
+// --- Spacing & Sizing (remapped logic: xs=0.5rem) ---
+$spacing-xs: 0.5rem; // 8px
+$spacing-sm: 0.75rem; // 12px
+$spacing-md: 1.25rem; // 20px
+$spacing-lg: 2rem; // 32px
+$spacing-xl: 3rem; // 48px
+$spacing-2xl: 4rem; // 64px
+
+// --- Radii ---
+$radius-sm: 0.5rem; // 8px
+$radius-md: 0.75rem; // 12px
+$radius-lg: 1.25rem; // 20px
+$radius-pill: 62.5rem; // 1000px appx
+
+// --- Shadows (using rem for offsets) ---
+$shadow-sm: 0 0.0625rem 0.125rem 0 rgba(0, 0, 0, 0.05);
+$shadow-1: 0px 0.5rem 1rem -0.25rem rgba(27, 29, 33, 0.04);
+$shadow-2: 0px 0.75rem 2rem -0.5rem rgba(108, 93, 211, 0.15); // Violet tint
+$shadow-3: 0px 1rem 2.5rem -0.5rem rgba(108, 93, 211, 0.25);
+
+// --- Layout ---
+$layout-max-width: 75rem; // 1200px
+
+// Dark Theme Overrides
+$dark-color-primary: #7F71E6;
+$dark-color-on-primary: #ffffff;
+
+$dark-color-background: #111425; // Deep Blue-Black
+$dark-color-surface: #1F213A;
+$dark-color-surface-translucent: rgba(31, 33, 58, 0.8);
+$dark-color-surface-hover: #2D304A;
+
+$dark-color-text-primary: #FFFFFF;
+$dark-color-text-secondary: #808191;
+$dark-color-text-disabled: #53545E;
+$dark-color-text-tertiary: #6b7280;
+
+$dark-color-border: #2D304A;
+
+$dark-shadow-1: 0px 0.5rem 1rem -0.25rem rgba(0, 0, 0, 0.2);
+$dark-shadow-2: 0px 0.75rem 2rem -0.5rem rgba(0, 0, 0, 0.3);
+$dark-shadow-3: 0px 1rem 2.5rem -0.5rem rgba(0, 0, 0, 0.4);
+
+// Export to Native CSS Variables
+:root {
+  --color-primary: #{$color-primary};
+  --color-primary-variant: #{$color-primary-variant};
+  --color-on-primary: #{$color-on-primary};
+  --color-secondary: #{$color-secondary};
+  --color-accent-warm: #{$color-accent-warm};
+
+  --color-background: #{$color-background};
+  --color-surface: #{$color-surface};
+  --color-surface-translucent: #{$color-surface-translucent};
+  --color-surface-hover: #{$color-surface-hover};
+
+  --color-success: #{$color-success};
+  --color-error: #{$color-error};
+
+  --color-text-primary: #{$color-text-primary};
+  --color-text-secondary: #{$color-text-secondary};
+  --color-text-disabled: #{$color-text-disabled};
+  --color-text-tertiary: #{$color-text-tertiary};
+
+  --color-border: #{$color-border};
+
+  --font-family: #{$font-family};
+  --font-heading: #{$font-heading};
+
+  --text-h1: #{$text-h1};
+  --text-h2: #{$text-h2};
+  --text-h3: #{$text-h3};
+  --text-h4: #{$text-h4};
+  --text-h5: #{$text-h5};
+  --text-h6: #{$text-h6};
+
+  --text-body-1: #{$text-body-1};
+  --text-body-2: #{$text-body-2};
+
+  --text-button: #{$text-button};
+  --text-caption: #{$text-caption};
+  --text-overline: #{$text-overline};
+
+  --spacing-xs: #{$spacing-xs};
+  --spacing-sm: #{$spacing-sm};
+  --spacing-md: #{$spacing-md};
+  --spacing-lg: #{$spacing-lg};
+  --spacing-xl: #{$spacing-xl};
+  --spacing-2xl: #{$spacing-2xl};
+
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  --radius-pill: #{$radius-pill};
+
+  --shadow-sm: #{$shadow-sm};
+  --shadow-1: #{$shadow-1};
+  --shadow-2: #{$shadow-2};
+  --shadow-3: #{$shadow-3};
+
+  --layout-max-width: #{$layout-max-width};
+}
+
+body.dark-theme {
+  --color-primary: #{$dark-color-primary};
+  --color-on-primary: #{$dark-color-on-primary};
+
+  --color-background: #{$dark-color-background};
+  --color-surface: #{$dark-color-surface};
+  --color-surface-translucent: #{$dark-color-surface-translucent};
+  --color-surface-hover: #{$dark-color-surface-hover};
+
+  --color-text-primary: #{$dark-color-text-primary};
+  --color-text-secondary: #{$dark-color-text-secondary};
+  --color-text-disabled: #{$dark-color-text-disabled};
+  --color-text-tertiary: #{$dark-color-text-tertiary};
+
+  --color-border: #{$dark-color-border};
+
+  --shadow-1: #{$dark-shadow-1};
+  --shadow-2: #{$dark-shadow-2};
+  --shadow-3: #{$dark-shadow-3};
+}
