@@ -35,7 +35,6 @@ const emit = defineEmits<{
 }>()
 
 const isOpen = ref(false)
-const inputRef = ref<HTMLInputElement | null>(null)
 const wrapperRef = ref<HTMLElement | null>(null)
 const selectedIndex = ref(-1)
 const isFiltering = ref(false)
@@ -115,8 +114,8 @@ onUnmounted(() => {
 <template>
     <div class="fp-combobox" ref="wrapperRef">
         <div class="input-wrapper" :class="{ 'is-focused': isOpen }">
-            <input ref="inputRef" class="fp-input" type="text" :value="modelValue" @input="onInput" @focus="onFocus"
-                @blur="onBlur" @keydown="onKeydown" :placeholder="isOpen ? placeholder : ''" />
+            <input class="fp-input" type="text" :value="modelValue" @input="onInput" @focus="onFocus" @blur="onBlur"
+                @keydown="onKeydown" :placeholder="isOpen ? placeholder : ''" />
             <label v-if="label" class="fp-label" :class="{ 'has-value': modelValue || isOpen }">
                 {{ label }}
             </label>

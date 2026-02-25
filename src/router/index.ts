@@ -15,7 +15,7 @@ const routes = [
     {
         path: '/profile',
         name: 'Profile',
-        component: () => import('@/views/ProfileView.vue'),
+        component: () => import('@/modules/profile/views/ProfileView.vue'),
         meta: { requiresAuth: true }
     },
     {
@@ -32,33 +32,33 @@ const routes = [
     {
         path: '/search',
         name: 'Search',
-        component: () => import('@/views/SearchView.vue')
+        component: () => import('@/modules/catalog/views/SearchView.vue')
     },
     {
         path: '/product/:id',
         name: 'Product',
-        component: () => import('@/views/ProductView.vue')
+        component: () => import('@/modules/catalog/views/ProductView.vue')
     },
     {
         path: '/store/:id',
         name: 'Store',
-        component: () => import('@/views/StoreView.vue')
+        component: () => import('@/modules/catalog/views/StoreView.vue')
     },
     {
         path: '/category/:id',
         name: 'Category',
-        component: () => import('@/views/CategoryView.vue')
+        component: () => import('@/modules/catalog/views/CategoryView.vue')
     },
     {
         path: '/shopping-list',
         name: 'ShoppingList',
-        component: () => import('@/views/ShoppingListView.vue'),
+        component: () => import('@/modules/shopping/views/ShoppingListView.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/quick-calc',
         name: 'QuickCalc',
-        component: () => import('@/views/QuickCalcView.vue')
+        component: () => import('@/modules/prices/views/QuickCalcView.vue')
     }
 ]
 
