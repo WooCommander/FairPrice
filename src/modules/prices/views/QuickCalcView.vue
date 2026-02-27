@@ -174,8 +174,6 @@ const formatPrice = (val: number) => {
 <style scoped lang="scss">
 .quick-calc-view {
     padding: 0 0.5rem;
-    max-width: var(--layout-max-width);
-
     min-height: 100vh;
 }
 

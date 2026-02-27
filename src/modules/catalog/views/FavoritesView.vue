@@ -66,8 +66,6 @@ const goToProduct = (id: string) => {
 <style scoped lang="scss">
 .favorites-view {
     padding: var(--spacing-md);
-    max-width: var(--layout-max-width);
-
     width: 100%;
 }
 

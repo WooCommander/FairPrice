@@ -63,31 +63,7 @@ const goToAddProduct = () => {
 
 <template>
     <div class="category-view">
-
-        <header class="ergo-header">
-            <div class="header-inner">
-                <button class="nav-btn" @click="router.back()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                </button>
-                <div class="header-title">
-                    {{ categoryName }}
-                </div>
-                <div class="header-controls">
-                    <button class="nav-btn add-btn" @click="router.push(`/add-price?category=${categoryName}`)"
-                        title="Добавить товар">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </header>
+        <h1 class="page-title">{{ categoryName }}</h1>
 
         <div v-if="isLoading" class="loading">
             <FpSpinner />
@@ -168,7 +144,6 @@ const goToAddProduct = () => {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    max-width: var(--layout-max-width);
 }
 
 .header-title {

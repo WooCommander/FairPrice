@@ -143,8 +143,6 @@ const saveEdit = async () => {
 <style scoped lang="scss">
 .store-view {
     padding: 0 0.5rem;
-    max-width: var(--layout-max-width);
-
 }
 
 .ergo-header {

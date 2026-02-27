@@ -60,8 +60,6 @@ const handleCreate = async () => {
 <style scoped lang="scss">
 .create-view {
     padding: var(--spacing-md);
-    max-width: 500px;
-
 }
 
 .section-header {

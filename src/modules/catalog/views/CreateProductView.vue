@@ -79,8 +79,6 @@ const createUnit = (val: string) => {
 <style scoped lang="scss">
 .create-view {
     padding: var(--spacing-md);
-    max-width: 500px;
-
 }
 
 .section-header {

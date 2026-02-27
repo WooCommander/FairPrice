@@ -28,19 +28,7 @@ const addPrice = (productId: string) => {
 
 <template>
     <div class="catalog-list-view">
-        <header class="ergo-header">
-            <div class="header-inner">
-                <button class="nav-btn" @click="router.push('/')">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                </button>
-                <div class="header-title">Каталог товаров</div>
-                <div style="width: 40px"></div>
-            </div>
-        </header>
+        <h1 class="page-title">Каталог товаров</h1>
 
         <section class="search-section">
             <FpCard>

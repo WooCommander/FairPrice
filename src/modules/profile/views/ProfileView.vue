@@ -112,13 +112,10 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .profile-view {
-  /* max-width handled by MainLayout */
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
   padding: 0 0.5rem; // Add horizontal padding for mobile
-  max-width: var(--layout-max-width);
-  margin: .5rem auto;
   width: 100%;
 }
 

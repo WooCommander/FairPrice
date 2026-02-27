@@ -121,21 +121,7 @@ const formatPrice = (p: number) => {
 
 <template>
     <div class="shopping-list-view">
-        <header class="ergo-header">
-            <div class="header-inner">
-                <button class="nav-btn" @click="router.push('/')">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                </button>
-                <div class="header-title">Список покупок</div>
-                <div class="header-controls">
-                    <div style="width: 40px;"></div>
-                </div>
-            </div>
-        </header>
+        <h1 class="page-title">Список покупок</h1>
 
         <section class="add-section">
             <FpCard>
@@ -230,8 +216,6 @@ const formatPrice = (p: number) => {
 <style scoped lang="scss">
 .shopping-list-view {
     padding: 0 0.5rem;
-    max-width: var(--layout-max-width);
-
 }
 
 .ergo-header {
