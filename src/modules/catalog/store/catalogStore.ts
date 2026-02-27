@@ -147,13 +147,13 @@ export const catalogStore = {
         searchResults.value = []
     },
 
-    async createProduct(data: { name: string, category: string, unit: string }) {
+    async createProduct(data: { name: string, category: string, unit: string }): Promise<ProductModel> {
         isSearching.value = true
         try {
             const dto = await CatalogService.createProduct(data)
-            currentProduct.value = adaptProduct(dto)
-            // Functionally, we might want to also add it to search results or history, 
-            // but setting currentProduct is enough to proceed to step 2
+            const adapted = adaptProduct(dto)
+            currentProduct.value = adapted
+            return adapted
         } finally {
             isSearching.value = false
         }

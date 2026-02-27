@@ -20,6 +20,11 @@ const navItems = [
 		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'
 	},
 	{
+		label: 'Избранное',
+		path: '/favorites',
+		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2"></polygon></svg>'
+	},
+	{
 		label: 'Профиль',
 		path: '/profile',
 		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
@@ -40,6 +45,18 @@ const handleLogout = async () => {
 	await authStore.logout()
 	router.push('/login')
 }
+
+const showBackButton = computed(() => {
+	return route.path !== '/' && route.path !== '/search' && route.path !== '/home'
+})
+
+const goBack = () => {
+	if (window.history.length > 2) {
+		router.back()
+	} else {
+		router.push('/')
+	}
+}
 </script>
 
 <template>
@@ -47,7 +64,14 @@ const handleLogout = async () => {
 		<header class="top-nav">
 			<div class="nav-container">
 				<div class="logo-area">
-					<button class="hamburger-btn" @click="isMenuOpen = true" v-if="!isMenuOpen">
+					<button v-if="showBackButton" class="back-btn" @click="goBack">
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+							stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<line x1="19" y1="12" x2="5" y2="12"></line>
+							<polyline points="12 19 5 12 12 5"></polyline>
+						</svg>
+					</button>
+					<button v-else class="hamburger-btn" @click="isMenuOpen = true" v-if="!isMenuOpen">
 						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
 							stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<line x1="3" y1="12" x2="21" y2="12"></line>
@@ -248,7 +272,8 @@ const handleLogout = async () => {
 	gap: 12px;
 }
 
-.hamburger-btn {
+.hamburger-btn,
+.back-btn {
 	background: none;
 	border: none;
 	font-size: 24px;
@@ -259,6 +284,12 @@ const handleLogout = async () => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	border-radius: var(--radius-sm);
+	transition: background 0.2s;
+
+	&:hover {
+		background: var(--color-surface-hover);
+	}
 }
 
 .menu-backdrop {

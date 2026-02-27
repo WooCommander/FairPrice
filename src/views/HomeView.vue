@@ -83,18 +83,18 @@ onMounted(async () => {
                 </button>
 
                 <!-- Card 3: Find Product -->
-                <button class="action-card" @click="router.push('/search')">
-                    <div class="action-icon">🔎</div>
+                <button class="action-card" @click="router.push('/create-product')">
+                    <div class="action-icon">➕📦</div>
                     <div class="text-content">
-                        <span class="title">Найти</span>
+                        <span class="title">Товар</span>
                     </div>
                 </button>
 
-                <!-- Card 4: Favorites -->
-                <button class="action-card" @click="router.push('/add-price?tab=favorites')">
-                    <div class="action-icon">⭐</div>
+                <!-- Card 4: Create Store -->
+                <button class="action-card" @click="router.push('/create-store')">
+                    <div class="action-icon">➕🏪</div>
                     <div class="text-content">
-                        <span class="title">Избранное</span>
+                        <span class="title">Место</span>
                     </div>
                 </button>
             </section>

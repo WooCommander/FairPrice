@@ -38,7 +38,8 @@ const handleSubmit = async () => {
     if (isLogin.value) {
         const success = await authStore.login(email.value, password.value)
         if (success) {
-            router.push('/')
+            const redirectPath = (router.currentRoute.value.query.redirect as string) || '/'
+            router.push(redirectPath)
         } else {
             error.value = authStore.error.value || 'Ошибка входа'
         }
@@ -50,8 +51,8 @@ const handleSubmit = async () => {
                 successMessage.value = 'Регистрация успешна! Проверьте почту для подтверждения.'
                 isLogin.value = true // Switch to login view or just show message
             } else {
-                // Auto logged in
-                router.push('/')
+                const redirectPath = (router.currentRoute.value.query.redirect as string) || '/'
+                router.push(redirectPath)
             }
         } else {
             error.value = result.error || 'Ошибка регистрации'

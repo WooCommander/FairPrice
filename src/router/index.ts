@@ -59,6 +59,30 @@ const routes = [
         path: '/quick-calc',
         name: 'QuickCalc',
         component: () => import('@/modules/prices/views/QuickCalcView.vue')
+    },
+    {
+        path: '/favorites',
+        name: 'Favorites',
+        component: () => import('@/modules/catalog/views/FavoritesView.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/activity',
+        name: 'Activity',
+        component: () => import('@/modules/profile/views/ActivityView.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/create-product',
+        name: 'CreateProduct',
+        component: () => import('@/modules/catalog/views/CreateProductView.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/create-store',
+        name: 'CreateStore',
+        component: () => import('@/modules/catalog/views/CreateStoreView.vue'),
+        meta: { requiresAuth: true }
     }
 ]
 
@@ -81,7 +105,7 @@ router.beforeEach(async (to, _from, next) => {
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
     if (requiresAuth && !isAuthenticated.value) {
-        next('/login')
+        next({ name: 'Login', query: { redirect: to.fullPath } })
     } else {
         next()
     }

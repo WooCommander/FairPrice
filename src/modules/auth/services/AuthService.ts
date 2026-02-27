@@ -72,7 +72,7 @@ class AuthService {
         }
     }
 
-    async getUserActivity() {
+    async getUserActivity(limit: number = 5) {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return []
 
@@ -82,28 +82,32 @@ class AuthService {
                 id,
                 price,
                 created_at,
+                product_id,
                 products (name, unit)
             `)
             .eq('created_by', user.id)
             .order('created_at', { ascending: false })
-            .limit(5)
+            .limit(limit)
 
         // Type the response to avoid 'any'
         interface PriceActivity {
             id: string
             price: number
             created_at: string
-            products: { name: string; unit: string } | null // Single object because of foreign key
+            product_id: string
+            products: { name: string; unit: string } | null
         }
 
         const typedData = data as unknown as PriceActivity[]
 
         return typedData?.map(item => ({
             id: item.id,
+            productId: item.product_id,
             action: 'Добавил цену',
             item: item.products?.name || 'Товар',
-            details: `${item.price.toLocaleString()} ₽`, // Format price
+            details: `${item.price.toLocaleString()} ₽`,
             time: new Date(item.created_at).toLocaleDateString('ru-RU'),
+            fullDate: item.created_at,
             icon: '🏷️'
         })) || []
     }

@@ -256,7 +256,6 @@ class CatalogService {
                     created_at,
                     unit,
                     store_id,
-                    store_id,
                     stores (name),
                     created_by,
                     quantity,
@@ -270,6 +269,33 @@ class CatalogService {
         if (error || !data) return undefined
 
         return this.mapToDTO(data)
+    }
+
+    async getProductsByIds(ids: string[]): Promise<ProductDTO[]> {
+        if (!ids || ids.length === 0) return []
+
+        const { data, error } = await supabase
+            .from('products')
+            .select(`
+                *,
+                prices (
+                    id,
+                    price,
+                    created_at,
+                    unit,
+                    store_id,
+                    stores (name),
+                    created_by,
+                    quantity,
+                    quantity_unit,
+                    normalized_price
+                )
+            `)
+            .in('id', ids)
+
+        if (error || !data) return []
+
+        return data.map(p => this.mapToDTO(p))
     }
 
     async createProduct(data: { name: string, category: string, unit: string }): Promise<ProductDTO> {

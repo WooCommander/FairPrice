@@ -1,0 +1,190 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { AuthService } from '@/modules/auth/services/AuthService'
+import FpCard from '@/design-system/components/FpCard.vue'
+import { FpSpinner } from '@/design-system'
+
+const router = useRouter()
+const activityData = ref<any[]>([])
+const isLoading = ref(true)
+
+onMounted(async () => {
+    try {
+        // Fetch more items for the full view (e.g. 50 for now)
+        activityData.value = await AuthService.getUserActivity(100)
+    } catch (error) {
+        console.error('Failed to load activity:', error)
+    } finally {
+        isLoading.value = false
+    }
+})
+
+const goToProduct = (id: string) => {
+    if (id) {
+        router.push(`/product/${id}`)
+    }
+}
+</script>
+
+<template>
+    <div class="activity-view">
+        <header class="section-header">
+            <h1>Моя активность</h1>
+            <p v-if="activityData.length > 0">Вы внесли {{ activityData.length }} цен</p>
+        </header>
+
+        <div v-if="isLoading" class="loading-state">
+            <FpSpinner />
+        </div>
+
+        <div v-else-if="activityData.length > 0" class="activity-list">
+            <FpCard v-for="act in activityData" :key="act.id" class="activity-item" padding="sm"
+                @click="goToProduct(act.productId)">
+                <div class="act-icon">{{ act.icon }}</div>
+                <div class="act-content">
+                    <div class="act-header">
+                        <span class="act-action">{{ act.action }}</span>
+                        <span class="act-time">{{ act.time }}</span>
+                    </div>
+                    <span class="act-item">{{ act.item }}</span>
+                    <span class="act-details">{{ act.details }}</span>
+                </div>
+            </FpCard>
+        </div>
+
+        <div v-else class="empty-state">
+            <span class="empty-icon">📝</span>
+            <h3>История пуста</h3>
+            <p>Ваши добавленные цены будут отображаться здесь</p>
+            <FpButton size="md" @click="router.push('/search')">Найти товар</FpButton>
+        </div>
+    </div>
+</template>
+
+<style scoped lang="scss">
+.activity-view {
+    padding: var(--spacing-md);
+    max-width: var(--layout-max-width);
+    margin: 0 auto;
+    width: 100%;
+}
+
+.section-header {
+    margin-bottom: var(--spacing-xl);
+
+    h1 {
+        font-size: var(--text-h4);
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    p {
+        color: var(--color-text-secondary);
+        font-size: var(--text-body-2);
+    }
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.activity-item {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    transition: all 0.2s;
+    cursor: pointer;
+
+    &:hover {
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-1);
+        transform: translateY(-2px);
+    }
+
+    .act-icon {
+        font-size: 24px;
+        background: var(--color-background);
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+    }
+
+    .act-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .act-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .act-action {
+            font-weight: 700;
+            font-size: var(--text-button);
+            color: var(--color-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .act-time {
+            font-size: var(--text-caption);
+            color: var(--color-text-disabled);
+        }
+    }
+
+    .act-item {
+        font-weight: 600;
+        font-size: var(--text-body-1);
+        color: var(--color-text-primary);
+    }
+
+    .act-details {
+        font-size: var(--text-body-2);
+        color: var(--color-text-secondary);
+    }
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+
+    .empty-icon {
+        font-size: 64px;
+        margin-bottom: var(--spacing-md);
+        opacity: 0.3;
+    }
+
+    h3 {
+        font-size: var(--text-h5);
+        margin-bottom: 8px;
+    }
+
+    p {
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-xl);
+        max-width: 300px;
+    }
+}
+
+.loading-state {
+    display: flex;
+    justify-content: center;
+    padding: 60px;
+}
+</style>
