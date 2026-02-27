@@ -52,7 +52,7 @@ const routes = [
     {
         path: '/shopping-list',
         name: 'ShoppingList',
-        component: () => import('@/modules/shopping/views/ShoppingListView.vue'),
+        component: () => import('@/modules/shopping-list/ui/ShoppingListView.vue'),
         meta: { requiresAuth: true }
     },
     {
@@ -83,6 +83,16 @@ const routes = [
         name: 'CreateStore',
         component: () => import('@/modules/catalog/views/CreateStoreView.vue'),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/catalog',
+        name: 'Catalog',
+        component: () => import('@/modules/catalog/views/CatalogListView.vue')
+    },
+    {
+        path: '/stores',
+        name: 'Stores',
+        component: () => import('@/modules/prices/views/StoresListView.vue')
     }
 ]
 

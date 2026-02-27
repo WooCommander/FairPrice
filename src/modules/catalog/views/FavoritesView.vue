@@ -1,3 +1,4 @@
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { CatalogService, type ProductDTO } from '@/modules/catalog/services/CatalogService'
@@ -66,19 +67,19 @@ const goToProduct = (id: string) => {
 .favorites-view {
     padding: var(--spacing-md);
     max-width: var(--layout-max-width);
-    margin: 0 auto;
+
     width: 100%;
 }
 
 .section-header {
     margin-bottom: var(--spacing-xl);
-    
+
     h1 {
         font-size: var(--text-h4);
         font-weight: 700;
         margin-bottom: 4px;
     }
-    
+
     p {
         color: var(--color-text-secondary);
         font-size: var(--text-body-2);

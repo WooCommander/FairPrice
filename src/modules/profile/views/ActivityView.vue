@@ -66,7 +66,7 @@ const goToProduct = (id: string) => {
 .activity-view {
     padding: var(--spacing-md);
     max-width: var(--layout-max-width);
-    margin: 0 auto;
+
     width: 100%;
 }
 

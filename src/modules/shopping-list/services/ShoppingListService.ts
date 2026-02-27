@@ -1,16 +1,19 @@
 import { supabase } from '@/api/supabase'
 
-export interface ShoppingListItem {
+export interface ShoppingListDto {
     id: string
     user_id: string
     product_id?: string
     text: string
     is_checked: boolean
+    price?: number      // Фактическая цена
+    quantity?: number   // Количество
+    unit?: string       // Единица измерения
     created_at: string
 }
 
 class ShoppingListService {
-    async getItems(): Promise<ShoppingListItem[]> {
+    async getItems(): Promise<ShoppingListDto[]> {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return []
 
@@ -24,18 +27,26 @@ class ShoppingListService {
         return data || []
     }
 
-    async addItem(text: string, productId?: string): Promise<ShoppingListItem | null> {
+    async addItem(text: string, productId?: string, details?: { price?: number, quantity?: number, unit?: string }): Promise<ShoppingListDto | null> {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) throw new Error('User not logged in')
 
+        const payload: any = {
+            user_id: user.id,
+            text,
+            product_id: productId,
+            is_checked: !!(details?.price)
+        }
+
+        // Only add extra fields if they are actually provided and truthy
+        // This helps avoid errors if columns don't exist in DB yet
+        if (details?.price) payload.price = details.price
+        if (details?.quantity) payload.quantity = details.quantity
+        if (details?.unit) payload.unit = details.unit
+
         const { data, error } = await supabase
             .from('shopping_list')
-            .insert({
-                user_id: user.id,
-                text,
-                product_id: productId,
-                is_checked: false
-            })
+            .insert(payload)
             .select()
             .single()
 
@@ -43,10 +54,25 @@ class ShoppingListService {
         return data
     }
 
-    async toggleItem(id: string, isChecked: boolean): Promise<void> {
+    async toggleItem(id: string, isChecked: boolean, details?: { price?: number, quantity?: number, unit?: string }): Promise<void> {
         const { error } = await supabase
             .from('shopping_list')
-            .update({ is_checked: isChecked })
+            .update({
+                is_checked: isChecked,
+                ...(details || {})
+            })
+            .eq('id', id)
+
+        if (error) throw error
+    }
+
+    async updateItem(id: string, updates: Partial<ShoppingListDto>): Promise<void> {
+        // Strip out fields that shouldn't be updated directly via this method if needed
+        const { id: _id, user_id: _uid, created_at: _ca, ...validUpdates } = updates as any
+
+        const { error } = await supabase
+            .from('shopping_list')
+            .update(validUpdates)
             .eq('id', id)
 
         if (error) throw error

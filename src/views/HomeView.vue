@@ -2,13 +2,13 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
+import { shoppingListStore } from '@/modules/shopping-list/state/shoppingListStore'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpSearchInput from '@/design-system/components/FpSearchInput.vue'
 
 const router = useRouter()
-// ... existing setup ...
 
-
+const shoppingItemsLeft = computed(() => shoppingListStore.uncheckedItems.value.length)
 const { recentUpdates } = catalogStore
 
 // Use a subset for HomeView
@@ -76,25 +76,27 @@ onMounted(async () => {
                 <button class="action-card secondary" @click="router.push('/shopping-list')">
                     <div class="icon-container list-icon">
                         <span>📝</span>
+                        <div v-if="shoppingItemsLeft > 0" class="badge-dot">{{ shoppingItemsLeft }}</div>
                     </div>
                     <div class="text-content">
                         <span class="title">Список</span>
+                        <span class="subtitle" v-if="shoppingItemsLeft > 0">{{ shoppingItemsLeft }} ост.</span>
                     </div>
                 </button>
 
-                <!-- Card 3: Find Product -->
-                <button class="action-card" @click="router.push('/create-product')">
-                    <div class="action-icon">➕📦</div>
+                <!-- Card 3: Catalog -->
+                <button class="action-card" @click="router.push('/catalog')">
+                    <div class="action-icon">📦</div>
                     <div class="text-content">
-                        <span class="title">Товар</span>
+                        <span class="title">Каталог</span>
                     </div>
                 </button>
 
-                <!-- Card 4: Create Store -->
-                <button class="action-card" @click="router.push('/create-store')">
-                    <div class="action-icon">➕🏪</div>
+                <!-- Card 4: Stores -->
+                <button class="action-card" @click="router.push('/stores')">
+                    <div class="action-icon">🏪</div>
                     <div class="text-content">
-                        <span class="title">Место</span>
+                        <span class="title">Места</span>
                     </div>
                 </button>
             </section>
@@ -248,7 +250,7 @@ onMounted(async () => {
     grid-template-columns: repeat(4, 1fr); // 4 columns on desktop
     gap: 12px;
     // max-width: 900px;
-    // margin: 0 auto;
+    // 
 
     @media (max-width: 600px) {
         display: flex; // Flex row on mobile
@@ -306,7 +308,26 @@ onMounted(async () => {
         width: 100%;
         height: 100%;
         font-size: 24px;
+        position: relative;
     }
+}
+
+.badge-dot {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--color-error);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid var(--color-surface);
 }
 
 .text-content {

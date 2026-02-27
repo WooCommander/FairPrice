@@ -6,6 +6,9 @@ export interface ShoppingListDto {
     product_id?: string
     text: string
     is_checked: boolean
+    price?: number
+    quantity?: number
+    unit?: string
     created_at: string
 }
 
@@ -15,6 +18,9 @@ export interface ShoppingListModel {
     productId?: string
     text: string
     isChecked: boolean
+    price?: number
+    quantity?: number
+    unit?: string
     createdAt: Date
 }
 
@@ -25,6 +31,9 @@ export function shoppingListDtoToModel(dto: ShoppingListDto): ShoppingListModel 
         productId: dto.product_id,
         text: dto.text,
         isChecked: dto.is_checked,
+        price: dto.price,
+        quantity: dto.quantity,
+        unit: dto.unit,
         createdAt: new Date(dto.created_at)
     }
 }
@@ -36,6 +45,9 @@ export function shoppingListModelToDto(model: ShoppingListModel): ShoppingListDt
         product_id: model.productId,
         text: model.text,
         is_checked: model.isChecked,
+        price: model.price,
+        quantity: model.quantity,
+        unit: model.unit,
         created_at: model.createdAt.toISOString()
     }
 }

@@ -116,7 +116,7 @@ const deleteChecked = () => {
 .shopping-list-view {
     padding: 0 0.5rem;
     max-width: var(--layout-max-width);
-    // margin: 0 auto;
+    // 
 }
 
 .ergo-header {

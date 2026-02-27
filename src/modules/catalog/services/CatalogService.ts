@@ -55,7 +55,7 @@ class CatalogService {
                     normalized_price
                 )
             `, { count: 'estimated' })
-            .order('created_at', { ascending: false })
+            .order('name', { ascending: true })
 
         if (query) {
             queryBuilder = queryBuilder.ilike('name', `%${query}%`)

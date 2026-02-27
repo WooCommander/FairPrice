@@ -80,7 +80,7 @@ const createUnit = (val: string) => {
 .create-view {
     padding: var(--spacing-md);
     max-width: 500px;
-    margin: 0 auto;
+
 }
 
 .section-header {

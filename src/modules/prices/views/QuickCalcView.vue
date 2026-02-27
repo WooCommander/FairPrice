@@ -175,7 +175,7 @@ const formatPrice = (val: number) => {
 .quick-calc-view {
     padding: 0 0.5rem;
     max-width: var(--layout-max-width);
-    margin: 0 auto;
+
     min-height: 100vh;
 }
 

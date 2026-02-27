@@ -1,10 +1,13 @@
 -- Create Shopping List Table
-create table shopping_list (
+create table if not exists shopping_list (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users not null,
   product_id uuid references public.products, -- Optional, can be text-only item
   text text not null,
   is_checked boolean default false,
+  price numeric,      -- Фактическая цена
+  quantity numeric,   -- Количество
+  unit text,          -- Единица измерения
   created_at timestamptz default now()
 );
 

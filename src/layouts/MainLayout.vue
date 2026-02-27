@@ -29,7 +29,16 @@ const navItems = [
 		path: '/profile',
 		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
 	},
-
+	{
+		label: 'Каталог',
+		path: '/catalog',
+		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>'
+	},
+	{
+		label: 'Магазины',
+		path: '/stores',
+		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>'
+	}
 ]
 
 const currentPath = computed(() => route.path)
@@ -248,7 +257,7 @@ const goBack = () => {
 
 	.nav-container {
 		max-width: var(--layout-max-width);
-		margin: 0 auto;
+
 		height: 64px; // Standard height
 		display: flex;
 		align-items: center;
@@ -509,8 +518,8 @@ const goBack = () => {
 }
 
 .content-container {
-	max-width: var(--layout-max-width);
-	margin: 0 auto;
+	max-width: 100%;
+
 	padding: var(--spacing-lg);
 	flex: 1;
 	display: flex;
