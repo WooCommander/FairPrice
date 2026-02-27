@@ -31,3 +31,28 @@ h4 {
     margin-top: 0;
     color: var(--color-text-primary);
 }
+
+.page-title {
+    font-size: var(--text-h4);
+    font-weight: 700;
+    margin-bottom: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+}
+
+.page-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+
+    .page-title {
+        margin: 0;
+    }
+}
+
+.title-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}

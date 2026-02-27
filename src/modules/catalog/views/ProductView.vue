@@ -6,7 +6,7 @@ import FpInput from '@/design-system/components/FpInput.vue'
 import FpConfirmationModal from '@/design-system/components/FpConfirmationModal.vue'
 import { FpSpinner } from '@/design-system'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
-import { shoppingListStore } from '@/modules/shopping-list/store/shoppingListStore'
+import { shoppingListStore } from '@/modules/shopping-list/state/shoppingListStore'
 import { authStore } from '@/modules/auth/store/authStore'
 
 import PriceChart from '@/components/PriceChart.vue'
@@ -147,63 +147,39 @@ const addToShoppingList = async () => {
 
 <template>
 	<div class="product-view">
-		<!-- Header -->
-		<header class="ergo-header">
-			<div style="display: flex; align-items: center; flex-direction: column;">
-				<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-					<button class="nav-btn" @click="router.back()">
-						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-							stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-							<line x1="19" y1="12" x2="5" y2="12"></line>
-							<polyline points="12 19 5 12 12 5"></polyline>
-						</svg>
-					</button>
-					<div class="header-content">
-						<!-- Empty for spacing or future use -->
-					</div>
-					<div class="header-controls">
-						<button class="nav-btn" @click="toggleFavorite">
-							<svg v-if="isFavorite" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"
-								stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-								class="icon-starred">
-								<polygon
-									points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
-								</polygon>
-							</svg>
-							<svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-								stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<polygon
-									points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
-								</polygon>
-							</svg>
-						</button>
-						<button class="nav-btn" @click="startEditProduct" title="Редактировать">
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-								stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-								<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-							</svg>
-						</button>
-						<button class="nav-btn danger-icon" @click="confirmDeleteProduct" title="Удалить">
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-								stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<polyline points="3 6 5 6 21 6"></polyline>
-								<path
-									d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-								</path>
-								<line x1="10" y1="11" x2="10" y2="17"></line>
-								<line x1="14" y1="11" x2="14" y2="17"></line>
-							</svg>
-						</button>
-					</div>
-				</div>
-
-
-
-			</div>
-		</header>
-
 		<div v-if="currentProduct" class="content-body">
+			<div class="product-actions-top">
+				<button class="action-icon-btn" @click="toggleFavorite"
+					:title="isFavorite ? 'Убрать из избранного' : 'В избранное'">
+					<svg v-if="isFavorite" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"
+						stroke="currentColor" stroke-width="2" class="icon-starred">
+						<polygon
+							points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
+						</polygon>
+					</svg>
+					<svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+						stroke-width="2">
+						<polygon
+							points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
+						</polygon>
+					</svg>
+				</button>
+				<button class="action-icon-btn" @click="startEditProduct" title="Редактировать">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+						<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+					</svg>
+				</button>
+				<button class="action-icon-btn danger" @click="confirmDeleteProduct" title="Удалить">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<polyline points="3 6 5 6 21 6"></polyline>
+						<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+						<line x1="10" y1="11" x2="10" y2="17"></line>
+						<line x1="14" y1="11" x2="14" y2="17"></line>
+					</svg>
+				</button>
+			</div>
+
 			<!-- VALUE CARD -->
 			<div class="value-card">
 				<div class="card-header-info">
@@ -259,8 +235,6 @@ const addToShoppingList = async () => {
 
 			<!-- HISTORY LIST (Compact) -->
 			<div class="history-section">
-				<!-- Chart moved up -->
-
 				<div class="history-cards-list">
 					<div v-for="(item, idx) in latestHistory" :key="idx" class="history-card-item">
 						<div class="h-card-left">
@@ -269,7 +243,6 @@ const addToShoppingList = async () => {
 						</div>
 						<div class="h-card-right">
 							<div class="h-date">{{ item.dateRelative }}</div>
-							<!-- Delete Btn -->
 
 							<button v-if="item.createdBy === currentUserId && item.id" class="delete-price-btn"
 								@click.stop="confirmDeletePrice(item.id)">
@@ -293,7 +266,6 @@ const addToShoppingList = async () => {
 
 					<div class="modal-form">
 						<FpInput v-model="productForm.name" label="Название товара" placeholder="Введите название" />
-						<!-- Optional: Category Input if needed, using simple input or FpInput -->
 						<FpInput v-model="productForm.category" label="Категория" placeholder="Категория" />
 					</div>
 
@@ -304,13 +276,11 @@ const addToShoppingList = async () => {
 						<FpButton size="md" variant="text" width="full" @click="cancelEditProduct">
 							Отмена
 						</FpButton>
-
-
 					</div>
 				</div>
 			</div>
-
 		</div>
+
 		<div v-else class="loading-state">
 			<FpSpinner />
 		</div>

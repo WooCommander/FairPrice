@@ -2,7 +2,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { shoppingListStore } from '../state/shoppingListStore'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
-import { useRouter } from 'vue-router'
 
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
@@ -10,7 +9,7 @@ import FpCard from '@/design-system/components/FpCard.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
 import { FpSpinner } from '@/design-system'
 
-const router = useRouter()
+
 const newItemText = ref('')
 const selectedProduct = ref<any>(null)
 const newItemPrice = ref('')

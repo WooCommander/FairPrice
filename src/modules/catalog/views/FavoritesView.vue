@@ -30,10 +30,7 @@ const goToProduct = (id: string) => {
 
 <template>
     <div class="favorites-view">
-        <header class="section-header">
-            <h1>Избранное</h1>
-            <p v-if="favorites.length > 0">{{ favorites.length }} товаров сохранено</p>
-        </header>
+        <h1 class="page-title">Избранное</h1>
 
         <div v-if="isLoading" class="loading-state">
             <FpSpinner />

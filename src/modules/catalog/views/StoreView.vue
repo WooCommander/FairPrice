@@ -73,47 +73,33 @@ const saveEdit = async () => {
 
 <template>
     <div class="store-view">
-        <header class="ergo-header">
-            <div class="header-inner">
-                <button class="nav-btn" @click="router.back()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        <div class="page-title-row">
+            <div v-if="!isEditing" class="title-group">
+                <h1 class="page-title">{{ storeName }}</h1>
+                <button class="icon-btn edit-icon" @click="startEdit" title="Редактировать название">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
+                        <path d="M11 4H4a2 2 0 0 0-2-2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                     </svg>
                 </button>
-
-                <div class="header-title-container">
-                    <div v-if="!isEditing" class="title-row">
-                        <div class="header-title">{{ storeName }}</div>
-                        <button class="icon-btn edit-icon" @click="startEdit" title="Редактировать название">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <div v-else class="edit-row">
-                        <input v-model="editName" class="edit-input" @keyup.enter="saveEdit" ref="editInputRef" />
-                        <div class="edit-actions">
-                            <button class="icon-btn save" @click="saveEdit" title="Сохранить">✅</button>
-                            <button class="icon-btn cancel" @click="cancelEdit" title="Отмена">❌</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="header-controls">
-                    <button class="nav-btn add-btn" @click="goToAddPrice" title="Добавить цену">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                    </button>
+            </div>
+            <div v-else class="edit-row">
+                <input v-model="editName" class="edit-input" @keyup.enter="saveEdit" ref="editInputRef" />
+                <div class="edit-actions">
+                    <button class="icon-btn save" @click="saveEdit" title="Сохранить">✅</button>
+                    <button class="icon-btn cancel" @click="cancelEdit" title="Отмена">❌</button>
                 </div>
             </div>
-        </header>
+
+            <button class="nav-btn add-btn" @click="goToAddPrice" title="Добавить цену">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+        </div>
 
         <div v-if="isLoading" class="loading">
             <FpSpinner />
