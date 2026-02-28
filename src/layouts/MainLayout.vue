@@ -215,6 +215,17 @@ const handleLogout = async () => {
 				</router-view>
 			</div>
 		</main>
+
+		<!-- Floating Home Button -->
+		<transition name="fade">
+			<button v-if="route.path !== '/'" class="floating-home-btn" @click="router.push('/')" title="На главную">
+				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+					stroke-linecap="round" stroke-linejoin="round">
+					<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+					<polyline points="9 22 9 12 15 12 15 22"></polyline>
+				</svg>
+			</button>
+		</transition>
 	</div>
 </template>
 
@@ -514,6 +525,44 @@ const handleLogout = async () => {
 
 	@media (max-width: 768px) {
 		padding: 0;
+	}
+}
+
+.floating-home-btn {
+	position: fixed;
+	left: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	background: var(--color-surface-translucent);
+	backdrop-filter: blur(12px);
+	border: 1px solid var(--color-border);
+	color: var(--color-primary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	z-index: 1000;
+	box-shadow: var(--shadow-2);
+	transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+	&:hover {
+		transform: translateY(-50%) scale(1.1);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-3);
+		color: var(--color-primary-variant);
+	}
+
+	&:active {
+		transform: translateY(-50%) scale(0.95);
+	}
+
+	@media (max-width: 768px) {
+		width: 42px;
+		height: 42px;
+		left: 8px;
 	}
 }
 </style>
