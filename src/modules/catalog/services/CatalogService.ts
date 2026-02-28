@@ -510,7 +510,7 @@ class CatalogService {
         }
     }
 
-    async getDashboardStats(): Promise<{ productCount: number, categoryCount: number }> {
+    async getDashboardStats(): Promise<{ productCount: number, categoryCount: number, userCount: number }> {
         // 1. Get total products
         const { count: productCount, error: productError } = await supabase
             .from('products')
@@ -523,14 +523,22 @@ class CatalogService {
 
         if (productError || categoryError) {
             console.error('Error fetching dashboard stats:', productError || categoryError)
-            return { productCount: 0, categoryCount: 0 }
+            return { productCount: 0, categoryCount: 0, userCount: 0 }
         }
 
         const uniqueCategories = new Set(categories?.map(p => p.category).filter(Boolean))
 
+        // 3. Get unique users who contributed prices
+        const { data: contributors } = await supabase
+            .from('prices')
+            .select('created_by')
+
+        const uniqueUsers = new Set(contributors?.map(c => c.created_by).filter(Boolean))
+
         return {
             productCount: productCount || 0,
-            categoryCount: uniqueCategories.size
+            categoryCount: uniqueCategories.size,
+            userCount: uniqueUsers.size || 0
         }
     }
 }

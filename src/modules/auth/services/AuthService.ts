@@ -109,6 +109,7 @@ class AuthService {
             productId: item.product_id,
             action: 'Добавил цену',
             item: item.products?.name || 'Товар',
+            price: item.price,
             details: `${item.price.toLocaleString()} ₽`,
             time: new Date(item.created_at).toLocaleDateString('ru-RU'),
             fullDate: item.created_at,

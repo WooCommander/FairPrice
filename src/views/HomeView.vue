@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { shoppingListStore } from '@/modules/shopping-list/state/shoppingListStore'
 import { AuthService } from '@/modules/auth/services/AuthService'
+import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
@@ -17,7 +18,9 @@ const {
     favoriteProductIds,
     isFavorite,
     totalProductCount,
-    totalCategoryCount
+    totalCategoryCount,
+    totalUserCount,
+    currentCurrency
 } = catalogStore
 const { uncheckedItems } = shoppingListStore
 
@@ -53,6 +56,13 @@ const toggleFavorite = async (productId: string) => {
     await catalogStore.toggleFavorite(productId)
 }
 
+const formatPrice = (val: number) => {
+    const converted = CurrencyService.convert(val, 'RUB', currentCurrency.value)
+    return CurrencyService.format(converted, currentCurrency.value)
+}
+
+const currencies: Array<'RUB' | 'USD' | 'EUR' | 'KZT'> = ['RUB', 'USD', 'EUR', 'KZT']
+
 onMounted(async () => {
     isLoading.value = true
     try {
@@ -77,9 +87,18 @@ onMounted(async () => {
     <div class="home-dashboard">
         <!-- Dashboard Hero: Personalized Profile -->
         <header class="dashboard-hero">
-            <div class="hero-content">
-                <h1 class="welcome-text">{{ greeting }}, <span class="accent">друг</span></h1>
-                <p class="hero-subtitle">Твой прогресс в Fair Price</p>
+            <div class="hero-top">
+                <div class="hero-content">
+                    <h1 class="welcome-text">{{ greeting }}, <span class="accent">друг</span></h1>
+                    <p class="hero-subtitle">Твой прогресс в Fair Price</p>
+                </div>
+
+                <div class="currency-selector">
+                    <button v-for="code in currencies" :key="code" class="curr-btn"
+                        :class="{ active: currentCurrency === code }" @click="catalogStore.setCurrency(code)">
+                        {{ code }}
+                    </button>
+                </div>
             </div>
 
             <FpCard v-if="userStats" class="profile-card">
@@ -135,7 +154,10 @@ onMounted(async () => {
             <!-- Global Insights (Small) -->
             <div class="global-mini-stats">
                 <div class="mini-stat">
-                    <span>📦 {{ totalProductCount }} товаров в базе</span>
+                    <span>📦 {{ totalProductCount }} товаров</span>
+                </div>
+                <div class="mini-stat">
+                    <span>👥 {{ totalUserCount }} контрибьюторов</span>
                 </div>
                 <div class="mini-stat">
                     <span>📂 {{ totalCategoryCount }} категорий</span>
@@ -202,7 +224,7 @@ onMounted(async () => {
                         <div class="act-icon">{{ act.icon }}</div>
                         <div class="act-main">
                             <span class="act-title">{{ act.item }}</span>
-                            <span class="act-meta">{{ act.action }} в {{ act.details }}</span>
+                            <span class="act-meta">{{ act.action }} за {{ formatPrice(act.price) }}</span>
                         </div>
                         <div class="act-side">
                             <span class="act-time">{{ act.time }}</span>
@@ -224,6 +246,12 @@ onMounted(async () => {
     flex-direction: column;
     gap: 20px;
 
+    .hero-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
     .hero-content {
         margin: 0;
     }
@@ -243,6 +271,32 @@ onMounted(async () => {
         font-size: 14px;
         color: var(--color-text-secondary);
         margin: 4px 0 0;
+    }
+
+    .currency-selector {
+        display: flex;
+        background: var(--color-surface);
+        padding: 4px;
+        border-radius: 12px;
+        border: 1px solid var(--color-border);
+        gap: 2px;
+
+        .curr-btn {
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--color-text-tertiary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+
+            &.active {
+                background: var(--color-primary);
+                color: white;
+            }
+        }
     }
 }
 
@@ -378,14 +432,20 @@ onMounted(async () => {
 
 .global-mini-stats {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding-left: 4px;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 4px;
 
     .mini-stat {
-        font-size: 12px;
+        font-size: 11px;
         color: var(--color-text-tertiary);
-        font-weight: 500;
+        font-weight: 600;
+        background: var(--color-surface);
+        padding: 6px 12px;
+        border-radius: 20px;
+        border: 1px solid var(--color-border);
+        flex: 1;
+        text-align: center;
     }
 }
 

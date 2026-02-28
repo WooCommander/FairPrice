@@ -9,6 +9,8 @@ const isSearching = ref(false)
 const favoriteProductIds = ref<Set<string>>(new Set())
 const totalProductCount = ref(0)
 const totalCategoryCount = ref(0)
+const totalUserCount = ref(0)
+const currentCurrency = ref<'RUB' | 'USD' | 'EUR' | 'KZT'>(localStorage.getItem('fp_currency') as any || 'RUB')
 
 // Pagination State
 const currentPage = ref(1)
@@ -51,6 +53,8 @@ export const catalogStore = {
     searchHistory: readonly(searchHistory),
     totalProductCount: readonly(totalProductCount),
     totalCategoryCount: readonly(totalCategoryCount),
+    totalUserCount: readonly(totalUserCount),
+    currentCurrency: readonly(currentCurrency),
     addToHistory,
     removeFromHistory,
     clearHistory,
@@ -143,9 +147,15 @@ export const catalogStore = {
             const stats = await CatalogService.getDashboardStats()
             totalProductCount.value = stats.productCount
             totalCategoryCount.value = stats.categoryCount
+            totalUserCount.value = stats.userCount
         } catch (e) {
             console.error('Failed to load dashboard stats', e)
         }
+    },
+
+    setCurrency(code: 'RUB' | 'USD' | 'EUR' | 'KZT') {
+        currentCurrency.value = code
+        localStorage.setItem('fp_currency', code)
     },
 
     async loadProductById(id: string) {
