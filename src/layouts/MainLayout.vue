@@ -88,120 +88,6 @@ const handleLogout = async () => {
 				</div>
 			</div>
 
-			<!-- Backdrop -->
-			<transition name="fade">
-				<div v-if="isMenuOpen" class="menu-backdrop" @click="isMenuOpen = false"></div>
-			</transition>
-
-			<!-- Side Drawer -->
-			<transition name="slide-right">
-				<div v-if="isMenuOpen" class="menu-drawer">
-					<div class="drawer-header">
-						<div class="drawer-user" v-if="authStore.user.value">
-							<div class="drawer-avatar">
-								{{ authStore.user.value.email?.charAt(0).toUpperCase() }}
-							</div>
-							<div class="drawer-user-info">
-								<span class="drawer-email">{{ authStore.user.value.email }}</span>
-								<span class="drawer-status">Online</span>
-							</div>
-						</div>
-						<div class="drawer-user guest" v-else>
-							<div class="drawer-avatar guest-avatar">
-								?
-							</div>
-							<div class="drawer-user-info">
-								<span class="drawer-email">Гость</span>
-								<button class="link-btn" @click="router.push('/login'); isMenuOpen = false">Войти</button>
-							</div>
-						</div>
-
-						<button class="close-btn" @click="isMenuOpen = false">
-							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-								stroke-linecap="round" stroke-linejoin="round">
-								<line x1="18" y1="6" x2="6" y2="18"></line>
-								<line x1="6" y1="6" x2="18" y2="18"></line>
-							</svg>
-						</button>
-					</div>
-
-					<div class="drawer-content">
-						<div class="nav-group">
-							<span class="nav-label">Меню</span>
-							<a v-for="item in navItems" :key="item.path" class="drawer-link"
-								:class="{ active: currentPath === item.path }" @click.prevent="navigate(item.path); isMenuOpen = false">
-								<span class="link-icon" v-html="item.icon"></span>
-								{{ item.label }}
-							</a>
-						</div>
-
-						<div class="nav-group">
-							<span class="nav-label">Инструменты</span>
-							<a class="drawer-link" :class="{ active: currentPath === '/shopping-list' }"
-								@click.prevent="navigate('/shopping-list'); isMenuOpen = false">
-								<span class="link-icon">
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-										stroke-linecap="round" stroke-linejoin="round">
-										<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-										<line x1="3" y1="6" x2="21" y2="6"></line>
-										<path d="M16 10a4 4 0 0 1-8 0"></path>
-									</svg>
-								</span>
-								Список покупок
-							</a>
-							<a class="drawer-link" :class="{ active: currentPath === '/quick-calc' }"
-								@click.prevent="navigate('/quick-calc'); isMenuOpen = false">
-								<span class="link-icon">
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-										stroke-linecap="round" stroke-linejoin="round">
-										<rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-										<line x1="8" y1="6" x2="16" y2="6"></line>
-										<line x1="16" y1="14" x2="16" y2="14"></line>
-										<line x1="8" y1="14" x2="8" y2="14"></line>
-										<line x1="12" y1="14" x2="12" y2="14"></line>
-										<line x1="16" y1="18" x2="16" y2="18"></line>
-										<line x1="8" y1="18" x2="8" y2="18"></line>
-										<line x1="12" y1="18" x2="12" y2="18"></line>
-									</svg>
-								</span>
-								Быстрый расчет
-							</a>
-						</div>
-
-						<div class="nav-group">
-							<span class="nav-label">Разработчику</span>
-							<a class="drawer-link" :class="{ active: currentPath === '/design-system' }"
-								@click.prevent="navigate('/design-system'); isMenuOpen = false">
-								<span class="link-icon">
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-										stroke-linecap="round" stroke-linejoin="round">
-										<path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88z"></path>
-										<path d="M2 12l10 10 10-10"></path>
-									</svg>
-								</span>
-								Стенд
-							</a>
-						</div>
-					</div>
-
-					<div class="drawer-footer">
-						<button class="theme-toggle-drawer" @click="toggleTheme">
-							<span class="icon">{{ isDark ? '🌞' : '🌙' }}</span>
-							<span>{{ isDark ? 'Светлая тема' : 'Темная тема' }}</span>
-						</button>
-
-						<button v-if="authStore.user.value" class="logout-drawer" @click="handleLogout">
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-								stroke-linecap="round" stroke-linejoin="round">
-								<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-								<polyline points="16 17 21 12 16 7"></polyline>
-								<line x1="21" y1="12" x2="9" y2="12"></line>
-							</svg>
-							Выйти
-						</button>
-					</div>
-				</div>
-			</transition>
 		</header>
 
 		<main class="page-content">
@@ -244,6 +130,121 @@ const handleLogout = async () => {
 				<span class="label">Избр.</span>
 			</a>
 		</nav>
+
+		<!-- Backdrop -->
+		<transition name="fade">
+			<div v-if="isMenuOpen" class="menu-backdrop" @click="isMenuOpen = false"></div>
+		</transition>
+
+		<!-- Side Drawer -->
+		<transition name="slide-right">
+			<div v-if="isMenuOpen" class="menu-drawer">
+				<div class="drawer-header">
+					<div class="drawer-user" v-if="authStore.user.value">
+						<div class="drawer-avatar">
+							{{ authStore.user.value.email?.charAt(0).toUpperCase() }}
+						</div>
+						<div class="drawer-user-info">
+							<span class="drawer-email">{{ authStore.user.value.email }}</span>
+							<span class="drawer-status">Online</span>
+						</div>
+					</div>
+					<div class="drawer-user guest" v-else>
+						<div class="drawer-avatar guest-avatar">
+							?
+						</div>
+						<div class="drawer-user-info">
+							<span class="drawer-email">Гость</span>
+							<button class="link-btn" @click="router.push('/login'); isMenuOpen = false">Войти</button>
+						</div>
+					</div>
+
+					<button class="close-btn" @click="isMenuOpen = false">
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+							stroke-linecap="round" stroke-linejoin="round">
+							<line x1="18" y1="6" x2="6" y2="18"></line>
+							<line x1="6" y1="6" x2="18" y2="18"></line>
+						</svg>
+					</button>
+				</div>
+
+				<div class="drawer-content">
+					<div class="nav-group">
+						<span class="nav-label">Меню</span>
+						<a v-for="item in navItems" :key="item.path" class="drawer-link"
+							:class="{ active: currentPath === item.path }" @click.prevent="navigate(item.path); isMenuOpen = false">
+							<span class="link-icon" v-html="item.icon"></span>
+							{{ item.label }}
+						</a>
+					</div>
+
+					<div class="nav-group">
+						<span class="nav-label">Инструменты</span>
+						<a class="drawer-link" :class="{ active: currentPath === '/shopping-list' }"
+							@click.prevent="navigate('/shopping-list'); isMenuOpen = false">
+							<span class="link-icon">
+								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+									stroke-linecap="round" stroke-linejoin="round">
+									<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+									<line x1="3" y1="6" x2="21" y2="6"></line>
+									<path d="M16 10a4 4 0 0 1-8 0"></path>
+								</svg>
+							</span>
+							Список покупок
+						</a>
+						<a class="drawer-link" :class="{ active: currentPath === '/quick-calc' }"
+							@click.prevent="navigate('/quick-calc'); isMenuOpen = false">
+							<span class="link-icon">
+								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+									stroke-linecap="round" stroke-linejoin="round">
+									<rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+									<line x1="8" y1="6" x2="16" y2="6"></line>
+									<line x1="16" y1="14" x2="16" y2="14"></line>
+									<line x1="8" y1="14" x2="8" y2="14"></line>
+									<line x1="12" y1="14" x2="12" y2="14"></line>
+									<line x1="16" y1="18" x2="16" y2="18"></line>
+									<line x1="8" y1="18" x2="8" y2="18"></line>
+									<line x1="12" y1="18" x2="12" y2="18"></line>
+								</svg>
+							</span>
+							Быстрый расчет
+						</a>
+					</div>
+
+					<div class="nav-group">
+						<span class="nav-label">Разработчику</span>
+						<a class="drawer-link" :class="{ active: currentPath === '/design-system' }"
+							@click.prevent="navigate('/design-system'); isMenuOpen = false">
+							<span class="link-icon">
+								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+									stroke-linecap="round" stroke-linejoin="round">
+									<path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88z"></path>
+									<path d="M2 12l10 10 10-10"></path>
+								</svg>
+							</span>
+							Стенд
+						</a>
+					</div>
+				</div>
+
+				<div class="drawer-footer">
+					<button class="theme-toggle-drawer" @click="toggleTheme">
+						<span class="icon">{{ isDark ? '🌞' : '🌙' }}</span>
+						<span>{{ isDark ? 'Светлая тема' : 'Темная тема' }}</span>
+					</button>
+
+					<button v-if="authStore.user.value" class="logout-drawer" @click="handleLogout">
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+							stroke-linecap="round" stroke-linejoin="round">
+							<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+							<polyline points="16 17 21 12 16 7"></polyline>
+							<line x1="21" y1="12" x2="9" y2="12"></line>
+						</svg>
+						Выйти
+					</button>
+				</div>
+			</div>
+		</transition>
 	</div>
 </template>
 
@@ -323,7 +324,7 @@ const handleLogout = async () => {
 	width: 100vw;
 	height: 100vh;
 	background: rgba(0, 0, 0, 0.5);
-	z-index: 1000;
+	z-index: 2000;
 	backdrop-filter: blur(4px);
 }
 
@@ -336,7 +337,7 @@ const handleLogout = async () => {
 	height: 100vh;
 	height: 100dvh; // Dynamic viewport height for mobile browsers
 	background: var(--color-surface);
-	z-index: 1001;
+	z-index: 2005;
 	display: flex;
 	flex-direction: column;
 	box-shadow: var(--shadow-3);
@@ -472,6 +473,7 @@ const handleLogout = async () => {
 
 .drawer-footer {
 	padding: 20px;
+	padding-bottom: calc(20px + env(safe-area-inset-bottom, 16px));
 	border-top: 1px solid var(--color-border);
 	display: flex;
 	flex-direction: column;

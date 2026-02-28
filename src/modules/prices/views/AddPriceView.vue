@@ -17,10 +17,10 @@ const router = useRouter()
 
 // State
 const step = ref(1) // 1: Select Product, 2: Enter Details
-const isLoadingProducts = ref(false)
 const searchQuery = ref('')
 const selectedCategory = ref<string | null>(route.query.category as string || null)
 const isCreating = ref(false)
+const { isLoading, hasMore } = catalogStore
 
 // Form data
 const currentProduct = ref<{ id: string, name: string, category: string, unit?: string } | null>(null)
@@ -42,23 +42,7 @@ const categoryItems = PRODUCT_CATEGORIES.map(c => ({ id: c, name: c }))
 // Subscriptions
 const products = computed(() => catalogStore.searchResults.value)
 
-// Computed
-const filteredGridProducts = computed(() => {
-    // Note: catalogStore.searchResults is already filtered by the store if we call search
-    // But for the grid we might want local filtering for snappiness
-    let items = products.value
-
-    if (selectedCategory.value) {
-        items = items.filter(p => p.category === selectedCategory.value)
-    }
-
-    if (searchQuery.value) {
-        const q = searchQuery.value.toLowerCase()
-        items = items.filter(p => p.name.toLowerCase().includes(q))
-    }
-
-    return items
-})
+const filteredGridProducts = computed(() => products.value)
 
 const calculatedUnitPrice = computed(() => {
     const p = parseFloat(price.value)
@@ -74,12 +58,9 @@ const calculatedUnitPrice = computed(() => {
 
 // Methods
 const loadProducts = async () => {
-    isLoadingProducts.value = true
-    try {
-        await catalogStore.searchProducts('', {})
-    } finally {
-        isLoadingProducts.value = false
-    }
+    await catalogStore.searchProducts(searchQuery.value, {
+        category: selectedCategory.value || undefined
+    })
 }
 
 const toggleCategory = (cat: string) => {
@@ -190,11 +171,11 @@ onMounted(() => {
     }
 })
 
-// Watch for search query
-watch(searchQuery, (val) => {
-    if (val.length > 2) {
-        catalogStore.searchProducts(val)
-    }
+// Watch for filter changes
+watch([searchQuery, selectedCategory], ([q, cat]) => {
+    catalogStore.searchProducts(q, {
+        category: cat || undefined
+    })
 })
 </script>
 
@@ -236,7 +217,7 @@ watch(searchQuery, (val) => {
                 </div>
             </div>
 
-            <div v-if="isLoadingProducts" class="standard-grid">
+            <div v-if="isLoading" class="standard-grid">
                 <div v-for="i in 8" :key="i" class="fp-tile skeleton">
                     <div class="tile-info">
                         <div class="skeleton-line sm"></div>
@@ -262,6 +243,13 @@ watch(searchQuery, (val) => {
                         <h3 class="title">{{ item.name }}</h3>
                     </div>
                 </div>
+            </div>
+
+            <!-- Load More Container -->
+            <div v-if="hasMore" class="load-more-container">
+                <FpButton variant="outline" size="full" :loading="isLoading" @click="catalogStore.loadMore">
+                    Загрузить еще
+                </FpButton>
             </div>
 
             <FpCard class="m-4" v-if="isCreating">
@@ -469,5 +457,10 @@ watch(searchQuery, (val) => {
         text-align: center;
         width: 100%;
     }
+}
+
+.load-more-container {
+    padding: 16px;
+    margin-bottom: 40px;
 }
 </style>
