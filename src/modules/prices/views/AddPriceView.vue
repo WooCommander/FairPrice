@@ -29,11 +29,9 @@ const newProductCategory = ref('Бакалея')
 const newProductUnit = ref('шт')
 
 import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
-// ... (imports)
-
-// ...
 
 const categories = PRODUCT_CATEGORIES.map(c => ({ id: c, name: c }))
+const selectedCategory = ref<string | null>(null)
 
 const units = ['шт', 'кг', 'л', 'уп'].map(u => ({ id: u, name: u }))
 
@@ -53,7 +51,7 @@ const loadProducts = async () => {
     isLoadingProducts.value = true
     try {
         const { items } = await CatalogService.searchProducts('', {}, 1, 100)
-        allProducts.value = items
+        allProducts.value = items.sort((a, b) => a.name.localeCompare(b.name))
     } catch (e) {
         console.error('Failed to load products for grid', e)
     } finally {
@@ -62,10 +60,27 @@ const loadProducts = async () => {
 }
 
 const filteredGridProducts = computed(() => {
-    if (!gridSearchQuery.value) return allProducts.value
-    const q = gridSearchQuery.value.toLowerCase()
-    return allProducts.value.filter(p => p.name.toLowerCase().includes(q))
+    let products = allProducts.value
+
+    if (selectedCategory.value) {
+        products = products.filter(p => p.category === selectedCategory.value)
+    }
+
+    if (gridSearchQuery.value) {
+        const q = gridSearchQuery.value.toLowerCase()
+        products = products.filter(p => p.name.toLowerCase().includes(q))
+    }
+
+    return products
 })
+
+const toggleCategory = (cat: string) => {
+    if (selectedCategory.value === cat) {
+        selectedCategory.value = null
+    } else {
+        selectedCategory.value = cat
+    }
+}
 
 // Logic
 const quantity = ref<string | number>('')
@@ -321,6 +336,13 @@ const goBack = () => {
             <div class="selection-grid-container">
                 <div class="search-header">
                     <FpInput v-model="gridSearchQuery" placeholder="Поиск товара..." class="grid-search" />
+                </div>
+
+                <div class="category-filters">
+                    <button v-for="cat in PRODUCT_CATEGORIES" :key="cat" class="category-tag"
+                        :class="{ active: selectedCategory === cat }" @click="toggleCategory(cat)">
+                        {{ cat }}
+                    </button>
                 </div>
 
                 <div v-if="isLoadingProducts" class="loading-state">
@@ -756,5 +778,37 @@ const goBack = () => {
     display: flex;
     justify-content: center;
     padding: var(--spacing-xl);
+}
+
+.category-filters {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 0 16px 0;
+    margin-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.category-tag {
+    white-space: nowrap;
+    padding: 6px 14px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.active {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        color: white;
+    }
 }
 </style>

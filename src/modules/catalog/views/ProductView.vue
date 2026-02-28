@@ -148,6 +148,20 @@ const addToShoppingList = async () => {
 <template>
 	<div class="product-view">
 		<div v-if="currentProduct" class="content-body">
+			<!-- Local Header with Back Button -->
+			<div class="page-title-row">
+				<div class="title-group">
+					<button class="nav-btn" @click="router.back()">
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+							stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<line x1="19" y1="12" x2="5" y2="12"></line>
+							<polyline points="12 19 5 12 12 5"></polyline>
+						</svg>
+					</button>
+					<h2 class="page-title">Товар</h2>
+				</div>
+			</div>
+
 			<div class="product-actions-top">
 				<button class="action-icon-btn" @click="toggleFavorite"
 					:title="isFavorite ? 'Убрать из избранного' : 'В избранное'">

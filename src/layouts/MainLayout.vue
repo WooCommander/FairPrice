@@ -216,16 +216,37 @@ const handleLogout = async () => {
 			</div>
 		</main>
 
-		<!-- Floating Home Button -->
-		<transition name="fade">
-			<button v-if="route.path !== '/'" class="floating-home-btn" @click="router.push('/')" title="На главную">
-				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-					stroke-linecap="round" stroke-linejoin="round">
-					<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-					<polyline points="9 22 9 12 15 12 15 22"></polyline>
-				</svg>
-			</button>
-		</transition>
+		<!-- Bottom Navigation (Mobile) -->
+		<nav class="bottom-nav">
+			<a class="nav-item" :class="{ active: route.path === '/' }" @click.prevent="router.push('/')">
+				<span class="icon">🏠</span>
+				<span class="label">Главная</span>
+			</a>
+			<a class="nav-item" :class="{ active: route.path === '/catalog' }" @click.prevent="router.push('/catalog')">
+				<span class="icon">📦</span>
+				<span class="label">Каталог</span>
+			</a>
+			<div class="nav-item action" @click="router.push('/add-price')">
+				<div class="plus-btn" :class="{ active: route.path === '/add-price' }">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+						stroke-linecap="round" stroke-linejoin="round">
+						<line x1="12" y1="5" x2="12" y2="19"></line>
+						<line x1="5" y1="12" x2="19" y2="12"></line>
+					</svg>
+				</div>
+				<span class="label">Цена</span>
+			</div>
+			<a class="nav-item" :class="{ active: route.path === '/shopping-list' }"
+				@click.prevent="router.push('/shopping-list')">
+				<span class="icon">🛒</span>
+				<span class="label">Список</span>
+			</a>
+			<a class="nav-item" :class="{ active: route.path === '/favorites' }"
+				@click.prevent="router.push('/favorites')">
+				<span class="icon">⭐</span>
+				<span class="label">Избр.</span>
+			</a>
+		</nav>
 	</div>
 </template>
 
@@ -525,44 +546,86 @@ const handleLogout = async () => {
 
 	@media (max-width: 768px) {
 		padding: 0;
+		padding-bottom: 72px; // Space for bottom nav
 	}
 }
 
-.floating-home-btn {
-	position: fixed;
-	left: 12px;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 48px;
-	height: 48px;
-	border-radius: 50%;
-	background: var(--color-surface-translucent);
-	backdrop-filter: blur(12px);
-	border: 1px solid var(--color-border);
-	color: var(--color-primary);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-	z-index: 1000;
-	box-shadow: var(--shadow-2);
-	transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-	&:hover {
-		transform: translateY(-50%) scale(1.1);
-		background: var(--color-surface);
-		box-shadow: var(--shadow-3);
-		color: var(--color-primary-variant);
-	}
-
-	&:active {
-		transform: translateY(-50%) scale(0.95);
-	}
+.bottom-nav {
+	display: none;
 
 	@media (max-width: 768px) {
-		width: 42px;
-		height: 42px;
-		left: 8px;
+		display: flex;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 64px;
+		height: calc(64px + env(safe-area-inset-bottom, 0px));
+		background: var(--color-surface-translucent);
+		backdrop-filter: blur(12px);
+		border-top: 1px solid var(--color-border);
+		z-index: 1000;
+		padding-bottom: env(safe-area-inset-bottom, 0px);
+		justify-content: space-around;
+		align-items: center;
+	}
+
+	.nav-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		color: var(--color-text-tertiary);
+		text-decoration: none;
+		flex: 1;
+		gap: 2px;
+		cursor: pointer;
+		transition: all 0.2s;
+
+		.icon {
+			font-size: 20px;
+		}
+
+		.label {
+			font-size: 10px;
+			font-weight: 500;
+			letter-spacing: 0.02em;
+		}
+
+		&.active {
+			color: var(--color-primary);
+
+			.icon {
+				transform: translateY(-2px);
+			}
+		}
+
+		&.action {
+			position: relative;
+			top: -12px;
+
+			.plus-btn {
+				width: 48px;
+				height: 48px;
+				background: var(--color-primary);
+				color: white;
+				border-radius: 50%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+				margin-bottom: 2px;
+				transition: all 0.2s;
+
+				&.active {
+					box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.2);
+				}
+			}
+
+			&:active .plus-btn {
+				transform: scale(0.9);
+			}
+		}
 	}
 }
 </style>
