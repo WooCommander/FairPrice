@@ -66,8 +66,8 @@ const handleLogout = async () => {
 			<div class="nav-container">
 				<div class="logo-area">
 					<button class="hamburger-btn" @click="isMenuOpen = true" v-if="!isMenuOpen">
-						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-							stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+							stroke-linecap="round" stroke-linejoin="round">
 							<line x1="3" y1="12" x2="21" y2="12"></line>
 							<line x1="3" y1="6" x2="21" y2="6"></line>
 							<line x1="3" y1="18" x2="21" y2="18"></line>
@@ -112,14 +112,13 @@ const handleLogout = async () => {
 							</div>
 							<div class="drawer-user-info">
 								<span class="drawer-email">Гость</span>
-								<button class="link-btn"
-									@click="router.push('/login'); isMenuOpen = false">Войти</button>
+								<button class="link-btn" @click="router.push('/login'); isMenuOpen = false">Войти</button>
 							</div>
 						</div>
 
 						<button class="close-btn" @click="isMenuOpen = false">
-							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-								stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+								stroke-linecap="round" stroke-linejoin="round">
 								<line x1="18" y1="6" x2="6" y2="18"></line>
 								<line x1="6" y1="6" x2="18" y2="18"></line>
 							</svg>
@@ -130,8 +129,7 @@ const handleLogout = async () => {
 						<div class="nav-group">
 							<span class="nav-label">Меню</span>
 							<a v-for="item in navItems" :key="item.path" class="drawer-link"
-								:class="{ active: currentPath === item.path }"
-								@click.prevent="navigate(item.path); isMenuOpen = false">
+								:class="{ active: currentPath === item.path }" @click.prevent="navigate(item.path); isMenuOpen = false">
 								<span class="link-icon" v-html="item.icon"></span>
 								{{ item.label }}
 							</a>
@@ -142,8 +140,8 @@ const handleLogout = async () => {
 							<a class="drawer-link" :class="{ active: currentPath === '/shopping-list' }"
 								@click.prevent="navigate('/shopping-list'); isMenuOpen = false">
 								<span class="link-icon">
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-										stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+										stroke-linecap="round" stroke-linejoin="round">
 										<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
 										<line x1="3" y1="6" x2="21" y2="6"></line>
 										<path d="M16 10a4 4 0 0 1-8 0"></path>
@@ -154,8 +152,8 @@ const handleLogout = async () => {
 							<a class="drawer-link" :class="{ active: currentPath === '/quick-calc' }"
 								@click.prevent="navigate('/quick-calc'); isMenuOpen = false">
 								<span class="link-icon">
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-										stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+										stroke-linecap="round" stroke-linejoin="round">
 										<rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
 										<line x1="8" y1="6" x2="16" y2="6"></line>
 										<line x1="16" y1="14" x2="16" y2="14"></line>
@@ -175,8 +173,8 @@ const handleLogout = async () => {
 							<a class="drawer-link" :class="{ active: currentPath === '/design-system' }"
 								@click.prevent="navigate('/design-system'); isMenuOpen = false">
 								<span class="link-icon">
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-										stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+										stroke-linecap="round" stroke-linejoin="round">
 										<path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88z"></path>
 										<path d="M2 12l10 10 10-10"></path>
 									</svg>
@@ -193,8 +191,8 @@ const handleLogout = async () => {
 						</button>
 
 						<button v-if="authStore.user.value" class="logout-drawer" @click="handleLogout">
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-								stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+								stroke-linecap="round" stroke-linejoin="round">
 								<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
 								<polyline points="16 17 21 12 16 7"></polyline>
 								<line x1="21" y1="12" x2="9" y2="12"></line>
@@ -241,8 +239,7 @@ const handleLogout = async () => {
 				<span class="icon">🛒</span>
 				<span class="label">Список</span>
 			</a>
-			<a class="nav-item" :class="{ active: route.path === '/favorites' }"
-				@click.prevent="router.push('/favorites')">
+			<a class="nav-item" :class="{ active: route.path === '/favorites' }" @click.prevent="router.push('/favorites')">
 				<span class="icon">⭐</span>
 				<span class="label">Избр.</span>
 			</a>
@@ -264,7 +261,7 @@ const handleLogout = async () => {
 	border-bottom: 1px solid var(--color-border);
 	position: sticky;
 	top: 0;
-	z-index: 100;
+	z-index: 1000; // Increased to be above page content sticky elements
 	padding: 0 var(--spacing-lg);
 	padding-top: env(safe-area-inset-top, 0px);
 

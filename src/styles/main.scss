@@ -53,7 +53,7 @@ h4 {
 .sticky-search-wrapper {
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 20; // Lowered from 100
     background: var(--color-background);
     padding: 12px 16px;
     margin: 0 -0.5rem 16px -0.5rem;
