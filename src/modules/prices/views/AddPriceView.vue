@@ -7,17 +7,16 @@ import FpInput from '@/design-system/components/FpInput.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import { CatalogService, type ProductDTO } from '@/modules/catalog/services/CatalogService'
 
 
 const route = useRoute()
 const router = useRouter()
 
 const step = ref(1) // 1: Select Product, 2: Enter Details
-const searchQuery = ref('')
 const storeName = ref('')
 const price = ref<string | number>('')
 const unit = ref('кг')
-let debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined
 const isStoreSelected = ref(false)
 
 const storeResults = ref<{ id: string, name: string }[]>([])
@@ -43,8 +42,30 @@ const categoryItems = ref<{ id: string, name: string }[]>([...categories])
 const unitItems = ref(units)
 
 // Store access
-const { searchResults, currentProduct } = catalogStore
+const { currentProduct } = catalogStore
 const { isSubmitting } = priceStore
+
+const allProducts = ref<ProductDTO[]>([])
+const isLoadingProducts = ref(false)
+const gridSearchQuery = ref('')
+
+const loadProducts = async () => {
+    isLoadingProducts.value = true
+    try {
+        const { items } = await CatalogService.searchProducts('', {}, 1, 100)
+        allProducts.value = items
+    } catch (e) {
+        console.error('Failed to load products for grid', e)
+    } finally {
+        isLoadingProducts.value = false
+    }
+}
+
+const filteredGridProducts = computed(() => {
+    if (!gridSearchQuery.value) return allProducts.value
+    const q = gridSearchQuery.value.toLowerCase()
+    return allProducts.value.filter(p => p.name.toLowerCase().includes(q))
+})
 
 // Logic
 const quantity = ref<string | number>('')
@@ -84,10 +105,6 @@ const isValid = computed(() => {
     const quantityVal = Number(quantity.value)
 
     return storeVal.length > 1 && !isNaN(priceVal) && priceVal > 0 && !isNaN(quantityVal) && quantityVal > 0
-})
-
-const comboboxSearchResults = computed(() => {
-    return Array.from(searchResults.value)
 })
 
 // Stores Methods
@@ -132,38 +149,14 @@ const onStoreFocus = async () => {
 }
 
 // Product Methods
-const handleSearch = (val: string) => {
-    const query = String(val)
-    searchQuery.value = query
-
-    clearTimeout(debounceTimer)
-    debounceTimer = setTimeout(async () => {
-        if (query.length > 1) {
-            await catalogStore.searchProducts(query)
-        }
-    }, 300)
-}
-
 const selectProduct = (p: { id: string | number, name: string }) => {
     catalogStore.loadProductById(String(p.id))
     step.value = 2
 }
 
-const onProductFocus = async () => {
-    if (!searchQuery.value) {
-        // Load recent or empty search
-        await catalogStore.searchProducts('')
-    }
-}
-
-const handleProductCreate = (query: string) => {
-    startCreation()
-    newProductName.value = query
-}
-
 const startCreation = () => {
     isCreating.value = true
-    newProductName.value = searchQuery.value
+    newProductName.value = gridSearchQuery.value // Pre-fill with current search query
 }
 
 const cancelCreation = () => {
@@ -234,6 +227,7 @@ const submit = async () => {
 }
 
 onMounted(async () => {
+    loadProducts()
     const id = route.params.id as string
     if (id) {
         await catalogStore.loadProductById(id)
@@ -241,8 +235,6 @@ onMounted(async () => {
             step.value = 2
             unit.value = currentProduct.value.unit || 'кг'
         }
-    } else {
-        catalogStore.clearSearch()
     }
 
     // Pre-fill from Query Params
@@ -326,16 +318,34 @@ const goBack = () => {
 
         <!-- Step 1: Select Product -->
         <section v-if="step === 1" class="step-section">
-            <FpCard class="m-4">
-                <div v-if="!isCreating">
-                    <h3>Выберите товар</h3>
-                    <FpCombobox v-model="searchQuery" label="Поиск товара" placeholder="Например: Молоко"
-                        :items="comboboxSearchResults" :loading="catalogStore.isSearching.value" allow-create
-                        create-label="Добавить новый товар" @update:modelValue="handleSearch" @select="selectProduct"
-                        @create="handleProductCreate" @focus="onProductFocus" />
+            <div class="selection-grid-container">
+                <div class="search-header">
+                    <FpInput v-model="gridSearchQuery" placeholder="Поиск товара..." class="grid-search" />
                 </div>
 
-                <div v-else class="creation-form">
+                <div v-if="isLoadingProducts" class="loading-state">
+                    <FpSpinner />
+                </div>
+
+                <div v-else class="product-grid">
+                    <!-- Create New Tile -->
+                    <button class="product-tile create-tile" @click="startCreation">
+                        <div class="tile-icon">+</div>
+                        <span class="tile-name">Новый товар</span>
+                    </button>
+
+                    <!-- Product Tiles -->
+                    <button v-for="item in filteredGridProducts" :key="item.id" class="product-tile"
+                        @click="selectProduct({ id: item.id, name: item.name })">
+                        <div class="tile-category-icon">{{ item.category?.[0] || '📦' }}</div>
+                        <span class="tile-name">{{ item.name }}</span>
+                        <span class="tile-category">{{ item.category }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <FpCard class="m-4" v-if="isCreating">
+                <div class="creation-form">
                     <h3>Новый товар</h3>
                     <div class="form-grid">
                         <FpInput v-model="newProductName" label="Название" @keydown.enter="createProduct" />
@@ -661,5 +671,90 @@ const goBack = () => {
     align-items: center;
     color: var(--color-primary);
     font-weight: 500;
+}
+
+.selection-grid-container {
+    padding: 0 var(--spacing-sm);
+}
+
+.search-header {
+    margin-bottom: var(--spacing-md);
+    position: sticky;
+    top: 64px; // Adjust based on header height
+    background: var(--color-background);
+    z-index: 5;
+    padding: var(--spacing-sm) 0;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    padding-bottom: var(--spacing-xl);
+}
+
+.product-tile {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    aspect-ratio: 1 / 1;
+    justify-content: center;
+
+    &:active {
+        transform: scale(0.95);
+        background-color: var(--color-surface-hover);
+    }
+
+    .tile-icon {
+        font-size: 24px;
+        color: var(--color-primary);
+        margin-bottom: 4px;
+    }
+
+    .tile-category-icon {
+        font-size: 20px;
+        margin-bottom: 4px;
+        opacity: 0.7;
+    }
+
+    .tile-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.2;
+    }
+
+    .tile-category {
+        font-size: 10px;
+        color: var(--color-text-secondary);
+        margin-top: 2px;
+    }
+
+    &.create-tile {
+        border: 2px dashed var(--color-primary);
+        background: rgba(var(--color-primary-rgb), 0.05);
+
+        .tile-name {
+            color: var(--color-primary);
+        }
+    }
+}
+
+.loading-state {
+    display: flex;
+    justify-content: center;
+    padding: var(--spacing-xl);
 }
 </style>
