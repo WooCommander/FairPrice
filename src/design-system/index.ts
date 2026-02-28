@@ -7,6 +7,7 @@ import FpConfirmationModal from './components/FpConfirmationModal.vue'
 import FpInput from './components/FpInput.vue'
 import FpSearchInput from './components/FpSearchInput.vue'
 import FpSpinner from './components/FpSpinner.vue'
+import FpMobilePicker from './components/FpMobilePicker.vue'
 
 export {
     FpBackButton,
@@ -17,5 +18,6 @@ export {
     FpConfirmationModal,
     FpInput,
     FpSearchInput,
-    FpSpinner
+    FpSpinner,
+    FpMobilePicker
 }

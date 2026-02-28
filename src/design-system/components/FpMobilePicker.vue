@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import FpInput from './FpInput.vue'
 
 interface Item {
@@ -31,6 +31,7 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void
     (e: 'select', item: Item): void
     (e: 'create', query: string): void
+    (e: 'search', query: string): void
 }>()
 
 const isOverlayOpen = ref(false)
@@ -51,7 +52,7 @@ const showCreateOption = computed(() => {
 const openPicker = () => {
     searchQuery.value = ''
     isOverlayOpen.value = true
-    // Logic for body scroll lock could be added here
+    emit('search', '')
 }
 
 const closePicker = () => {
@@ -68,6 +69,10 @@ const handleCreate = () => {
     emit('create', searchQuery.value)
     closePicker()
 }
+
+watch(searchQuery, (q) => {
+    emit('search', q)
+})
 
 // Global hotkeys or back-button prevention can be here
 </script>

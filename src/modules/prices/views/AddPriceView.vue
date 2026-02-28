@@ -8,7 +8,8 @@ import {
     FpButton,
     FpInput,
     FpCard,
-    FpCombobox
+    FpCombobox,
+    FpMobilePicker
 } from '@/design-system'
 
 const route = useRoute()
@@ -120,9 +121,22 @@ const createProduct = async () => {
     }
 }
 
+const onStoreSelect = (s: any) => {
+    storeName.value = s.name
+}
+
+const onStoreCreate = (name: string) => {
+    storeName.value = name
+}
+
 const handleSearchStore = async (q: string) => {
     storeName.value = q
-    if (q.length < 2 && q.length > 0) return
+    if (q.length < 1) {
+        // Load some initial stores
+        const results = await priceStore.getStores('')
+        storeResults.value = results
+        return
+    }
     isSearchingStores.value = true
     try {
         const results = await priceStore.getStores(q)
@@ -132,21 +146,6 @@ const handleSearchStore = async (q: string) => {
     }
 }
 
-const selectStore = (s: any) => {
-    storeName.value = s.name || s.label
-}
-
-const createStore = async (name: string) => {
-    storeName.value = name
-}
-
-const createCategory = (name: string) => {
-    newProductCategory.value = name
-}
-
-const createUnit = (val: string) => {
-    unit.value = val
-}
 
 const submit = async () => {
     if (!currentProduct.value || !storeName.value || !price.value) return
@@ -174,6 +173,7 @@ const submit = async () => {
 }
 
 onMounted(() => {
+    handleSearchStore('') // Pre-fetch stores
     const id = route.params.id as string
     if (id) {
         // Direct entry
@@ -189,12 +189,6 @@ onMounted(() => {
         loadProducts()
     }
 })
-
-const onStoreFocus = () => {
-    if (!storeName.value) {
-        priceStore.getStores('')
-    }
-}
 
 // Watch for search query
 watch(searchQuery, (val) => {
@@ -276,7 +270,7 @@ watch(searchQuery, (val) => {
                     <div class="form-grid">
                         <FpInput v-model="newProductName" label="Название" @keydown.enter="createProduct" />
                         <FpCombobox v-model="newProductCategory" label="Категория" :items="categoryItems"
-                            placeholder="Выберите категорию" allow-create @create="createCategory" />
+                            placeholder="Выберите категорию" allow-create @create="newProductCategory = $event" />
                     </div>
                     <div class="actions-row">
                         <FpButton variant="outline" @click="isCreating = false">Отмена</FpButton>
@@ -295,9 +289,9 @@ watch(searchQuery, (val) => {
                 </div>
 
                 <div class="form-grid">
-                    <FpCombobox v-model="storeName" label="Магазин" placeholder="Где купили?" :items="storeResults"
-                        :loading="isSearchingStores" allow-create @update:modelValue="handleSearchStore"
-                        @select="selectStore" @create="createStore" @focus="onStoreFocus" />
+                    <FpMobilePicker v-model="storeName" label="Магазин" placeholder="Где купили?" title="Выбор магазина"
+                        :items="storeResults" allow-create @select="onStoreSelect" @create="onStoreCreate"
+                        @search="handleSearchStore" />
 
                     <div class="price-row">
                         <FpInput v-model="price" label="Цена (₽)" type="number" placeholder="0" class="price-input" />
@@ -307,8 +301,8 @@ watch(searchQuery, (val) => {
                         <FpInput v-model="quantity" label="Вес/Объем" type="number" placeholder="900"
                             class="quantity-input" />
                         <div class="unit-select">
-                            <FpCombobox v-model="unit" label="Ед." :items="unitItems" placeholder="г" allow-create
-                                @create="createUnit" :clearable="false" />
+                            <FpMobilePicker v-model="unit" label="Ед." :items="unitItems" placeholder="г"
+                                title="Единица изм." allow-create @create="unit = $event" />
                         </div>
                     </div>
 
