@@ -37,6 +37,10 @@ const filteredUpdates = computed(() => {
     return recentUpdates.value
 })
 
+const toggleFavorite = async (productId: string) => {
+    await catalogStore.toggleFavorite(productId)
+}
+
 onMounted(async () => {
     try {
         await Promise.all([
@@ -131,6 +135,7 @@ onMounted(async () => {
                         <thead>
                             <tr>
                                 <th>Товар</th>
+                                <th></th>
                                 <th>Категория</th>
                                 <th class="text-right">Цена</th>
                                 <th class="text-right">Средняя (мес.)</th>
@@ -142,6 +147,18 @@ onMounted(async () => {
                             <tr v-for="item in filteredUpdates" :key="item.id" class="feed-row"
                                 @click="router.push(`/product/${item.id}`)">
                                 <td class="font-medium">{{ item.displayName }}</td>
+                                <td>
+                                    <button class="fav-btn" :class="{ active: catalogStore.isFavorite(item.id) }"
+                                        @click.stop="toggleFavorite(item.id)">
+                                        <svg width="20" height="20" viewBox="0 0 24 24"
+                                            :fill="catalogStore.isFavorite(item.id) ? 'currentColor' : 'none'"
+                                            stroke="currentColor" stroke-width="2">
+                                            <polygon
+                                                points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
+                                            </polygon>
+                                        </svg>
+                                    </button>
+                                </td>
                                 <td>
                                     <span class="category-tag" @click.stop="router.push(`/category/${item.category}`)">
                                         {{ item.category }}
@@ -178,7 +195,19 @@ onMounted(async () => {
 
                             <!-- Row 1: Title & Price -->
                             <div class="card-top">
-                                <span class="card-title">{{ item.displayName }}</span>
+                                <div class="title-with-fav">
+                                    <button class="fav-btn" :class="{ active: catalogStore.isFavorite(item.id) }"
+                                        @click.stop="toggleFavorite(item.id)">
+                                        <svg width="20" height="20" viewBox="0 0 24 24"
+                                            :fill="catalogStore.isFavorite(item.id) ? 'currentColor' : 'none'"
+                                            stroke="currentColor" stroke-width="2">
+                                            <polygon
+                                                points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
+                                            </polygon>
+                                        </svg>
+                                    </button>
+                                    <span class="card-title">{{ item.displayName }}</span>
+                                </div>
                                 <div class="price-col">
                                     <span class="card-price" :class="{
                                         'text-success': item.priceStatus === 'good',
@@ -668,5 +697,36 @@ onMounted(async () => {
 // Hide elements not used in new design if needed
 .avg-price-badge {
     display: none; // Hide average price to reduce clutter on mobile
+}
+
+.fav-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--color-text-disabled);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.active {
+        color: #FFD700; // Gold
+    }
+
+    &:hover {
+        transform: scale(1.1);
+    }
+}
+
+.title-with-fav {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+
+    .fav-btn {
+        padding: 0;
+        margin-top: -2px;
+    }
 }
 </style>

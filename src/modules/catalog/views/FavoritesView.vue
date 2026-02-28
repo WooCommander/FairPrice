@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { CatalogService, type ProductDTO } from '@/modules/catalog/services/CatalogService'
+import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import { FpSpinner } from '@/design-system'
@@ -26,6 +27,11 @@ onMounted(async () => {
 const goToProduct = (id: string) => {
     router.push(`/product/${id}`)
 }
+
+const toggleFavorite = async (productId: string) => {
+    await catalogStore.toggleFavorite(productId)
+    favorites.value = favorites.value.filter(p => p.id !== productId)
+}
 </script>
 
 <template>
@@ -40,7 +46,18 @@ const goToProduct = (id: string) => {
             <FpCard v-for="item in favorites" :key="item.id" class="result-card" @click="goToProduct(item.id)">
                 <div class="card-content">
                     <div class="main-info">
-                        <h3>{{ item.name }}</h3>
+                        <div class="title-row">
+                            <h3>{{ item.name }}</h3>
+                            <button class="fav-btn active" @click.stop="toggleFavorite(item.id)"
+                                title="Убрать из избранного">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"
+                                    stroke="currentColor" stroke-width="2">
+                                    <polygon
+                                        points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
+                                    </polygon>
+                                </svg>
+                            </button>
+                        </div>
                         <span class="category">{{ item.category }}</span>
                     </div>
                     <div class="price-info">
@@ -104,16 +121,48 @@ const goToProduct = (id: string) => {
 }
 
 .main-info {
+    flex: 1;
+
+    .title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
     h3 {
         margin: 0;
         font-size: var(--text-body-1);
         font-weight: 600;
         color: var(--color-text-primary);
+        line-height: 1.2;
     }
 
     .category {
         font-size: var(--text-caption);
         color: var(--color-text-secondary);
+        display: block;
+        margin-top: 4px;
+    }
+}
+
+.fav-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--color-text-disabled);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.active {
+        color: #FFD700; // Gold
+    }
+
+    &:hover {
+        transform: scale(1.1);
     }
 }
 
