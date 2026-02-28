@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { priceStore } from '../store/priceStore'
 import { useRouter } from 'vue-router'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
-import FpSpinner from '@/design-system/components/FpSpinner.vue'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -20,6 +19,11 @@ const handleSearch = async () => {
     }
 }
 
+// Watch for search query changes to unify search behavior
+watch(searchQuery, () => {
+    handleSearch()
+})
+
 onMounted(() => {
     handleSearch()
 })
@@ -32,7 +36,7 @@ const viewStore = (storeId: string) => {
 <template>
     <div class="stores-list-view">
         <div class="page-title-row">
-            <h1 class="page-title">Места</h1>
+            <h1 class="page-title">Магазины</h1>
             <FpButton size="sm" @click="router.push('/create-store')">Добавить</FpButton>
         </div>
 
@@ -40,17 +44,24 @@ const viewStore = (storeId: string) => {
             <div class="search-input-group">
                 <FpInput v-model="searchQuery" placeholder="Поиск магазина..." @keydown.enter="handleSearch"
                     class="flex-grow" />
-                <FpButton @click="handleSearch">Найти</FpButton>
             </div>
         </div>
 
         <section class="list-section">
-            <div v-if="isLoading && stores.length === 0" class="loading">
-                <FpSpinner />
+            <div v-if="isLoading && stores.length === 0" class="standard-grid">
+                <!-- Skeleton Loading State -->
+                <div v-for="i in 6" :key="i" class="fp-tile skeleton">
+                    <div class="tile-info">
+                        <div class="skeleton-line sm" style="width: 40%"></div>
+                        <div class="skeleton-line lg" style="width: 70%"></div>
+                    </div>
+                </div>
             </div>
 
             <div v-else-if="stores.length === 0" class="empty">
-                Ничего не найдено.
+                <div class="empty-icon">🏪</div>
+                <h3>Ничего не найдено</h3>
+                <p>Попробуйте изменить поисковый запрос</p>
             </div>
 
             <div v-else class="standard-grid">
@@ -77,10 +88,29 @@ const viewStore = (storeId: string) => {
     padding: 0 0.5rem;
 }
 
-.loading,
 .empty {
     text-align: center;
-    padding: 2rem;
+    padding: 3rem 1rem;
     color: var(--color-text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    .empty-icon {
+        font-size: 48px;
+        opacity: 0.3;
+    }
+
+    h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: var(--color-text-primary);
+    }
+
+    p {
+        margin: 0;
+        font-size: 0.95rem;
+    }
 }
 </style>

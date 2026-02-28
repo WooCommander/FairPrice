@@ -104,7 +104,7 @@ onMounted(async () => {
                 <button class="action-card" @click="router.push('/stores')">
                     <div class="action-icon">🏪</div>
                     <div class="text-content">
-                        <span class="title">Места</span>
+                        <span class="title">Магазины</span>
                     </div>
                 </button>
             </section>
