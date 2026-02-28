@@ -75,7 +75,7 @@ const calculatedUnitPrice = computed(() => {
 const loadProducts = async () => {
     isLoadingProducts.value = true
     try {
-        await catalogStore.searchProducts('', { limit: 100 })
+        await catalogStore.searchProducts('', {})
     } finally {
         isLoadingProducts.value = false
     }
@@ -215,7 +215,7 @@ watch(searchQuery, (val) => {
                     </svg>
                 </button>
                 <h1 class="header-title">
-                    {{ step === 1 ? 'Выбор товара' : currentProduct?.name }}
+                    {{ step === 1 ? 'Добавить цену' : currentProduct?.name }}
                 </h1>
                 <div class="header-actions">
                     <button v-if="step === 2" class="action-btn-text" :disabled="!storeName || !price || !quantity"
@@ -266,10 +266,6 @@ watch(searchQuery, (val) => {
                     <div class="tile-info">
                         <span class="subtitle">{{ item.category }}</span>
                         <h3 class="title">{{ item.name }}</h3>
-                    </div>
-                    <div class="tile-footer">
-                        <span class="extra-info">{{ item.unit || '---' }}</span>
-                        <span class="main-value">Выбрать</span>
                     </div>
                 </div>
             </div>
@@ -468,5 +464,16 @@ watch(searchQuery, (val) => {
     margin-top: 20px;
     color: var(--color-success);
     font-weight: 600;
+}
+
+// Ergonomic adjustments for tiles without footer
+.fp-tile {
+    justify-content: center;
+    min-height: 80px;
+
+    .tile-info {
+        text-align: center;
+        width: 100%;
+    }
 }
 </style>
