@@ -1,0 +1,269 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import FpInput from './FpInput.vue'
+
+interface Item {
+    id: string | number
+    name: string
+    [key: string]: any
+}
+
+interface Props {
+    modelValue: string
+    items: Item[]
+    label?: string
+    placeholder?: string
+    allowCreate?: boolean
+    createLabel?: string
+    title?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+    modelValue: '',
+    items: () => [],
+    allowCreate: false,
+    createLabel: 'Добавить',
+    placeholder: 'Поиск...',
+    title: 'Выбор'
+})
+
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: string): void
+    (e: 'select', item: Item): void
+    (e: 'create', query: string): void
+}>()
+
+const isOverlayOpen = ref(false)
+const searchQuery = ref('')
+
+const filteredItems = computed(() => {
+    const q = searchQuery.value.toLowerCase()
+    if (!q) return props.items
+    return props.items.filter(i => i.name.toLowerCase().includes(q))
+})
+
+const showCreateOption = computed(() => {
+    return props.allowCreate &&
+        searchQuery.value.length > 0 &&
+        !props.items.find(i => i.name.toLowerCase() === searchQuery.value.toLowerCase())
+})
+
+const openPicker = () => {
+    searchQuery.value = ''
+    isOverlayOpen.value = true
+    // Logic for body scroll lock could be added here
+}
+
+const closePicker = () => {
+    isOverlayOpen.value = false
+}
+
+const handleSelect = (item: Item) => {
+    emit('update:modelValue', item.name)
+    emit('select', item)
+    closePicker()
+}
+
+const handleCreate = () => {
+    emit('create', searchQuery.value)
+    closePicker()
+}
+
+// Global hotkeys or back-button prevention can be here
+</script>
+
+<template>
+    <div class="fp-mobile-picker">
+        <div class="picker-trigger" @click="openPicker">
+            <div class="trigger-label" :class="{ 'has-value': modelValue }">{{ label }}</div>
+            <div class="trigger-value">{{ modelValue || placeholder }}</div>
+            <div class="chevron">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9L12 15L18 9" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+        </div>
+
+        <Teleport to="body">
+            <Transition name="picker-fade">
+                <div v-if="isOverlayOpen" class="picker-overlay">
+                    <div class="picker-header">
+                        <button class="close-btn" @click="closePicker">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                        <h2 class="picker-title">{{ title }}</h2>
+                        <div style="width: 24px"></div>
+                    </div>
+
+                    <div class="picker-search">
+                        <FpInput v-model="searchQuery" :placeholder="placeholder" ref="searchInputRef" autofocus />
+                    </div>
+
+                    <div class="picker-content">
+                        <div v-if="filteredItems.length === 0 && !showCreateOption" class="empty-results">
+                            Ничего не найдено
+                        </div>
+
+                        <div v-for="item in filteredItems" :key="item.id" class="picker-item"
+                            @click="handleSelect(item)">
+                            {{ item.name }}
+                        </div>
+
+                        <div v-if="showCreateOption" class="picker-item create-btn" @click="handleCreate">
+                            <span class="plus">+</span> {{ createLabel }} "{{ searchQuery }}"
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+    </div>
+</template>
+
+<style scoped lang="scss">
+.fp-mobile-picker {
+    width: 100%;
+    margin-bottom: var(--spacing-md);
+}
+
+.picker-trigger {
+    position: relative;
+    background-color: var(--color-surface);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    border-bottom: 2px solid var(--color-border);
+    height: 56px;
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:active {
+        background-color: rgba(var(--color-primary-rgb), 0.04);
+        border-bottom-color: var(--color-primary);
+    }
+}
+
+.trigger-label {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    font-size: var(--text-body-1);
+    color: var(--color-text-secondary);
+    transition: all 0.2s ease;
+    pointer-events: none;
+
+    &.has-value {
+        top: 4px;
+        font-size: var(--text-caption);
+        color: var(--color-primary);
+    }
+}
+
+.trigger-value {
+    font-size: var(--text-body-1);
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 24px;
+}
+
+.chevron {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    color: var(--color-text-secondary);
+}
+
+.picker-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--color-background);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+}
+
+.picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+}
+
+.picker-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+}
+
+.picker-search {
+    padding: 16px;
+    background: var(--color-surface);
+}
+
+.picker-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 40px;
+}
+
+.picker-item {
+    padding: 16px;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 1.125rem;
+    color: var(--color-text-primary);
+    transition: background-color 0.1s;
+
+    &:active {
+        background-color: var(--color-surface-hover);
+    }
+
+    &.create-btn {
+        color: var(--color-primary);
+        font-weight: 600;
+        background-color: rgba(var(--color-primary-rgb), 0.02);
+
+        .plus {
+            font-size: 1.5rem;
+            margin-right: 8px;
+        }
+    }
+}
+
+.empty-results {
+    padding: 40px;
+    text-align: center;
+    color: var(--color-text-secondary);
+}
+
+// Transitions
+.picker-fade-enter-active,
+.picker-fade-leave-active {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.picker-fade-enter-from,
+.picker-fade-leave-to {
+    transform: translateY(100%);
+    opacity: 0;
+}
+</style>

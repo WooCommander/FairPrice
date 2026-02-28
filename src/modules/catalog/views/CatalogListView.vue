@@ -28,7 +28,10 @@ const addPrice = (productId: string) => {
 
 <template>
     <div class="catalog-list-view">
-        <h1 class="page-title">Каталог товаров</h1>
+        <div class="page-title-row">
+            <h1 class="page-title">Каталог товаров</h1>
+            <FpButton size="sm" @click="router.push('/create-product')">Добавить</FpButton>
+        </div>
 
         <section class="search-section">
             <FpCard>

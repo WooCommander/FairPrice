@@ -63,7 +63,10 @@ const goToAddProduct = () => {
 
 <template>
     <div class="category-view">
-        <h1 class="page-title">{{ categoryName }}</h1>
+        <div class="page-title-row">
+            <h1 class="page-title">{{ categoryName }}</h1>
+            <FpButton size="sm" @click="router.push(`/create-product?category=${categoryName}`)">Добавить</FpButton>
+        </div>
 
         <div v-if="isLoading" class="loading">
             <FpSpinner />

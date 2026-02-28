@@ -33,7 +33,10 @@ const viewStore = (storeId: string) => {
 
 <template>
     <div class="stores-list-view">
-        <h1 class="page-title">Места</h1>
+        <div class="page-title-row">
+            <h1 class="page-title">Места</h1>
+            <FpButton size="sm" @click="router.push('/create-store')">Добавить</FpButton>
+        </div>
 
         <section class="search-section">
             <FpCard>

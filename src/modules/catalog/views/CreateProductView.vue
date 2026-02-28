@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import FpInput from '@/design-system/components/FpInput.vue'
-import FpCombobox from '@/design-system/components/FpCombobox.vue'
+import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 
 const router = useRouter()
@@ -39,8 +39,8 @@ const handleCreate = async () => {
 }
 
 const createCategory = (val: string) => {
-    categoryItems.value.push({ id: val, name: val })
-    category.value = val
+    categoryItems.value.push({ id: val, name: val } as any)
+    category.value = val as any
 }
 
 const createUnit = (val: string) => {
@@ -60,11 +60,11 @@ const createUnit = (val: string) => {
             <div class="form-grid">
                 <FpInput v-model="name" label="Название товара" placeholder="Например: Сыр Российский" autofocus />
 
-                <FpCombobox v-model="category" label="Категория" :items="categoryItems" allow-create
-                    @create="createCategory" />
+                <FpMobilePicker v-model="category" label="Категория" :items="categoryItems" allow-create
+                    title="Выбор категории" @create="createCategory" />
 
-                <FpCombobox v-model="unit" label="Единица измерения" :items="unitItems" allow-create
-                    @create="createUnit" />
+                <FpMobilePicker v-model="unit" label="Единица измерения" :items="unitItems" allow-create
+                    title="Единица измерения" @create="createUnit" />
 
                 <div class="actions">
                     <FpButton size="lg" full-width :disabled="!name || isSubmitting" @click="handleCreate">

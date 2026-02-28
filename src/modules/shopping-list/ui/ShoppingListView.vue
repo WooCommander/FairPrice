@@ -6,7 +6,7 @@ import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
-import FpCombobox from '@/design-system/components/FpCombobox.vue'
+import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import { FpSpinner } from '@/design-system'
 
 
@@ -32,23 +32,7 @@ onMounted(() => {
     catalogStore.searchProducts('')
 })
 
-const onProductFocus = () => {
-    if (!newItemText.value) {
-        catalogStore.searchProducts('')
-    }
-}
 
-let debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined
-
-const handleSearch = (val: string) => {
-    newItemText.value = val
-    clearTimeout(debounceTimer)
-    debounceTimer = setTimeout(async () => {
-        if (val.length > 1) {
-            await catalogStore.searchProducts(val)
-        }
-    }, 300)
-}
 
 const onProductSelect = (product: any) => {
     selectedProduct.value = product
@@ -120,15 +104,21 @@ const formatPrice = (p: number) => {
 
 <template>
     <div class="shopping-list-view">
-        <h1 class="page-title">Список покупок</h1>
+        <div class="page-title-row">
+            <h1 class="page-title">Список покупок</h1>
+            <FpButton v-if="uncheckedItems.length > 0 || checkedItems.length > 0" variant="text" size="sm"
+                class="danger-text" @click="shoppingListStore.deleteChecked">
+                Очистить купленное
+            </FpButton>
+        </div>
 
         <section class="add-section">
             <FpCard>
                 <div class="add-form">
                     <div class="row main-row">
-                        <FpCombobox v-model="newItemText" label="Что купить?" :items="searchResults"
-                            :loading="catalogStore.isSearching.value" placeholder="Молоко..."
-                            @update:modelValue="handleSearch" @select="onProductSelect" class="flex-grow" />
+                        <FpMobilePicker v-model="newItemText" label="Что купить?" :items="searchResults"
+                            placeholder="Поиск товара..." title="Выбор товара" allow-create @select="onProductSelect"
+                            @create="newItemText = $event" class="flex-grow" />
                     </div>
                     <div class="row details-row">
                         <FpInput v-model="newItemPrice" type="number" label="Цена" placeholder="0" size="sm" />
