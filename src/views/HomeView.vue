@@ -108,6 +108,9 @@ onMounted(async () => {
                         <span class="stat-value">{{ shoppingItemsLeft }}</span>
                         <span class="stat-label">В списке</span>
                     </div>
+                    <div v-if="shoppingListStore.estimatedTotal.value > 0" class="stat-footer-text">
+                        ~{{ Math.round(shoppingListStore.estimatedTotal.value) }} ₽
+                    </div>
                 </FpCard>
 
                 <FpCard class="stat-card" @click="showFavoritesOnly = true">

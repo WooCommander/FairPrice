@@ -102,5 +102,15 @@ export const shoppingListStore = {
         return items.value
             .filter(i => i.isChecked && i.price)
             .reduce((sum, i) => sum + (Number(i.price) * (Number(i.quantity) || 1)), 0)
+    }),
+
+    estimatedTotal: computed(() => {
+        return items.value
+            .filter(i => !i.isChecked)
+            .reduce((sum, i) => {
+                const p = i.estimatedPrice || 0
+                const q = i.quantity || 1
+                return sum + (p * q)
+            }, 0)
     })
 }

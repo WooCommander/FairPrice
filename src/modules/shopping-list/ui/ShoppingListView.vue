@@ -112,32 +112,37 @@ const formatPrice = (p: number) => {
             </FpButton>
         </div>
 
-        <section class="add-section">
-            <FpCard>
-                <div class="add-form">
-                    <div class="row main-row">
-                        <FpMobilePicker v-model="newItemText" label="Что купить?" :items="searchResults"
-                            placeholder="Поиск товара..." title="Выбор товара" allow-create @select="onProductSelect"
-                            @create="newItemText = $event" class="flex-grow" />
-                    </div>
-                    <div class="row details-row">
-                        <FpInput v-model="newItemPrice" type="number" label="Цена" placeholder="0" size="sm" />
-                        <FpInput v-model="newItemQuantity" type="number" label="Кол-во" placeholder="1" size="sm" />
-                        <FpButton @click="addItem" :disabled="!newItemText.trim()" variant="primary">Добавить</FpButton>
-                    </div>
+        <div class="sticky-search-wrapper">
+            <div class="add-form">
+                <div class="row main-row">
+                    <FpMobilePicker v-model="newItemText" label="Что купить?" :items="searchResults"
+                        placeholder="Поиск товара..." title="Выбор товара" allow-create @select="onProductSelect"
+                        @create="newItemText = $event" class="flex-grow" />
                 </div>
-            </FpCard>
-        </section>
+                <div class="row details-row">
+                    <FpInput v-model="newItemPrice" type="number" label="Цена (рек.)" placeholder="0" size="sm" />
+                    <FpInput v-model="newItemQuantity" type="number" label="Кол-во" placeholder="1" size="sm" />
+                    <FpButton @click="addItem" :disabled="!newItemText.trim()" variant="primary">Добавить</FpButton>
+                </div>
+            </div>
+        </div>
 
         <!-- Summary Bar -->
-        <section v-if="checkedItems.length > 0" class="summary-bar">
-            <FpCard class="summary-card">
-                <div class="summary-info">
-                    <span class="label">Итого куплено:</span>
-                    <span class="value">{{ formatPrice(totalExpenses) }}</span>
+        <section v-if="uncheckedItems.length > 0 || checkedItems.length > 0" class="summary-bar">
+            <FpCard class="summary-card" :class="{ 'has-estimate': uncheckedItems.length > 0 }">
+                <div class="summary-main">
+                    <div class="summary-info checked" v-if="checkedItems.length > 0">
+                        <span class="label">Итого куплено:</span>
+                        <span class="value">{{ formatPrice(totalExpenses) }}</span>
+                    </div>
+                    <div class="summary-info estimate" v-if="uncheckedItems.length > 0">
+                        <span class="label">Примерный итог:</span>
+                        <span class="value">~{{ formatPrice(shoppingListStore.estimatedTotal.value) }}</span>
+                    </div>
                 </div>
                 <div class="summary-stats">
-                    <span>{{ checkedItems.length }} из {{ uncheckedItems.length + checkedItems.length }} товаров</span>
+                    <span>{{ checkedItems.length }} из {{ uncheckedItems.length + checkedItems.length }} товаров
+                        куплено</span>
                 </div>
             </FpCard>
         </section>
@@ -291,11 +296,17 @@ const formatPrice = (p: number) => {
     color: white;
     padding: var(--spacing-md);
 
+    .summary-main {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
     .summary-info {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-bottom: 4px;
 
         .label {
             font-size: var(--text-caption);
@@ -305,6 +316,15 @@ const formatPrice = (p: number) => {
         .value {
             font-size: var(--text-h5);
             font-weight: 800;
+        }
+
+        &.estimate {
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+
+            .value {
+                color: rgba(255, 255, 255, 0.9);
+            }
         }
     }
 

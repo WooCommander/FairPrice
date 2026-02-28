@@ -13,18 +13,40 @@ export interface ShoppingListDto {
 }
 
 class ShoppingListService {
-    async getItems(): Promise<ShoppingListDto[]> {
+    async getItems(): Promise<any[]> {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return []
 
         const { data, error } = await supabase
             .from('shopping_list')
-            .select('*')
+            .select(`
+                *,
+                product:products (
+                    prices (
+                        price,
+                        created_at
+                    )
+                )
+            `)
             .eq('user_id', user.id)
             .order('created_at', { ascending: true })
 
         if (error) throw error
-        return data || []
+
+        // Enhance DTO with estimated_price from latest price history
+        return (data || []).map((item: any) => {
+            let estimatedPrice = undefined
+            if (item.product?.prices?.length > 0) {
+                // Get latest price
+                const prices = [...item.product.prices]
+                prices.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                estimatedPrice = prices[0].price
+            }
+            return {
+                ...item,
+                estimated_price: estimatedPrice
+            }
+        })
     }
 
     async addItem(text: string, productId?: string, details?: { price?: number, quantity?: number, unit?: string }): Promise<ShoppingListDto | null> {

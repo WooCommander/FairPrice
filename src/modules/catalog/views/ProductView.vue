@@ -143,55 +143,59 @@ const addToShoppingList = async () => {
 		}
 	}
 }
+
+const cheapestStore = computed(() => {
+	if (!latestHistory.value || latestHistory.value.length === 0) return null
+
+	// Filter prices that have store info and are valid numbers
+	const validPrices = latestHistory.value.filter(h => h.price > 0 && h.storeName)
+	if (validPrices.length === 0) return null
+
+	const sorted = [...validPrices].sort((a, b) => a.price - b.price)
+	return {
+		price: sorted[0].price,
+		storeName: sorted[0].storeName,
+		storeId: sorted[0].storeId
+	}
+})
+
+const priceStatusLabel = computed(() => {
+	if (currentProduct.value?.priceStatus === 'good') return '🔥 Выгодная цена'
+	if (currentProduct.value?.priceStatus === 'bad') return '⚠️ Дорого'
+	return '⚖️ Обычная цена'
+})
+
+
 </script>
 
 <template>
 	<div class="product-view">
 		<div v-if="currentProduct" class="content-body">
-			<!-- Local Header with Back Button -->
-			<div class="page-title-row">
-				<div class="title-group">
+			<!-- Standardized Header -->
+			<div class="sticky-search-wrapper product-header">
+				<div class="header-inner">
 					<button class="nav-btn" @click="router.back()">
-						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-							stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+							stroke-linecap="round" stroke-linejoin="round">
 							<line x1="19" y1="12" x2="5" y2="12"></line>
 							<polyline points="12 19 5 12 12 5"></polyline>
 						</svg>
 					</button>
-					<h2 class="page-title">Товар</h2>
+					<h2 class="header-title">Детали товара</h2>
+					<div class="header-actions">
+						<button class="action-icon-btn" @click="toggleFavorite"
+							:title="isFavorite ? 'Убрать из избранного' : 'В избранное'">
+							<span v-if="isFavorite">⭐</span>
+							<span v-else>☆</span>
+						</button>
+						<button class="action-icon-btn" @click="startEditProduct" title="Редактировать">
+							<span>✏️</span>
+						</button>
+						<button class="action-icon-btn danger" @click="confirmDeleteProduct" title="Удалить">
+							<span>🗑️</span>
+						</button>
+					</div>
 				</div>
-			</div>
-
-			<div class="product-actions-top">
-				<button class="action-icon-btn" @click="toggleFavorite"
-					:title="isFavorite ? 'Убрать из избранного' : 'В избранное'">
-					<svg v-if="isFavorite" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"
-						stroke="currentColor" stroke-width="2" class="icon-starred">
-						<polygon
-							points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
-						</polygon>
-					</svg>
-					<svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-						stroke-width="2">
-						<polygon
-							points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
-						</polygon>
-					</svg>
-				</button>
-				<button class="action-icon-btn" @click="startEditProduct" title="Редактировать">
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-						<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-					</svg>
-				</button>
-				<button class="action-icon-btn danger" @click="confirmDeleteProduct" title="Удалить">
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<polyline points="3 6 5 6 21 6"></polyline>
-						<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-						<line x1="10" y1="11" x2="10" y2="17"></line>
-						<line x1="14" y1="11" x2="14" y2="17"></line>
-					</svg>
-				</button>
 			</div>
 
 			<!-- VALUE CARD -->
@@ -201,26 +205,27 @@ const addToShoppingList = async () => {
 					<h1 class="card-title">{{ currentProduct.name }}</h1>
 				</div>
 
-				<div class="card-top-info">
-					<span class="store-badge" v-if="latestHistory[0]?.storeName">
-						📍 {{ latestHistory[0].storeName }}
-					</span>
-					<span class="date-badge" v-if="latestHistory[0]?.dateRelative">
-						{{ latestHistory[0].dateRelative }}
-					</span>
-				</div>
-
 				<div class="price-hero">
 					<span class="main-price">{{ currentProduct.formattedPrice }}</span>
 					<span class="unit-label" v-if="currentProduct.unit">за {{ currentProduct.unit }}</span>
 				</div>
 
-				<div class="value-analysis" v-if="currentProduct.priceStatus !== 'neutral'">
+				<div class="value-analysis">
 					<span class="analysis-pill" :class="currentProduct.priceStatus">
-						{{ currentProduct.priceStatus === 'good' ? '🔥 Отличная цена' : '⚠️ Дороговато' }}
+						{{ priceStatusLabel }}
 					</span>
 					<span class="avg-ref" v-if="currentProduct.averagePrice">Средняя: ~{{
 						Math.round(currentProduct.averagePrice) }} ₽</span>
+				</div>
+
+				<!-- Cheapest Store Insight -->
+				<div v-if="cheapestStore && cheapestStore.price < (currentProduct.lastPrice || 0)" class="cheapest-insight"
+					@click="router.push(`/store/${cheapestStore.storeId}`)">
+					<div class="insight-label">Лучшая цена была здесь:</div>
+					<div class="insight-value">
+						<span class="price">{{ cheapestStore.price }} ₽</span>
+						<span class="store">🏪 {{ cheapestStore.storeName }}</span>
+					</div>
 				</div>
 
 				<!-- Primary Action (Update Price) -->
@@ -260,11 +265,10 @@ const addToShoppingList = async () => {
 
 							<button v-if="item.createdBy === currentUserId && item.id" class="delete-price-btn"
 								@click.stop="confirmDeletePrice(item.id)">
-								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-									stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+									stroke-linecap="round" stroke-linejoin="round">
 									<polyline points="3 6 5 6 21 6"></polyline>
-									<path
-										d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+									<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
 									</path>
 								</svg>
 							</button>
@@ -303,9 +307,9 @@ const addToShoppingList = async () => {
 			confirm-text="Да, удалить" variant="danger" @update:visible="showDeleteModal = $event"
 			@confirm="handleDeleteConfirm" />
 
-		<FpConfirmationModal :visible="showDeletePriceModal" title="Удаление цены"
-			message="Удалить эту цену из истории?" confirm-text="Да, удалить" variant="danger"
-			@update:visible="showDeletePriceModal = $event" @confirm="handleDeletePrice" />
+		<FpConfirmationModal :visible="showDeletePriceModal" title="Удаление цены" message="Удалить эту цену из истории?"
+			confirm-text="Да, удалить" variant="danger" @update:visible="showDeletePriceModal = $event"
+			@confirm="handleDeletePrice" />
 	</div>
 </template>
 
@@ -315,17 +319,57 @@ const addToShoppingList = async () => {
 }
 
 
-.ergo-header {
-	//display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 12px 16px;
-	background: var(--color-surface);
-	position: sticky;
-	top: 0;
-	z-index: 10;
-	border-bottom: 1px solid var(--color-border);
+.product-header {
+	background: var(--color-surface) !important;
+	border-bottom: 1px solid var(--color-border) !important;
+	padding: 0 !important;
+	margin: 0 -16px !important;
+
+	.header-inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 8px 16px;
+		height: 60px;
+	}
+
+	.header-title {
+		font-size: 17px;
+		font-weight: 700;
+		margin: 0;
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.header-actions {
+		display: flex;
+		gap: 8px;
+	}
 }
+
+.action-icon-btn {
+	background: none;
+	border: none;
+	font-size: 20px;
+	cursor: pointer;
+	width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	transition: background 0.2s;
+
+	&:active {
+		background: var(--color-surface-hover);
+	}
+
+	&.danger:active {
+		background: rgba(var(--color-error-rgb), 0.1);
+	}
+}
+
 
 .nav-btn {
 	background: transparent;
@@ -499,6 +543,62 @@ const addToShoppingList = async () => {
 	border-radius: 16px;
 	font-size: 1rem;
 	font-weight: 600;
+}
+
+.cheapest-insight {
+	background: linear-gradient(135deg, rgba(var(--color-success-rgb), 0.1), transparent);
+	border: 1px dashed var(--color-success);
+	border-radius: 12px;
+	padding: 12px 16px;
+	margin: 16px 0;
+	width: 100%;
+	cursor: pointer;
+	transition: transform 0.2s;
+
+	&:active {
+		transform: scale(0.98);
+	}
+
+	.stat-label {
+		font-size: 10px;
+		font-weight: 600;
+		color: var(--color-text-secondary);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.stat-footer-text {
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--color-primary);
+		margin-top: 2px;
+	}
+
+	.insight-label {
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--color-success);
+		text-transform: uppercase;
+		margin-bottom: 4px;
+	}
+
+	.insight-value {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+
+		.price {
+			font-size: 18px;
+			font-weight: 800;
+			color: var(--color-success);
+		}
+
+		.store {
+			font-size: 13px;
+			color: var(--color-text-secondary);
+			font-weight: 500;
+		}
+	}
 }
 
 .avg-ref {

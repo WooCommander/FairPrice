@@ -19,12 +19,13 @@ export interface ShoppingListModel {
     text: string
     isChecked: boolean
     price?: number
+    estimatedPrice?: number // New field for predictive budgeting
     quantity?: number
     unit?: string
     createdAt: Date
 }
 
-export function shoppingListDtoToModel(dto: ShoppingListDto): ShoppingListModel {
+export function shoppingListDtoToModel(dto: any): ShoppingListModel {
     return {
         id: dto.id,
         userId: dto.user_id,
@@ -32,6 +33,7 @@ export function shoppingListDtoToModel(dto: ShoppingListDto): ShoppingListModel 
         text: dto.text,
         isChecked: dto.is_checked,
         price: dto.price,
+        estimatedPrice: dto.estimated_price, // Added mapping
         quantity: dto.quantity,
         unit: dto.unit,
         createdAt: new Date(dto.created_at)
