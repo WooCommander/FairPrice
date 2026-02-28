@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { shoppingListStore } from '@/modules/shopping-list/state/shoppingListStore'
 import FpCard from '@/design-system/components/FpCard.vue'
-import FpSearchInput from '@/design-system/components/FpSearchInput.vue'
+import FpInput from '@/design-system/components/FpInput.vue'
 
 const router = useRouter()
 
@@ -59,13 +59,13 @@ onMounted(async () => {
 
 <template>
     <div class="home-dashboard">
-        <!-- Header / Hero Section -->
-        <header class="dashboard-header">
-            <div class="search-bar-container">
-                <FpSearchInput v-model="searchQuery" placeholder="Поищем что нибудь?..." @keyup.enter="handleSearch"
-                    @search="handleSearch" />
+        <!-- Standardized Sticky Search -->
+        <div class="sticky-search-wrapper home-search">
+            <div class="search-input-group">
+                <FpInput v-model="searchQuery" placeholder="Поищем что нибудь?..." @keydown.enter="handleSearch"
+                    class="flex-grow" />
             </div>
-        </header>
+        </div>
 
         <div class="dashboard-content">
             <!-- Main Actions -->
@@ -287,14 +287,8 @@ onMounted(async () => {
     padding-bottom: var(--spacing-lg);
 }
 
-.dashboard-header {
+.home-search {
     margin-bottom: var(--spacing-lg);
-    text-align: center;
-}
-
-.search-bar-container {
-    position: relative;
-    margin: var(--spacing-sm);
 }
 
 .dashboard-content {

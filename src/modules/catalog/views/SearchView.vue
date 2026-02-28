@@ -5,7 +5,7 @@ import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpBackButton from '@/design-system/components/FpBackButton.vue'
-import FpSearchInput from '@/design-system/components/FpSearchInput.vue'
+import FpInput from '@/design-system/components/FpInput.vue'
 
 const router = useRouter()
 const { searchResults, isSearching, hasMore } = catalogStore
@@ -81,22 +81,20 @@ const goToProduct = (id: string) => {
 
 <template>
     <div class="search-view">
-        <header class="search-header">
-            <div class="search-bar">
+        <div class="sticky-search-wrapper">
+            <div class="search-input-group">
                 <FpBackButton />
-                <div class="input-container">
-                    <FpSearchInput v-model="query" placeholder="Поиск товаров..." :autofocus="true"
-                        @update:modelValue="handleSearch" />
-                </div>
+                <FpInput v-model="query" placeholder="Поиск товаров..." :autofocus="true"
+                    @update:modelValue="handleSearch" class="flex-grow" />
             </div>
 
-            <div class="filters">
-                <button v-for="cat in categories" :key="cat" class="filter-chip"
+            <div class="category-filters">
+                <button v-for="cat in categories" :key="cat" class="category-tag"
                     :class="{ active: selectedCategory === cat }" @click="selectCategory(cat)">
                     {{ cat }}
                 </button>
             </div>
-        </header>
+        </div>
 
         <div class="results-list">
 
@@ -153,61 +151,6 @@ const goToProduct = (id: string) => {
     flex-direction: column;
     overflow: hidden; // Prevent document scroll trigger
     max-height: 100%; // Constrain to parent
-}
-
-.search-header {
-    position: sticky;
-    top: 0;
-    background: var(--color-background);
-    z-index: 10;
-    padding: var(--spacing-md);
-    border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0; // Don't shrink header
-}
-
-.search-bar {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
-}
-
-.input-container {
-    flex: 1;
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.filters {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap; // Wrap tags to see them all
-    padding-bottom: 8px;
-}
-
-.filter-chip {
-    white-space: nowrap;
-    padding: 6px 16px;
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-text-secondary);
-    font-size: var(--text-caption);
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &.active {
-        background: var(--color-primary);
-        color: white;
-        border-color: var(--color-primary);
-    }
-
-    &:hover:not(.active) {
-        border-color: var(--color-primary);
-        color: var(--color-primary);
-    }
 }
 
 .results-list {
