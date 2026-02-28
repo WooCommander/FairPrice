@@ -75,8 +75,8 @@ const handleCreate = () => {
 <template>
     <div class="fp-mobile-picker">
         <div class="picker-trigger" @click="openPicker">
-            <div class="trigger-label" :class="{ 'has-value': modelValue }">{{ label }}</div>
-            <div class="trigger-value">{{ modelValue || placeholder }}</div>
+            <div v-if="label" class="trigger-label" :class="{ 'has-value': modelValue }">{{ label }}</div>
+            <div class="trigger-value">{{ modelValue || (label && !modelValue ? '' : placeholder) }}</div>
             <div class="chevron">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M6 9L12 15L18 9" stroke-linecap="round" stroke-linejoin="round" />
