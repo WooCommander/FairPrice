@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { catalogStore } from '../store/catalogStore'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { PRODUCT_CATEGORIES } from '../constants'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 
 const router = useRouter()
-const searchQuery = ref('')
-const selectedCategory = ref<string | null>(null)
+const route = useRoute()
+const searchQuery = ref(route.query.q as string || '')
+const selectedCategory = ref<string | null>(route.query.category as string || null)
 
 const products = computed(() => catalogStore.searchResults.value)
 const isLoading = computed(() => catalogStore.isLoading.value)
