@@ -41,15 +41,23 @@ const handleSubmit = async () => {
             const redirectPath = (router.currentRoute.value.query.redirect as string) || '/'
             router.push(redirectPath)
         } else {
-            error.value = authStore.error.value || 'Ошибка входа'
+            const errorMessage = authStore.error.value || 'Ошибка входа'
+            if (errorMessage.toLowerCase().includes('email not confirmed')) {
+                error.value = 'Email не подтвержден. Пожалуйста, проверьте свою почту.'
+            } else if (errorMessage.toLowerCase().includes('invalid login credentials')) {
+                error.value = 'Неверный email или пароль'
+            } else {
+                error.value = errorMessage
+            }
         }
     } else {
         const result: any = await authStore.register(email.value, password.value)
         if (result.success) {
             if (result.message) {
                 // Email confirmation needed
-                successMessage.value = 'Регистрация успешна! Проверьте почту для подтверждения.'
-                isLogin.value = true // Switch to login view or just show message
+                successMessage.value = 'Регистрация успешна! Проверьте почту для подтверждения аккаунта.'
+                isLogin.value = true
+                password.value = '' // Clear password for security
             } else {
                 const redirectPath = (router.currentRoute.value.query.redirect as string) || '/'
                 router.push(redirectPath)

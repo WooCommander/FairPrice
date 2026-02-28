@@ -39,6 +39,10 @@ class AuthService {
         if (error) throw error
     }
 
+    onAuthStateChange(callback: (event: string, session: Session | null) => void) {
+        return supabase.auth.onAuthStateChange(callback)
+    }
+
     async getUserStats() {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return null

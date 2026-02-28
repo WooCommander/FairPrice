@@ -27,13 +27,13 @@ export const authStore = {
             isLoading.value = false
         }
 
-        // Listen for auth changes
-        // We can access supabase client directly here or expose on service, 
-        // but importing supabase directly in store is fine for subscription
-        // For strict layered arch, maybe add listener in service?
-        // Let's keep it simple and just init. Realtime updates usually handled by supabase client automatically updating storage,
-        // but explicit listener is better.
-        // For MVP, just initial load is enough.
+        // Listen for auth changes to keep state in sync
+        AuthService.onAuthStateChange((event, currentSession) => {
+            console.log('Auth event:', event)
+            session.value = currentSession
+            user.value = currentSession?.user || null
+            isLoading.value = false
+        })
     },
 
     async login(email: string, password: string) {
@@ -80,7 +80,6 @@ export const authStore = {
 
     async logout() {
         await AuthService.signOut()
-        user.value = null
-        session.value = null
+        // State cleanup is now handled by onAuthStateChange listener
     }
 }
