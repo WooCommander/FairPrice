@@ -8,10 +8,23 @@ import FpInput from '@/design-system/components/FpInput.vue'
 
 const router = useRouter()
 
-const shoppingItemsLeft = computed(() => shoppingListStore.uncheckedItems.value.length)
-const { recentUpdates } = catalogStore
+// Stats Data
+// Destructure for easier use and reactivity in template
+const { recentUpdates, favoriteProductIds, isFavorite } = catalogStore
+const { uncheckedItems } = shoppingListStore
 
-// Use a subset for HomeView
+const shoppingItemsLeft = computed(() => uncheckedItems.value.length)
+const favoriteCount = computed(() => favoriteProductIds.value.size)
+// Welcome Greeting
+const greeting = computed(() => {
+    const hour = new Date().getHours()
+    if (hour < 6) return 'Доброй ночи'
+    if (hour < 12) return 'Доброе утро'
+    if (hour < 18) return 'Добрый день'
+    return 'Добрый вечер'
+})
+
+// Search
 const searchQuery = ref('')
 const showFavoritesOnly = ref(false)
 const isLoading = ref(true)
@@ -22,6 +35,16 @@ const handleSearch = () => {
     }
 }
 
+// Stats Helpers
+const favoriteProducts = computed(() =>
+    recentUpdates.value.filter(p => isFavorite(p.id))
+)
+
+const goodDeals = computed(() =>
+    favoriteProducts.value.filter(p => p.priceStatus === 'good')
+)
+
+// Main List Filtering
 const filteredUpdates = computed(() => {
     if (searchQuery.value) {
         const q = searchQuery.value.toLowerCase()
@@ -32,7 +55,7 @@ const filteredUpdates = computed(() => {
     }
 
     if (showFavoritesOnly.value) {
-        return recentUpdates.value.filter(p => catalogStore.isFavorite(p.id))
+        return favoriteProducts.value
     }
 
     return recentUpdates.value
@@ -47,7 +70,9 @@ onMounted(async () => {
     try {
         await Promise.all([
             catalogStore.loadRecentProducts(),
-            catalogStore.loadFavorites()
+            catalogStore.loadFavorites(),
+            // Ensure shopping list is loaded for stats
+            shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
         ])
     } catch (e) {
         console.error('Failed to load home data', e)
@@ -59,357 +84,396 @@ onMounted(async () => {
 
 <template>
     <div class="home-dashboard">
-        <!-- Standardized Sticky Search -->
-        <div class="sticky-search-wrapper home-search">
-            <div class="search-input-group">
-                <FpInput v-model="searchQuery" placeholder="Поищем что нибудь?..." @keydown.enter="handleSearch"
-                    class="flex-grow" />
+        <!-- Dashboard Hero -->
+        <header class="dashboard-hero">
+            <div class="hero-content">
+                <h1 class="welcome-text">{{ greeting }}, <span class="accent">друг</span></h1>
+                <p class="hero-subtitle">Сегодня отличный день для экономных покупок!</p>
             </div>
-        </div>
+
+            <div class="sticky-search-wrapper home-search">
+                <div class="search-input-group">
+                    <FpInput v-model="searchQuery" placeholder="Найти лучший товар..." @keydown.enter="handleSearch"
+                        class="flex-grow" />
+                </div>
+            </div>
+        </header>
 
         <div class="dashboard-content">
-            <!-- Main Actions -->
-            <section class="actions-section">
-                <!-- Card 1: Add Price -->
-                <button class="action-card primary" @click="router.push('/add-price')">
-                    <div class="icon-container">
-                        <span>+</span>
+            <!-- Stats Grid -->
+            <section class="stats-grid">
+                <FpCard class="stat-card" @click="router.push('/shopping-list')">
+                    <div class="stat-icon list">🛒</div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ shoppingItemsLeft }}</span>
+                        <span class="stat-label">В списке</span>
                     </div>
-                    <div class="text-content">
-                        <span class="title">Добавить</span>
-                    </div>
-                </button>
+                </FpCard>
 
-                <!-- Card 2: Shopping List -->
-                <button class="action-card secondary" @click="router.push('/shopping-list')">
-                    <div class="icon-container list-icon">
-                        <span>📝</span>
-                        <div v-if="shoppingItemsLeft > 0" class="badge-dot">{{ shoppingItemsLeft }}</div>
+                <FpCard class="stat-card" @click="showFavoritesOnly = true">
+                    <div class="stat-icon favorites">⭐</div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ favoriteCount }}</span>
+                        <span class="stat-label">Избранных</span>
                     </div>
-                    <div class="text-content">
-                        <span class="title">Список</span>
-                        <span class="subtitle" v-if="shoppingItemsLeft > 0">{{ shoppingItemsLeft }} ост.</span>
-                    </div>
-                </button>
+                </FpCard>
 
-                <!-- Card 3: Catalog -->
-                <button class="action-card" @click="router.push('/catalog')">
-                    <div class="action-icon">📦</div>
-                    <div class="text-content">
-                        <span class="title">Каталог</span>
+                <FpCard class="stat-card spotlight" :class="{ pulse: goodDeals.length > 0 }">
+                    <div class="stat-icon deals">🔥</div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ goodDeals.length }}</span>
+                        <span class="stat-label">Скидки</span>
                     </div>
-                </button>
+                </FpCard>
+            </section>
 
-                <!-- Card 4: Stores -->
-                <button class="action-card" @click="router.push('/stores')">
-                    <div class="action-icon">🏪</div>
-                    <div class="text-content">
-                        <span class="title">Магазины</span>
-                    </div>
+            <!-- Quick Actions -->
+            <section class="actions-row">
+                <button class="action-btn-circle" @click="router.push('/add-price')" title="Добавить цену">
+                    <span class="icon">+</span>
+                    <span class="label">Цена</span>
+                </button>
+                <button class="action-btn-circle" @click="router.push('/catalog')" title="Каталог">
+                    <span class="icon">📦</span>
+                    <span class="label">Каталог</span>
+                </button>
+                <button class="action-btn-circle" @click="router.push('/stores')" title="Магазины">
+                    <span class="icon">🏪</span>
+                    <span class="label">Магазины</span>
+                </button>
+                <button class="action-btn-circle" @click="router.push('/shopping-list')" title="Список покупок">
+                    <span class="icon">📝</span>
+                    <span class="label">Список</span>
                 </button>
             </section>
 
-            <!-- Recent Updates Feed -->
+            <!-- Best Deals Watchlist -->
+            <section v-if="goodDeals.length > 0" class="deals-watchlist-section">
+                <div class="section-header">
+                    <h2 class="section-title">Лучшие цены сейчас 🔥</h2>
+                </div>
+                <div class="deals-scroller">
+                    <div v-for="item in goodDeals" :key="item.id" class="deal-tile"
+                        @click="router.push(`/product/${item.id}`)">
+                        <div class="deal-tag">Выгодно</div>
+                        <div class="deal-content">
+                            <span class="deal-title">{{ item.displayName }}</span>
+                            <div class="deal-price-row">
+                                <span class="deal-price">{{ item.formattedPrice }}</span>
+                                <span class="deal-store">🏪 {{ item.lastStore }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Updates Feed -->
             <section class="updates-section">
                 <div class="section-header">
                     <div class="feed-tabs">
                         <button class="tab-btn" :class="{ active: !showFavoritesOnly }"
-                            @click="showFavoritesOnly = false">Все</button>
+                            @click="showFavoritesOnly = false">Все обновления</button>
                         <button class="tab-btn" :class="{ active: showFavoritesOnly }"
                             @click="showFavoritesOnly = true">Избранное</button>
                     </div>
                 </div>
 
                 <div v-if="isLoading">
-                    <!-- Skeletons for Desktop -->
-                    <div class="desktop-skeletons">
-                        <FpCard v-for="i in 5" :key="i" class="skeleton-row-card">
-                            <div class="skeleton-row skeleton">
-                                <div class="sk-cell" style="width: 25%"></div>
-                                <div class="sk-cell" style="width: 15%"></div>
-                                <div class="sk-cell" style="width: 10%"></div>
-                                <div class="sk-cell" style="width: 15%"></div>
-                                <div class="sk-cell" style="width: 20%"></div>
-                            </div>
-                        </FpCard>
-                    </div>
-                    <!-- Skeletons for Mobile -->
-                    <div class="mobile-skeletons">
-                        <div v-for="i in 4" :key="i" class="mobile-skeleton-card skeleton">
+                    <div class="skeleton-list">
+                        <div v-for="i in 5" :key="i" class="skeleton-row-card skeleton">
                             <div class="sk-line lg"></div>
                             <div class="sk-row">
                                 <div class="sk-line md"></div>
                                 <div class="sk-line sm"></div>
                             </div>
-                            <div class="skeleton-divider"></div>
                         </div>
                     </div>
                 </div>
 
                 <div v-else-if="filteredUpdates.length === 0" class="empty-state">
                     <template v-if="searchQuery">
-                        <p class="empty-text">В последних обновлениях не найдено</p>
+                        <p class="empty-text">Ничего не найдено</p>
                         <button class="search-global-btn" @click="handleSearch">
-                            Искать "{{ searchQuery }}" во всем каталоге
+                            Искать в каталогах
                         </button>
                     </template>
                     <template v-else>
-                        <span v-if="showFavoritesOnly">В избранном пока пусто</span>
-                        <span v-else>Нет последних обновлений</span>
+                        <span>{{ showFavoritesOnly ? 'В избранном пока пусто' : 'Нет последних обновлений' }}</span>
                     </template>
                 </div>
 
-                <FpCard class="feed-table-card" padding="none" v-else>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Товар</th>
-                                <th></th>
-                                <th>Категория</th>
-                                <th class="text-right">Цена</th>
-                                <th class="text-right">Средняя (мес.)</th>
-                                <th>Магазин</th>
-                                <th class="text-right">Время</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="item in filteredUpdates" :key="item.id" class="feed-row"
-                                @click="router.push(`/product/${item.id}`)">
-                                <td class="font-medium">{{ item.displayName }}</td>
-                                <td>
-                                    <button class="fav-btn" :class="{ active: catalogStore.isFavorite(item.id) }"
-                                        @click.stop="toggleFavorite(item.id)">
-                                        <svg width="20" height="20" viewBox="0 0 24 24"
-                                            :fill="catalogStore.isFavorite(item.id) ? 'currentColor' : 'none'"
-                                            stroke="currentColor" stroke-width="2">
-                                            <polygon
-                                                points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
-                                            </polygon>
-                                        </svg>
-                                    </button>
-                                </td>
-                                <td>
-                                    <span class="category-tag-inline"
-                                        @click.stop="router.push(`/category/${item.category}`)">
-                                        {{ item.category }}
-                                    </span>
-                                </td>
-                                <td class="text-right font-bold" :class="{
-                                    'text-success': item.priceStatus === 'good',
-                                    'text-error': item.priceStatus === 'bad',
-                                    'text-neutral': item.priceStatus === 'neutral'
-                                }">
-                                    {{ item.formattedPrice }}
-                                </td>
-                                <td class="text-right font-medium text-secondary">
-                                    {{ item.formattedAveragePrice || '-' }}
-                                </td>
-                                <td>
-                                    <span class="store" @click.stop="router.push(`/store/${item.lastStoreId}`)"
-                                        v-if="item.lastStoreId" role="link">
-                                        🏪 {{ item.lastStore }}
-                                    </span>
-                                    <span class="store" v-else>
-                                        🏪 {{ item.lastStore || 'Нет данных' }}
-                                    </span>
-                                </td>
-                                <td class="text-right text-muted text-sm">{{ item.lastUpdateRelative }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- Mobile View -->
-                    <div class="mobile-feed">
-                        <div v-for="item in filteredUpdates" :key="item.id" class="mobile-feed-card"
-                            @click="router.push(`/product/${item.id}`)">
-
-                            <!-- Row 1: Title & Price -->
-                            <div class="card-top">
-                                <div class="title-with-fav">
-                                    <button class="fav-btn" :class="{ active: catalogStore.isFavorite(item.id) }"
-                                        @click.stop="toggleFavorite(item.id)">
-                                        <svg width="20" height="20" viewBox="0 0 24 24"
-                                            :fill="catalogStore.isFavorite(item.id) ? 'currentColor' : 'none'"
-                                            stroke="currentColor" stroke-width="2">
-                                            <polygon
-                                                points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
-                                            </polygon>
-                                        </svg>
-                                    </button>
-                                    <span class="card-title">{{ item.displayName }}</span>
-                                </div>
-                                <div class="price-col">
-                                    <span class="card-price" :class="{
-                                        'text-success': item.priceStatus === 'good',
-                                        'text-error': item.priceStatus === 'bad',
-                                        'text-neutral': item.priceStatus === 'neutral'
-                                    }">
-                                        {{ item.formattedPrice }}
-                                    </span>
-                                </div>
+                <div v-else class="updates-feed">
+                    <div v-for="item in filteredUpdates" :key="item.id" class="feed-tile"
+                        @click="router.push(`/product/${item.id}`)">
+                        <div class="tile-main">
+                            <div class="tile-title-row">
+                                <span class="tile-title">{{ item.displayName }}</span>
+                                <button class="fav-icon-btn" :class="{ active: isFavorite(item.id) }"
+                                    @click.stop="toggleFavorite(item.id)">
+                                    ⭐
+                                </button>
                             </div>
-
-                            <!-- Row 2: Unit Price & Store -->
-                            <div class="card-middle">
-                                <span v-if="item.formattedUnitPrice" class="unit-price-badge">
-                                    {{ item.formattedUnitPrice }}
-                                </span>
-                                <span v-else></span> <!-- Spacer -->
-
-                                <span class="store-text" @click.stop="router.push(`/store/${item.lastStoreId}`)"
-                                    v-if="item.lastStoreId">
-                                    🏪 {{ item.lastStore }}
-                                </span>
-                            </div>
-
-                            <!-- Row 3: Category & Time -->
-                            <div class="card-bottom">
-                                <span class="category-tag-inline"
-                                    @click.stop="router.push(`/category/${item.category}`)">
-                                    {{ item.category }}
-                                </span>
-                                <span class="last-update">{{ item.lastUpdateRelative }}</span>
-                            </div>
+                            <span class="tile-meta">{{ item.category }} • {{ item.lastStore }}</span>
+                        </div>
+                        <div class="tile-side">
+                            <span class="tile-price" :class="item.priceStatus">{{ item.formattedPrice }}</span>
+                            <span class="tile-time">{{ item.lastUpdateRelative }}</span>
                         </div>
                     </div>
-                </FpCard>
+                </div>
             </section>
         </div>
     </div>
 </template>
 
 <style scoped lang="scss">
-.updates-section {
-    margin: 0rem 1.25rem;
+.home-dashboard {
+    padding-bottom: 80px;
 }
 
-.home-dashboard {
-    padding-bottom: var(--spacing-lg);
+// Hero Section
+.dashboard-hero {
+    padding: 32px 20px 0;
+    background: linear-gradient(180deg, rgba(var(--color-primary-rgb), 0.08) 0%, transparent 100%);
+
+    .hero-content {
+        margin-bottom: 24px;
+    }
+
+    .welcome-text {
+        font-size: 28px;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -0.5px;
+
+        .accent {
+            color: var(--color-primary);
+        }
+    }
+
+    .hero-subtitle {
+        font-size: 15px;
+        color: var(--color-text-secondary);
+        margin: 4px 0 0;
+    }
 }
 
 .home-search {
-    margin-bottom: var(--spacing-lg);
+    background: transparent !important;
+    border-bottom: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 .dashboard-content {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 24px;
+    padding: 20px;
 }
 
-.actions-section {
+// Stats Grid
+.stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
 
-    @media (max-width: 600px) {
+    .stat-card {
+        padding: 12px;
         display: flex;
-        justify-content: space-evenly;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: transform 0.2s;
+
+        &:active {
+            transform: scale(0.95);
+        }
+
+        &.spotlight {
+            background: linear-gradient(135deg, var(--color-surface) 0%, rgba(var(--color-success-rgb), 0.05) 100%);
+            border-color: rgba(var(--color-success-rgb), 0.2);
+        }
+    }
+
+    .stat-icon {
+        font-size: 20px;
+        width: 36px;
+        height: 36px;
+        background: var(--color-background);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stat-value {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--color-text-primary);
+    }
+
+    .stat-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+}
+
+// Pulsing effect for deals
+.pulse {
+    animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+    0% {
+        box-shadow: 0 0 0 0 rgba(var(--color-success-rgb), 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(var(--color-success-rgb), 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--color-success-rgb), 0);
+    }
+}
+
+// Actions Row
+.actions-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+
+    .action-btn-circle {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         gap: 8px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        width: 64px;
+
+        .icon {
+            width: 52px;
+            height: 52px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
+        }
+
+        .label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+        }
+
+        &:hover .icon {
+            background: var(--color-surface-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        &:active .icon {
+            transform: scale(0.9);
+        }
     }
 }
 
-.action-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
-    box-shadow: var(--shadow-sm);
-    padding: 16px 8px;
-    height: 100px;
-    width: 100%;
-    box-sizing: border-box;
-
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-        border-color: rgba(var(--color-primary-rgb), 0.5);
-    }
-
-    @media (max-width: 600px) {
-        width: 60px;
-        height: 60px;
-        padding: 0;
-        border-radius: 50%;
-        gap: 0;
+// Deals Watchlist
+.deals-watchlist-section {
+    .section-title {
+        font-size: 17px;
+        font-weight: 700;
+        margin: 0 0 12px;
+        padding-left: 4px;
     }
 }
 
-.icon-container,
-.action-icon {
-    font-size: 24px;
-    background: var(--color-background);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+.deals-scroller {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-primary);
+    gap: 12px;
+    overflow-x: auto;
+    padding: 4px;
+    margin: 0 -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    -webkit-overflow-scrolling: touch;
 
-    @media (max-width: 600px) {
-        background: transparent;
-        width: 100%;
-        height: 100%;
-        font-size: 24px;
-        position: relative;
-    }
-}
-
-.badge-dot {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    background: var(--color-error);
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    min-width: 16px;
-    height: 16px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-    border: 2px solid var(--color-surface);
-}
-
-.text-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-
-    @media (max-width: 600px) {
+    &::-webkit-scrollbar {
         display: none;
     }
 
-    .title {
-        font-weight: 600;
-        font-size: var(--text-body-1);
-        color: var(--color-text-primary);
-        line-height: 1.2;
-    }
+    .deal-tile {
+        flex-shrink: 0;
+        width: 160px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 16px;
+        padding: 12px;
+        position: relative;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
 
-    .subtitle {
-        font-size: var(--text-caption);
-        color: var(--color-text-secondary);
-        line-height: 1.2;
-        margin-top: 2px;
+        .deal-tag {
+            position: absolute;
+            top: -8px;
+            right: 12px;
+            background: var(--color-success);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .deal-title {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 36px;
+        }
+
+        .deal-price {
+            display: block;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--color-success);
+        }
+
+        .deal-store {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     }
 }
 
-.section-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-bottom: var(--spacing-sm);
+// Feed Section
+.updates-section {
+    .section-header {
+        margin-bottom: 16px;
+    }
 }
 
 .feed-tabs {
@@ -417,358 +481,149 @@ onMounted(async () => {
     gap: 8px;
     background: var(--color-surface);
     padding: 4px;
-    border-radius: var(--radius-pill);
+    border-radius: 12px;
     border: 1px solid var(--color-border);
 }
 
 .tab-btn {
+    flex: 1;
     background: none;
     border: none;
-    padding: 4px 12px;
-    border-radius: var(--radius-pill);
-    font-size: var(--text-caption);
+    padding: 8px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     color: var(--color-text-secondary);
     transition: all 0.2s;
 
     &.active {
-        background: var(--color-primary);
-        color: white;
-        font-weight: 500;
+        background: var(--color-background);
+        color: var(--color-primary);
+        box-shadow: var(--shadow-sm);
+    }
+}
+
+.updates-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.feed-tile {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.1s;
+
+    &:active {
+        transform: scale(0.98);
+    }
+
+    .tile-main {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .tile-title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .tile-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .fav-icon-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 14px;
+        opacity: 0.2;
+        filter: grayscale(1);
+
+        &.active {
+            opacity: 1;
+            filter: none;
+        }
+    }
+
+    .tile-meta {
+        font-size: 12px;
+        color: var(--color-text-secondary);
+    }
+
+    .tile-side {
+        text-align: right;
+        margin-left: 16px;
+    }
+
+    .tile-price {
+        display: block;
+        font-size: 16px;
+        font-weight: 700;
+
+        &.good {
+            color: var(--color-success);
+        }
+
+        &.bad {
+            color: var(--color-error);
+        }
+    }
+
+    .tile-time {
+        font-size: 11px;
+        color: var(--color-text-tertiary);
     }
 }
 
 .empty-state {
     text-align: center;
-    padding: var(--spacing-xl);
-    color: var(--color-text-secondary);
+    padding: 40px 20px;
     background: var(--color-surface);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    border: 1px dashed var(--color-border);
+    color: var(--color-text-secondary);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: 16px;
 }
 
 .search-global-btn {
     background: var(--color-primary);
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-
-    &:hover {
-        filter: brightness(0.9);
-    }
-}
-
-.feed-table-card {
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-
-    @media (max-width: 600px) {
-        background: transparent;
-        border: none;
-        box-shadow: none;
-    }
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-
-    @media (max-width: 600px) {
-        display: none;
-    }
-
-    th,
-    td {
-        padding: 16px 24px;
-        text-align: left;
-    }
-
-    th {
-        font-size: 1rem;
-        color: var(--color-text-secondary);
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        background: #fafafa;
-        border-bottom: 1px solid var(--color-border);
-    }
-
-    tbody tr {
-        border-bottom: 1px solid var(--color-border);
-        transition: background-color 0.1s;
-
-        &:last-child {
-            border-bottom: none;
-        }
-
-        &:hover {
-            background-color: var(--color-surface-hover);
-        }
-    }
-
-    .feed-row {
-        cursor: pointer;
-    }
-}
-
-.text-right {
-    text-align: right;
-}
-
-.font-medium {
-    font-weight: 500;
-}
-
-.font-bold {
-    font-weight: 700;
-}
-
-.text-success {
-    color: var(--color-success);
-}
-
-.text-error {
-    color: var(--color-error);
-}
-
-.text-neutral {
-    color: var(--color-text-primary);
-}
-
-.text-secondary {
-    color: var(--color-text-secondary);
-}
-
-.text-muted {
-    color: var(--color-text-disabled);
-}
-
-.text-sm {
-    font-size: var(--text-caption);
-}
-
-.category-tag-inline {
-    background: rgba(var(--color-primary-rgb), 0.1);
-    color: var(--color-primary);
-    padding: 2px 8px;
-    border-radius: var(--radius-pill);
-    font-size: var(--text-caption);
+    padding: 10px 20px;
+    border-radius: 12px;
     font-weight: 600;
-    cursor: pointer;
-
-    &:hover {
-        background: rgba(var(--color-primary-rgb), 0.2);
-    }
 }
 
-.mobile-feed {
-    display: none;
+.skeleton-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.skeleton-row-card {
+    padding: 16px;
+    border-radius: 16px;
+    background: var(--color-surface);
+    display: flex;
     flex-direction: column;
     gap: 8px;
-
-    @media (max-width: 600px) {
-        display: flex;
-    }
-}
-
-.mobile-feed-card {
-    background: var(--color-surface);
-    padding: 12px;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--color-border);
-    cursor: pointer;
-    transition: all 0.2s;
-    margin: 0rem .5rem;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 4px 12px;
-
-    &:active {
-        transform: scale(0.98);
-        background-color: var(--color-surface-hover);
-    }
-}
-
-.card-top {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.card-title {
-    font-weight: 600;
-    font-size: 15px;
-    line-height: 1.3;
-    color: var(--color-text-primary);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.price-col {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    flex-shrink: 0;
-}
-
-.card-price {
-    font-weight: 800;
-    font-size: 18px;
-    line-height: 1.2;
-    white-space: nowrap;
-}
-
-.card-middle {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 2px;
-}
-
-.unit-price-badge {
-    font-size: 14px;
-    color: var(--color-text-secondary);
-}
-
-.store-text {
-    font-size: 14px;
-    color: var(--color-text-primary);
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    background: var(--color-background);
-    padding: 2px 6px;
-    border-radius: 4px;
-}
-
-.card-bottom {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid var(--color-border);
-}
-
-.last-update {
-    font-size: 12px;
-    color: var(--color-text-tertiary);
-}
-
-.fav-btn {
-    background: none;
-    border: none;
-    padding: 4px;
-    cursor: pointer;
-    color: var(--color-text-disabled);
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &.active {
-        color: #FFD700;
-    }
-
-    &:hover {
-        transform: scale(1.1);
-    }
-}
-
-.title-with-fav {
-    display: flex;
-    align-items: flex-start;
-    gap: 4px;
-
-    .fav-btn {
-        padding: 0;
-        margin-top: -2px;
-    }
-}
-
-// Skeleton Helper Classes
-.skeleton-row-card {
-    margin-bottom: 8px;
-    border: 1px solid var(--color-border);
-}
-
-.skeleton-row {
-    display: flex;
-    gap: 16px;
-    padding: 16px;
-}
-
-.mobile-skeleton-card {
-    background: var(--color-surface);
-    padding: 16px;
-    border-radius: 12px;
-    margin: 0 0.5rem 8px 0.5rem;
-    border: 1px solid var(--color-border);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-
-    .sk-line {
-        height: 14px;
-
-        &.lg {
-            width: 70%;
-            height: 18px;
-        }
-
-        &.md {
-            width: 40%;
-        }
-
-        &.sm {
-            width: 20%;
-        }
-    }
-
-    .sk-row {
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .skeleton-divider {
-        margin-top: 4px;
-        border-top: 1px solid var(--color-border);
-        padding-top: 8px;
-    }
-}
-
-.desktop-skeletons {
-    @media (max-width: 600px) {
-        display: none;
-    }
-}
-
-.mobile-skeletons {
-    display: none;
-
-    @media (max-width: 600px) {
-        display: flex;
-        flex-direction: column;
-    }
 }
 </style>
