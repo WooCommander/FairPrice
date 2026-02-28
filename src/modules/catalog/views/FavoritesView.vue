@@ -1,15 +1,37 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { CatalogService, type ProductDTO } from '@/modules/catalog/services/CatalogService'
-import { catalogStore } from '@/modules/catalog/store/catalogStore'
-import FpCard from '@/design-system/components/FpCard.vue'
+import { catalogStore } from '../store/catalogStore'
 import FpButton from '@/design-system/components/FpButton.vue'
+import FpInput from '@/design-system/components/FpInput.vue'
 import { FpSpinner } from '@/design-system'
+import { PRODUCT_CATEGORIES } from '../constants'
 
 const router = useRouter()
 const favorites = ref<ProductDTO[]>([])
 const isLoading = ref(true)
+const searchQuery = ref('')
+const selectedCategory = ref<string | null>(null)
+
+const filteredFavorites = computed(() => {
+    let items = favorites.value
+
+    if (selectedCategory.value) {
+        items = items.filter(p => p.category === selectedCategory.value)
+    }
+
+    if (searchQuery.value) {
+        const q = searchQuery.value.toLowerCase()
+        items = items.filter(p => p.name.toLowerCase().includes(q))
+    }
+
+    return items
+})
+
+const toggleCategory = (cat: string) => {
+    selectedCategory.value = selectedCategory.value === cat ? null : cat
+}
 
 onMounted(async () => {
     try {
@@ -36,114 +58,61 @@ const toggleFavorite = async (productId: string) => {
 
 <template>
     <div class="favorites-view">
-        <h1 class="page-title">Избранное</h1>
+        <div class="page-title-row">
+            <h1 class="page-title">Избранное</h1>
+        </div>
+
+        <div class="sticky-search-wrapper">
+            <div class="search-input-group">
+                <FpInput v-model="searchQuery" placeholder="Поиск в избранном..." class="flex-grow" />
+            </div>
+
+            <div class="category-filters">
+                <button v-for="cat in PRODUCT_CATEGORIES" :key="cat" class="category-tag"
+                    :class="{ active: selectedCategory === cat }" @click="toggleCategory(cat)">
+                    {{ cat }}
+                </button>
+            </div>
+        </div>
 
         <div v-if="isLoading" class="loading-state">
             <FpSpinner />
         </div>
 
-        <div v-else-if="favorites.length > 0" class="results-grid">
-            <FpCard v-for="item in favorites" :key="item.id" class="result-card" @click="goToProduct(item.id)">
-                <div class="card-content">
-                    <div class="main-info">
-                        <div class="title-row">
-                            <h3>{{ item.name }}</h3>
-                            <button class="fav-btn active" @click.stop="toggleFavorite(item.id)"
-                                title="Убрать из избранного">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"
-                                    stroke="currentColor" stroke-width="2">
-                                    <polygon
-                                        points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
-                                    </polygon>
-                                </svg>
-                            </button>
-                        </div>
-                        <span class="category">{{ item.category }}</span>
-                    </div>
-                    <div class="price-info">
-                        <span class="price">{{ item.lastPrice ? `${item.lastPrice} ₽` : '---' }}</span>
-                        <span v-if="item.lastStore" class="store">{{ item.lastStore }}</span>
-                    </div>
+        <div v-else-if="filteredFavorites.length > 0" class="standard-grid">
+            <div v-for="item in filteredFavorites" :key="item.id" class="fp-tile" @click="goToProduct(item.id)">
+                <div class="tile-info">
+                    <span class="subtitle">{{ item.category }}</span>
+                    <h3 class="title">{{ item.name }}</h3>
                 </div>
-            </FpCard>
+
+                <div class="tile-footer">
+                    <div class="main-value">{{ item.lastPrice ? `${item.lastPrice} ₽` : '---' }}</div>
+                    <button class="fav-btn active" @click.stop="toggleFavorite(item.id)" title="Убрать">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor"
+                            stroke-width="2">
+                            <polygon
+                                points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
+                            </polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div v-else class="empty-state">
             <span class="empty-icon">⭐</span>
             <h3>Пока пусто</h3>
             <p>Добавляйте товары в избранное, чтобы быстро следить за ценами</p>
-            <FpButton size="md" @click="router.push('/search')">Перейти в поиск</FpButton>
+            <FpButton size="md" @click="router.push('/catalog')">Перейти в каталог</FpButton>
         </div>
     </div>
 </template>
 
 <style scoped lang="scss">
 .favorites-view {
-    padding: var(--spacing-md);
+    padding: 0 0.5rem;
     width: 100%;
-}
-
-.section-header {
-    margin-bottom: var(--spacing-xl);
-
-    h1 {
-        font-size: var(--text-h4);
-        font-weight: 700;
-        margin-bottom: 4px;
-    }
-
-    p {
-        color: var(--color-text-secondary);
-        font-size: var(--text-body-2);
-    }
-}
-
-.results-grid {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-.result-card {
-    cursor: pointer;
-    transition: transform 0.1s;
-    background: var(--color-surface);
-
-    &:active {
-        transform: scale(0.98);
-    }
-}
-
-.card-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.main-info {
-    flex: 1;
-
-    .title-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    h3 {
-        margin: 0;
-        font-size: var(--text-body-1);
-        font-weight: 600;
-        color: var(--color-text-primary);
-        line-height: 1.2;
-    }
-
-    .category {
-        font-size: var(--text-caption);
-        color: var(--color-text-secondary);
-        display: block;
-        margin-top: 4px;
-    }
 }
 
 .fav-btn {
@@ -151,35 +120,14 @@ const toggleFavorite = async (productId: string) => {
     border: none;
     padding: 4px;
     cursor: pointer;
-    color: var(--color-text-disabled);
+    color: #FFD700; // Gold
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
 
-    &.active {
-        color: #FFD700; // Gold
-    }
-
     &:hover {
         transform: scale(1.1);
-    }
-}
-
-.price-info {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-
-    .price {
-        font-weight: 700;
-        color: var(--color-primary);
-        font-size: var(--text-body-1);
-    }
-
-    .store {
-        font-size: var(--text-caption);
-        color: var(--color-text-secondary);
     }
 }
 
@@ -198,7 +146,7 @@ const toggleFavorite = async (productId: string) => {
     }
 
     h3 {
-        font-size: var(--text-h5);
+        font-size: 20px;
         margin-bottom: 8px;
     }
 

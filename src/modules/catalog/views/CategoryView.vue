@@ -2,9 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
-import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
-
 import { FpSpinner } from '@/design-system'
 
 const route = useRoute()
@@ -37,7 +35,6 @@ const groupedProducts = computed(() => {
 })
 
 const loadData = async () => {
-    // We use :id in router for consistency, which holds the category name
     const name = route.params.id as string
     if (!name) return
     categoryName.value = name
@@ -50,7 +47,6 @@ const loadData = async () => {
 }
 
 onMounted(loadData)
-
 watch(() => route.params.id, loadData)
 
 const goToAddProduct = () => {
@@ -77,35 +73,39 @@ const goToAddProduct = () => {
             <FpButton @click="goToAddProduct">Добавить первый товар</FpButton>
         </div>
 
-        <div v-else class="products-grid">
+        <div v-else class="products-container">
             <template v-if="Object.keys(groupedProducts).length > 0">
                 <div v-for="(products, store) in groupedProducts" :key="store" class="store-group">
                     <h2 class="store-header">🏪 {{ store }}</h2>
-                    <FpCard v-for="product in products" :key="product.id" class="product-card"
-                        @click="router.push(`/product/${product.id}`)">
-                        <div class="product-info">
-                            <h3>{{ product.name }}</h3>
-                            <span class="unit">{{ product.unit }}</span>
+                    <div class="standard-grid">
+                        <div v-for="product in products" :key="product.id" class="fp-tile"
+                            @click="router.push(`/product/${product.id}`)">
+                            <div class="tile-info">
+                                <h3 class="title">{{ product.name }}</h3>
+                                <span class="subtitle">{{ product.unit }}</span>
+                            </div>
+                            <div class="tile-footer">
+                                <span class="main-value">{{ product.formattedPrice }}</span>
+                                <span class="extra-info">{{ product.lastUpdateRelative }}</span>
+                            </div>
                         </div>
-                        <div class="price-info">
-                            <span class="price">{{ product.formattedPrice }}</span>
-                            <span class="date">{{ product.lastUpdateRelative }}</span>
-                        </div>
-                    </FpCard>
+                    </div>
                 </div>
             </template>
             <template v-else>
-                <FpCard v-for="product in searchResults" :key="product.id" class="product-card"
-                    @click="router.push(`/product/${product.id}`)">
-                    <div class="product-info">
-                        <h3>{{ product.name }}</h3>
-                        <span class="unit">{{ product.unit }}</span>
+                <div class="standard-grid">
+                    <div v-for="product in searchResults" :key="product.id" class="fp-tile"
+                        @click="router.push(`/product/${product.id}`)">
+                        <div class="tile-info">
+                            <h3 class="title">{{ product.name }}</h3>
+                            <span class="subtitle">{{ product.unit }}</span>
+                        </div>
+                        <div class="tile-footer">
+                            <span class="main-value">{{ product.formattedPrice }}</span>
+                            <span class="extra-info" v-if="product.lastStore">@ {{ product.lastStore }}</span>
+                        </div>
                     </div>
-                    <div class="price-info">
-                        <span class="price">{{ product.formattedPrice }}</span>
-                        <span class="store" v-if="product.lastStore">@ {{ product.lastStore }}</span>
-                    </div>
-                </FpCard>
+                </div>
             </template>
         </div>
     </div>
@@ -121,112 +121,17 @@ const goToAddProduct = () => {
 }
 
 .store-header {
-    font-size: var(--text-h4);
-    color: var(--color-text-secondary);
-    margin: 0 0 var(--spacing-sm);
-    padding-left: 4px;
-    border-bottom: 2px solid var(--color-border);
-    padding-bottom: 4px;
-}
-
-.ergo-header {
-    background: var(--color-surface);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    border-bottom: 1px solid var(--color-border);
-    // Negative margin to overflow the 0.5rem padding
-    margin: 0 -0.5rem var(--spacing-md) -0.5rem;
-    padding: 12px 16px;
-    display: flex;
-    justify-content: center;
-}
-
-.header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-
-.header-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    text-transform: capitalize;
-}
-
-.nav-btn {
-    background: transparent;
-    border: none;
-    color: var(--color-text-secondary);
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-
-    &:active {
-        background: var(--color-surface-hover);
-        color: var(--color-text-primary);
-    }
-}
-
-.add-btn {
-    color: var(--color-primary); // Make add button colored
-}
-
-.products-grid {
-    display: grid;
-    gap: var(--spacing-md);
-}
-
-.product-card {
-    display: flex !important;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-        border-color: var(--color-primary);
-        transform: translateY(-2px);
-    }
-}
-
-.product-info h3 {
-    margin: 0;
-    font-size: var(--text-body-1);
-    font-weight: 600;
-}
-
-.unit {
-    font-size: var(--text-caption);
-    color: var(--color-text-secondary);
-}
-
-.price-info {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-}
-
-.price {
+    font-size: 16px;
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--color-text-secondary);
+    margin: 0 0 12px;
+    padding-left: 4px;
 }
 
-.store {
-    font-size: var(--text-caption);
-    color: var(--color-text-tertiary);
-}
-
+.loading,
 .empty-state {
     text-align: center;
-    padding: var(--spacing-xl);
+    padding: 2rem;
     color: var(--color-text-secondary);
 }
 </style>

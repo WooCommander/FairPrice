@@ -333,7 +333,7 @@ const goBack = () => {
 
         <!-- Step 1: Select Product -->
         <section v-if="step === 1" class="step-section">
-            <div class="selection-grid-container">
+            <div class="sticky-search-wrapper">
                 <div class="search-header">
                     <FpInput v-model="gridSearchQuery" placeholder="Поиск товара..." class="grid-search" />
                 </div>
@@ -349,7 +349,7 @@ const goBack = () => {
                     <FpSpinner />
                 </div>
 
-                <div v-else class="product-grid">
+                <div v-else class="standard-grid">
                     <!-- Create New Tile -->
                     <button class="product-tile create-tile" @click="startCreation">
                         <div class="tile-icon">+</div>
@@ -699,116 +699,9 @@ const goBack = () => {
     padding: 0 var(--spacing-sm);
 }
 
-.search-header {
-    margin-bottom: var(--spacing-md);
-    position: sticky;
-    top: 64px; // Adjust based on header height
-    background: var(--color-background);
-    z-index: 5;
-    padding: var(--spacing-sm) 0;
-}
-
-.product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 12px;
-    padding-bottom: var(--spacing-xl);
-}
-
-.product-tile {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 12px 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    aspect-ratio: 1 / 1;
-    justify-content: center;
-
-    &:active {
-        transform: scale(0.95);
-        background-color: var(--color-surface-hover);
-    }
-
-    .tile-icon {
-        font-size: 24px;
-        color: var(--color-primary);
-        margin-bottom: 4px;
-    }
-
-    .tile-category-icon {
-        font-size: 20px;
-        margin-bottom: 4px;
-        opacity: 0.7;
-    }
-
-    .tile-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--color-text-primary);
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        line-height: 1.2;
-    }
-
-    .tile-category {
-        font-size: 10px;
-        color: var(--color-text-secondary);
-        margin-top: 2px;
-    }
-
-    &.create-tile {
-        border: 2px dashed var(--color-primary);
-        background: rgba(var(--color-primary-rgb), 0.05);
-
-        .tile-name {
-            color: var(--color-primary);
-        }
-    }
-}
-
 .loading-state {
     display: flex;
     justify-content: center;
     padding: var(--spacing-xl);
-}
-
-.category-filters {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 4px 0 16px 0;
-    margin-bottom: 8px;
-    -webkit-overflow-scrolling: touch;
-
-    &::-webkit-scrollbar {
-        display: none;
-    }
-}
-
-.category-tag {
-    white-space: nowrap;
-    padding: 6px 14px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &.active {
-        background: var(--color-primary);
-        border-color: var(--color-primary);
-        color: white;
-    }
 }
 </style>
