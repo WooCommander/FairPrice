@@ -196,3 +196,58 @@ h4 {
     align-items: center;
     gap: var(--spacing-sm);
 }
+
+// --- Skeleton Loaders (Premium Placeholders) ---
+
+.skeleton {
+    cursor: default;
+    pointer-events: none;
+    position: relative;
+    overflow: hidden;
+
+    &.fp-tile,
+    &.skeleton-row {
+        background: var(--color-surface);
+        border-color: var(--color-border);
+    }
+
+    .sk-line,
+    .skeleton-line,
+    .sk-cell {
+        background: linear-gradient(90deg,
+                var(--color-border) 25%,
+                var(--color-surface-hover) 50%,
+                var(--color-border) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite linear;
+        border-radius: 4px;
+        opacity: 0.5;
+    }
+}
+
+.skeleton-line {
+    height: 12px;
+    margin-bottom: 8px;
+
+    &.sm {
+        width: 40%;
+    }
+
+    &.md {
+        width: 60%;
+    }
+
+    &.lg {
+        width: 85%;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}

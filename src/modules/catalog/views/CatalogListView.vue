@@ -5,7 +5,6 @@ import { useRouter } from 'vue-router'
 import { PRODUCT_CATEGORIES } from '../constants'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
-import FpSpinner from '@/design-system/components/FpSpinner.vue'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -59,12 +58,23 @@ const addPrice = (productId: string) => {
     </div>
 
     <section class="list-section">
-      <div v-if="isLoading && products.length === 0" class="loading">
-        <FpSpinner />
+      <div v-if="isLoading && products.length === 0" class="standard-grid">
+        <div v-for="i in 6" :key="i" class="fp-tile skeleton">
+          <div class="tile-info">
+            <div class="skeleton-line sm"></div>
+            <div class="skeleton-line lg"></div>
+          </div>
+        </div>
       </div>
 
       <div v-else-if="products.length === 0" class="empty">
-        Ничего не найдено.
+        <div class="empty-icon">🔍</div>
+        <h3>Ничего не нашли</h3>
+        <p>Попробуйте изменить запрос или категорию</p>
+        <FpButton v-if="searchQuery || selectedCategory" variant="outline" size="sm"
+          @click="searchQuery = ''; selectedCategory = null">
+          Сбросить фильтры
+        </FpButton>
       </div>
 
       <div v-else class="standard-grid">
@@ -98,11 +108,32 @@ const addPrice = (productId: string) => {
   padding: 0 0.5rem;
 }
 
-.loading,
 .empty {
   text-align: center;
-  padding: 2rem;
+  padding: 4rem 2rem;
   color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--color-text-primary);
+  }
+
+  p {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    max-width: 240px;
+  }
 }
 
 .load-more {

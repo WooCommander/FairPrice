@@ -1,332 +1,228 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { priceStore } from '../store/priceStore'
-import FpInput from '@/design-system/components/FpInput.vue'
-import FpCard from '@/design-system/components/FpCard.vue'
-import FpCombobox from '@/design-system/components/FpCombobox.vue'
-import FpButton from '@/design-system/components/FpButton.vue'
-import { CatalogService, type ProductDTO } from '@/modules/catalog/services/CatalogService'
-
+import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
+import {
+    FpButton,
+    FpInput,
+    FpCard,
+    FpCombobox
+} from '@/design-system'
 
 const route = useRoute()
 const router = useRouter()
 
+// State
 const step = ref(1) // 1: Select Product, 2: Enter Details
-const storeName = ref('')
-const price = ref<string | number>('')
-const unit = ref('кг')
-const isStoreSelected = ref(false)
+const isLoadingProducts = ref(false)
+const searchQuery = ref('')
+const selectedCategory = ref<string | null>(route.query.category as string || null)
+const isCreating = ref(false)
 
+// Form data
+const currentProduct = ref<{ id: string, name: string, category: string, unit?: string } | null>(null)
+const storeName = ref('')
 const storeResults = ref<{ id: string, name: string }[]>([])
 const isSearchingStores = ref(false)
+const price = ref('')
+const quantity = ref('')
+const unit = ref('г')
+const isSuccess = ref(false)
 
-// Create Product State
-const isCreating = ref(false)
+// Create product state
 const newProductName = ref('')
-const newProductCategory = ref('Бакалея')
-const newProductUnit = ref('шт')
+const newProductCategory = ref('')
 
-import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
+const unitItems = ['г', 'кг', 'мл', 'л', 'шт', 'уп'].map(u => ({ id: u, name: u }))
+const categoryItems = PRODUCT_CATEGORIES.map(c => ({ id: c, name: c }))
 
-const categories = PRODUCT_CATEGORIES.map(c => ({ id: c, name: c }))
-const selectedCategory = ref<string | null>(null)
+// Subscriptions
+const products = computed(() => catalogStore.searchResults.value)
 
-const units = ['шт', 'кг', 'л', 'уп'].map(u => ({ id: u, name: u }))
+// Computed
+const filteredGridProducts = computed(() => {
+    // Note: catalogStore.searchResults is already filtered by the store if we call search
+    // But for the grid we might want local filtering for snappiness
+    let items = products.value
 
-// Explicitly type as generic string to allow custom categories
-const categoryItems = ref<{ id: string, name: string }[]>([...categories])
-const unitItems = ref(units)
+    if (selectedCategory.value) {
+        items = items.filter(p => p.category === selectedCategory.value)
+    }
 
-// Store access
-const { currentProduct } = catalogStore
-const { isSubmitting } = priceStore
+    if (searchQuery.value) {
+        const q = searchQuery.value.toLowerCase()
+        items = items.filter(p => p.name.toLowerCase().includes(q))
+    }
 
-const allProducts = ref<ProductDTO[]>([])
-const isLoadingProducts = ref(false)
-const gridSearchQuery = ref('')
+    return items
+})
 
+const calculatedUnitPrice = computed(() => {
+    const p = parseFloat(price.value)
+    const q = parseFloat(quantity.value)
+    if (!p || !q) return null
+
+    const res = (p / q) * (unit.value === 'кг' || unit.value === 'л' ? 1 : 1000)
+    return {
+        price: Math.round(res),
+        unit: unit.value === 'кг' || unit.value === 'л' ? unit.value : (unit.value === 'шт' ? 'шт' : (unit.value === 'мл' ? 'л' : 'кг'))
+    }
+})
+
+// Methods
 const loadProducts = async () => {
     isLoadingProducts.value = true
     try {
-        const { items } = await CatalogService.searchProducts('', {}, 1, 100)
-        allProducts.value = items.sort((a, b) => a.name.localeCompare(b.name))
-    } catch (e) {
-        console.error('Failed to load products for grid', e)
+        await catalogStore.searchProducts('', { limit: 100 })
     } finally {
         isLoadingProducts.value = false
     }
 }
 
-const filteredGridProducts = computed(() => {
-    let products = allProducts.value
-
-    if (selectedCategory.value) {
-        products = products.filter(p => p.category === selectedCategory.value)
-    }
-
-    if (gridSearchQuery.value) {
-        const q = gridSearchQuery.value.toLowerCase()
-        products = products.filter(p => p.name.toLowerCase().includes(q))
-    }
-
-    return products
-})
-
 const toggleCategory = (cat: string) => {
-    if (selectedCategory.value === cat) {
-        selectedCategory.value = null
-    } else {
-        selectedCategory.value = cat
+    selectedCategory.value = selectedCategory.value === cat ? null : cat
+}
+
+const selectProduct = (p: { id: string, name: string }) => {
+    const fullProduct = products.value.find(item => item.id === p.id)
+    currentProduct.value = {
+        id: p.id,
+        name: p.name,
+        category: fullProduct?.category || 'Разное',
+        unit: fullProduct?.unit
+    }
+    if (fullProduct?.unit) {
+        unit.value = fullProduct.unit
+    }
+    step.value = 2
+}
+
+const startCreation = () => {
+    newProductName.value = searchQuery.value
+    newProductCategory.value = selectedCategory.value || ''
+    isCreating.value = true
+}
+
+const createProduct = async () => {
+    if (!newProductName.value) return
+    try {
+        const product = await catalogStore.createProduct({
+            name: newProductName.value,
+            category: newProductCategory.value || 'Разное',
+            unit: 'г' // Default unit
+        })
+        selectProduct({ id: product.id, name: product.name })
+        isCreating.value = false
+    } catch (e: any) {
+        alert(e.message)
     }
 }
 
-// Logic
-const quantity = ref<string | number>('')
-
-// Computed Unit Price
-const calculatedUnitPrice = computed(() => {
-    const p = Number(price.value)
-    const q = Number(quantity.value)
-
-    if (!p || !q) return null
-
-    const u = unit.value.toLowerCase()
-    let normalized = 0
-    let base = ''
-
-    if (u === 'g' || u === 'г' || u === 'ml' || u === 'мл') {
-        normalized = p / (q / 1000)
-        base = u === 'g' || u === 'г' ? 'кг' : 'л'
-    } else {
-        normalized = p / q
-        base = u
-    }
-
-    return {
-        price: Math.round(normalized),
-        unit: base
-    }
-})
-
-// Computed
-const isValid = computed(() => {
-    const priceVal = Number(price.value)
-    const storeVal = storeName.value
-    // Check if quantity is valid (optional if logic permits, but for fair price we need it)
-    // Let's make quantity required for better data, or default to 1 if empty?
-    // Better to require it for explicit "Fair Price" data.
-    const quantityVal = Number(quantity.value)
-
-    return storeVal.length > 1 && !isNaN(priceVal) && priceVal > 0 && !isNaN(quantityVal) && quantityVal > 0
-})
-
-// Stores Methods
-const handleSearchStore = async (val: string) => {
-    storeName.value = val
-    if (val.length < 2) {
-        // Don't clear if it's empty, might be default list
-        if (val.length === 0) return
-        storeResults.value = []
-        return
-    }
-
+const handleSearchStore = async (q: string) => {
+    storeName.value = q
+    if (q.length < 2 && q.length > 0) return
     isSearchingStores.value = true
     try {
-        storeResults.value = await priceStore.getStores(val)
+        const results = await priceStore.getStores(q)
+        storeResults.value = results
     } finally {
         isSearchingStores.value = false
     }
 }
 
-const selectStore = (item: { id: string | number, name: string }) => {
-    storeName.value = item.name
-    isStoreSelected.value = true
+const selectStore = (s: any) => {
+    storeName.value = s.name || s.label
 }
 
-const createStore = (name: string) => {
+const createStore = async (name: string) => {
     storeName.value = name
-    storeResults.value = [] // Clear suggestions
-    isStoreSelected.value = true
 }
 
-const onStoreFocus = async () => {
-    // Load defaults/recents if empty
-    if (!storeName.value) {
-        isSearchingStores.value = true
-        try {
-            storeResults.value = await priceStore.getStores('')
-        } finally {
-            isSearchingStores.value = false
-        }
-    }
-}
-
-// Product Methods
-const selectProduct = (p: { id: string | number, name: string }) => {
-    catalogStore.loadProductById(String(p.id))
-    step.value = 2
-}
-
-const startCreation = () => {
-    isCreating.value = true
-    newProductName.value = gridSearchQuery.value // Pre-fill with current search query
-}
-
-const cancelCreation = () => {
-    isCreating.value = false
-    newProductName.value = ''
-}
-
-const createProduct = async () => {
-    if (!newProductName.value) return
-
-    try {
-        await catalogStore.createProduct({
-            name: newProductName.value,
-            category: newProductCategory.value,
-            unit: newProductUnit.value
-        })
-        isCreating.value = false
-        step.value = 2
-    } catch (e: any) {
-        console.error('Failed to create product:', e)
-        alert(`Не удалось создать товар: ${e.message || e}`)
-    }
-}
-
-// Handlers for new comboboxes
-const createCategory = (val: string) => {
-    const newItem = { id: val, name: val }
-    categoryItems.value.push(newItem)
-    newProductCategory.value = val
+const createCategory = (name: string) => {
+    newProductCategory.value = name
 }
 
 const createUnit = (val: string) => {
-    const newItem = { id: val, name: val }
-    unitItems.value.push(newItem)
-    newProductUnit.value = val
+    unit.value = val
 }
 
-const isSuccess = ref(false)
-
-// Exchange Rate Logic
-
-
 const submit = async () => {
-    if (!currentProduct.value) return
-
-    const finalPrice = Number(price.value)
-    const finalQuantity = Number(quantity.value)
+    if (!currentProduct.value || !storeName.value || !price.value) return
 
     try {
         await priceStore.submitPrice({
             productId: currentProduct.value.id,
             storeName: storeName.value,
-            price: finalPrice,
+            price: parseFloat(price.value),
             currency: 'RUB',
-            quantity: finalQuantity,
+            quantity: parseFloat(quantity.value) || 1,
             quantityUnit: unit.value
         })
         isSuccess.value = true
         setTimeout(() => {
             if (currentProduct.value) {
                 router.push(`/product/${currentProduct.value.id}`)
+            } else {
+                router.push('/')
             }
         }, 1500)
     } catch (e) {
-        console.error('Failed to submit price:', e)
-        alert('Ошибка при сохранении цены')
+        console.error(e)
     }
 }
 
-onMounted(async () => {
-    loadProducts()
+onMounted(() => {
     const id = route.params.id as string
     if (id) {
-        await catalogStore.loadProductById(id)
-        if (currentProduct.value) {
-            step.value = 2
-            unit.value = currentProduct.value.unit || 'кг'
-        }
-    }
-
-    // Pre-fill from Query Params
-    if (route.query.storeId) {
-        const id = String(route.query.storeId)
-        // We can reuse catalogStore or priceStore to get name
-        // catalogStore.getStoreName is available
-        storeName.value = await catalogStore.getStoreName(id)
-        isStoreSelected.value = true
-    } else if (route.query.storeName) {
-        storeName.value = String(route.query.storeName)
-        isStoreSelected.value = true
-    }
-
-    if (route.query.category) {
-        newProductCategory.value = String(route.query.category)
+        // Direct entry
+        catalogStore.loadProductById(id).then(() => {
+            if (catalogStore.currentProduct.value) {
+                const p = catalogStore.currentProduct.value
+                currentProduct.value = { id: p.id, name: p.name, category: p.category, unit: p.unit }
+                if (p.unit) unit.value = p.unit
+                step.value = 2
+            }
+        })
+    } else {
+        loadProducts()
     }
 })
 
-const headerTitle = computed(() => {
-    if (step.value === 2 && currentProduct.value) {
-        return currentProduct.value.name
+const onStoreFocus = () => {
+    if (!storeName.value) {
+        priceStore.getStores('')
     }
-    if (isCreating.value) {
-        return 'Новый товар'
-    }
-    return 'Добавить цену'
-})
-
-const goBack = () => {
-    if (isCreating.value) {
-        isCreating.value = false
-        return
-    }
-
-    if (step.value === 2) {
-        // If we entered directly with an ID (from Product View), go back to Product View
-        if (route.params.id) {
-            router.back()
-            return
-        }
-        step.value = 1
-        return
-    }
-
-    router.back()
 }
+
+// Watch for search query
+watch(searchQuery, (val) => {
+    if (val.length > 2) {
+        catalogStore.searchProducts(val)
+    }
+})
 </script>
 
 <template>
     <div class="add-price-view">
-        <!-- Header -->
         <header class="ergo-header">
             <div class="header-inner">
-                <button class="nav-btn" @click="goBack">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
+                <button class="nav-btn" @click="step === 1 ? router.back() : step = 1">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <path d="M15 18l-6-6 6-6" />
                     </svg>
                 </button>
-                <div class="header-title">
-                    {{ headerTitle }}
-                </div>
-
+                <h1 class="header-title">
+                    {{ step === 1 ? 'Выбор товара' : currentProduct?.name }}
+                </h1>
                 <div class="header-actions">
-                    <template v-if="isCreating">
-                        <button class="action-btn cancel" @click="cancelCreation">Отмена</button>
-                        <button class="action-btn primary" :disabled="!newProductName" @click="createProduct">
-                            Создать
-                        </button>
-                    </template>
-                    <template v-else-if="step === 2 && !isSuccess">
-                        <FpButton :disabled="!isValid || isSubmitting" @click="submit">
-                            Сохранить
-                        </FpButton>
-                    </template>
+                    <button v-if="step === 2" class="action-btn-text" :disabled="!storeName || !price || !quantity"
+                        @click="submit">
+                        Готово
+                    </button>
+                    <div v-else style="width: 40px"></div>
                 </div>
             </div>
         </header>
@@ -334,8 +230,8 @@ const goBack = () => {
         <!-- Step 1: Select Product -->
         <section v-if="step === 1" class="step-section">
             <div class="sticky-search-wrapper">
-                <div class="search-header">
-                    <FpInput v-model="gridSearchQuery" placeholder="Поиск товара..." class="grid-search" />
+                <div class="search-input-group">
+                    <FpInput v-model="searchQuery" placeholder="Поиск товара..." class="flex-grow" />
                 </div>
 
                 <div class="category-filters">
@@ -344,25 +240,37 @@ const goBack = () => {
                         {{ cat }}
                     </button>
                 </div>
+            </div>
 
-                <div v-if="isLoadingProducts" class="loading-state">
-                    <FpSpinner />
+            <div v-if="isLoadingProducts" class="standard-grid">
+                <div v-for="i in 8" :key="i" class="fp-tile skeleton">
+                    <div class="tile-info">
+                        <div class="skeleton-line sm"></div>
+                        <div class="skeleton-line lg"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="standard-grid">
+                <!-- Create New Tile -->
+                <div class="fp-tile create-tile" @click="startCreation">
+                    <div class="tile-info">
+                        <span class="subtitle">Новый</span>
+                        <h3 class="title">+ Добавить товар</h3>
+                    </div>
                 </div>
 
-                <div v-else class="standard-grid">
-                    <!-- Create New Tile -->
-                    <button class="product-tile create-tile" @click="startCreation">
-                        <div class="tile-icon">+</div>
-                        <span class="tile-name">Новый товар</span>
-                    </button>
-
-                    <!-- Product Tiles -->
-                    <button v-for="item in filteredGridProducts" :key="item.id" class="product-tile"
-                        @click="selectProduct({ id: item.id, name: item.name })">
-                        <div class="tile-category-icon">{{ item.category?.[0] || '📦' }}</div>
-                        <span class="tile-name">{{ item.name }}</span>
-                        <span class="tile-category">{{ item.category }}</span>
-                    </button>
+                <!-- Product Tiles -->
+                <div v-for="item in filteredGridProducts" :key="item.id" class="fp-tile"
+                    @click="selectProduct({ id: item.id, name: item.name })">
+                    <div class="tile-info">
+                        <span class="subtitle">{{ item.category }}</span>
+                        <h3 class="title">{{ item.name }}</h3>
+                    </div>
+                    <div class="tile-footer">
+                        <span class="extra-info">{{ item.unit || '---' }}</span>
+                        <span class="main-value">Выбрать</span>
+                    </div>
                 </div>
             </div>
 
@@ -371,15 +279,13 @@ const goBack = () => {
                     <h3>Новый товар</h3>
                     <div class="form-grid">
                         <FpInput v-model="newProductName" label="Название" @keydown.enter="createProduct" />
-
-                        <div class="select-group">
-                            <FpCombobox v-model="newProductCategory" label="Категория" :items="categoryItems"
-                                placeholder="Выберите категорию" allow-create @create="createCategory" />
-                        </div>
-
+                        <FpCombobox v-model="newProductCategory" label="Категория" :items="categoryItems"
+                            placeholder="Выберите категорию" allow-create @create="createCategory" />
                     </div>
-
-
+                    <div class="actions-row">
+                        <FpButton variant="outline" @click="isCreating = false">Отмена</FpButton>
+                        <FpButton :disabled="!newProductName" @click="createProduct">Создать</FpButton>
+                    </div>
                 </div>
             </FpCard>
         </section>
@@ -387,26 +293,20 @@ const goBack = () => {
         <!-- Step 2: Enter Details -->
         <section v-else class="step-section">
             <FpCard>
-                <div class="product-summary" v-if="currentProduct">
-                    <!-- Title moved to header -->
-                    <span class="category">{{ currentProduct.category }}</span>
-                    <button class="change-btn" @click="step = 1">Изменить</button>
+                <div class="product-summary">
+                    <span class="category">{{ currentProduct?.category }}</span>
+                    <button class="change-btn" @click="step = 1">Изменить товар</button>
                 </div>
 
                 <div class="form-grid">
-                    <div class="store-field">
-                        <FpCombobox v-model="storeName" label="Магазин" placeholder="Магазин или рынок"
-                            :items="storeResults" :loading="isSearchingStores" allow-create
-                            create-label="Добавить место" @update:modelValue="handleSearchStore" @select="selectStore"
-                            @create="createStore" @focus="onStoreFocus" />
-                    </div>
+                    <FpCombobox v-model="storeName" label="Магазин" placeholder="Где купили?" :items="storeResults"
+                        :loading="isSearchingStores" allow-create @update:modelValue="handleSearchStore"
+                        @select="selectStore" @create="createStore" @focus="onStoreFocus" />
 
-                    <!-- Price Row -->
                     <div class="price-row">
                         <FpInput v-model="price" label="Цена (₽)" type="number" placeholder="0" class="price-input" />
                     </div>
 
-                    <!-- Quantity Row -->
                     <div class="quantity-row">
                         <FpInput v-model="quantity" label="Вес/Объем" type="number" placeholder="900"
                             class="quantity-input" />
@@ -416,13 +316,11 @@ const goBack = () => {
                         </div>
                     </div>
 
-                    <!-- Calculated Info -->
                     <div class="calc-info" v-if="calculatedUnitPrice">
                         <span class="label">Цена за {{ calculatedUnitPrice.unit }}:</span>
                         <span class="value">~{{ calculatedUnitPrice.price }} ₽</span>
                     </div>
                 </div>
-
 
                 <div v-if="isSuccess" class="success-message">
                     ✅ Цена успешно добавлена!
@@ -434,9 +332,7 @@ const goBack = () => {
 
 <style scoped lang="scss">
 .add-price-view {
-    padding: 0 0.5rem; // User requested 0.5rem from edge
-
-
+    padding: 0 0.5rem;
 }
 
 .ergo-header {
@@ -445,7 +341,7 @@ const goBack = () => {
     top: 0;
     z-index: 10;
     border-bottom: 1px solid var(--color-border);
-    margin: 0 -0.5rem var(--spacing-md) -0.5rem; // Negative margin to overflow padding
+    margin: 0 -0.5rem var(--spacing-md) -0.5rem;
     padding: 12px 16px;
 }
 
@@ -453,128 +349,69 @@ const goBack = () => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
 }
 
 .header-title {
     font-size: 18px;
     font-weight: 600;
-    color: var(--color-text-primary);
     flex: 1;
     text-align: center;
-    white-space: nowrap;
+    margin: 0 8px;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin: 0 8px;
-}
-
-.header-actions {
-    display: flex;
-    gap: 8px;
-    min-width: 40px;
-    justify-content: flex-end;
-}
-
-.action-btn {
-    background: none;
-    border: none;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 6px 12px;
-    border-radius: var(--radius-sm);
-    transition: background 0.2s;
-
-    &.primary {
-        color: var(--color-primary);
-        background: rgba(var(--color-primary-rgb), 0.1);
-
-        &:disabled {
-            opacity: 0.5;
-            background: transparent;
-            cursor: not-allowed;
-        }
-
-        &:not(:disabled):hover {
-            background: rgba(var(--color-primary-rgb), 0.2);
-        }
-    }
-
-    &.cancel {
-        color: var(--color-text-secondary);
-
-        &:hover {
-            background: var(--color-surface-hover);
-        }
-    }
+    white-space: nowrap;
 }
 
 .nav-btn {
-    background: transparent;
+    background: none;
     border: none;
     color: var(--color-text-secondary);
-    width: 40px;
-    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
     cursor: pointer;
-    transition: background 0.2s, color 0.2s;
+}
 
-    &:active {
-        background: var(--color-surface-hover);
-        color: var(--color-text-primary);
+.action-btn-text {
+    color: var(--color-primary);
+    font-weight: 600;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 }
 
 .product-summary {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding-bottom: var(--spacing-md);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--color-border);
-    margin-bottom: var(--spacing-md);
-    padding-left: 4px;
-    /* Fix visual sticking */
-    padding-right: 4px;
-
-    h3 {
-        margin: 0;
-        font-size: var(--text-body-1);
-        font-weight: 600;
-        /* Improve hierarchy */
-    }
 
     .category {
-        font-size: var(--text-caption);
         color: var(--color-text-secondary);
-        margin-left: 8px;
+        font-size: 12px;
     }
-}
 
-.change-btn {
-    background: none;
-    border: none;
-    color: var(--color-primary);
-    cursor: pointer;
-    font-size: var(--text-caption);
-    text-decoration: underline;
+    .change-btn {
+        color: var(--color-primary);
+        background: none;
+        border: none;
+        font-size: 12px;
+        text-decoration: underline;
+        cursor: pointer;
+    }
 }
 
 .form-grid {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
-    position: relative;
-}
-
-.actions-row {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-lg);
+    gap: 16px;
 }
 
 .price-row,
@@ -583,125 +420,53 @@ const goBack = () => {
     gap: 12px;
 }
 
-.price-input {
-    flex: 1;
-}
-
+.price-input,
 .quantity-input {
-    flex: 2;
+    flex: 1;
 }
 
 .unit-select {
-    flex: 1;
-    min-width: 80px;
-}
-
-.currency-toggles {
-    display: flex;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: 4px;
-    height: 56px;
-    /* Match input height */
-    align-items: center;
-}
-
-.currency-btn {
-    height: 100%;
-    padding: 0 20px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: var(--text-body-2);
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    border-radius: var(--radius-xs);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-    &:hover {
-        color: var(--color-text-primary);
-    }
-
-    &.active {
-        background: var(--color-primary);
-        color: white;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-}
-
-.exchange-rate-control {
-    background: rgba(var(--color-primary-rgb), 0.05);
-    border: 1px solid rgba(var(--color-primary-rgb), 0.1);
-    padding: 16px;
-    border-radius: var(--radius-md);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: var(--text-body-2);
-    margin-top: 8px;
-    transition: all 0.3s ease;
-
-    &:hover {
-        background: rgba(var(--color-primary-rgb), 0.08);
-    }
-}
-
-.rate-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--color-text-secondary);
-}
-
-.rate-value {
-    border-bottom: 1px dashed var(--color-primary);
-    cursor: pointer;
-    font-weight: 700;
-    color: var(--color-primary);
-    transition: all 0.2s;
-
-    &:hover {
-        opacity: 0.8;
-    }
-}
-
-.rate-input {
-    width: 80px;
-    padding: 4px 8px;
-    border: 2px solid var(--color-primary);
-    border-radius: var(--radius-xs);
-    font-weight: 600;
-    color: var(--color-primary);
-    background: var(--color-surface);
-    outline: none;
-}
-
-.converted-price {
-    font-size: var(--text-h4);
-    font-weight: 700;
-    color: var(--color-primary);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    width: 100px;
 }
 
 .calc-info {
     background: rgba(var(--color-primary-rgb), 0.1);
     padding: 12px;
-    border-radius: var(--radius-md);
+    border-radius: 8px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
     color: var(--color-primary);
-    font-weight: 500;
+    font-weight: 600;
 }
 
-.selection-grid-container {
-    padding: 0 var(--spacing-sm);
+.create-tile {
+    border: 2px dashed var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.05);
+
+    .title {
+        color: var(--color-primary);
+    }
 }
 
-.loading-state {
+.creation-form {
+    padding: 16px;
+
+    h3 {
+        margin-bottom: 16px;
+    }
+}
+
+.actions-row {
     display: flex;
-    justify-content: center;
-    padding: var(--spacing-xl);
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.success-message {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--color-success);
+    font-weight: 600;
 }
 </style>

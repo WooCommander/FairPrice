@@ -51,7 +51,8 @@ const onBlur = () => {
   <div class="fp-input-wrapper" :class="{ 'has-error': !!props.error, 'is-focused': isFocused, 'has-value': hasValue }">
     <div class="input-container">
       <input :id="inputId" class="fp-input" :type="props.type" :value="props.modelValue" :disabled="props.disabled"
-        placeholder=" " @input="onInput" @focus="onFocus" @blur="onBlur" />
+        :placeholder="props.label && !isFocused && !hasValue ? '' : props.placeholder || ' '" @input="onInput"
+        @focus="onFocus" @blur="onBlur" />
       <label v-if="props.label" :for="inputId" class="fp-label">
         {{ props.label }}
       </label>

@@ -14,6 +14,7 @@ const { recentUpdates } = catalogStore
 // Use a subset for HomeView
 const searchQuery = ref('')
 const showFavoritesOnly = ref(false)
+const isLoading = ref(true)
 
 const handleSearch = () => {
     if (searchQuery.value.trim()) {
@@ -42,6 +43,7 @@ const toggleFavorite = async (productId: string) => {
 }
 
 onMounted(async () => {
+    isLoading.value = true
     try {
         await Promise.all([
             catalogStore.loadRecentProducts(),
@@ -49,6 +51,8 @@ onMounted(async () => {
         ])
     } catch (e) {
         console.error('Failed to load home data', e)
+    } finally {
+        isLoading.value = false
     }
 })
 </script>
@@ -58,7 +62,7 @@ onMounted(async () => {
         <!-- Header / Hero Section -->
         <header class="dashboard-header">
             <div class="search-bar-container">
-                <FpSearchInput v-model="searchQuery" placeholder="Поиск товара..." @keyup.enter="handleSearch"
+                <FpSearchInput v-model="searchQuery" placeholder="Поищем что нибудь?..." @keyup.enter="handleSearch"
                     @search="handleSearch" />
             </div>
         </header>
@@ -108,7 +112,6 @@ onMounted(async () => {
             <!-- Recent Updates Feed -->
             <section class="updates-section">
                 <div class="section-header">
-
                     <div class="feed-tabs">
                         <button class="tab-btn" :class="{ active: !showFavoritesOnly }"
                             @click="showFavoritesOnly = false">Все</button>
@@ -117,7 +120,33 @@ onMounted(async () => {
                     </div>
                 </div>
 
-                <div v-if="filteredUpdates.length === 0" class="empty-state">
+                <div v-if="isLoading">
+                    <!-- Skeletons for Desktop -->
+                    <div class="desktop-skeletons">
+                        <FpCard v-for="i in 5" :key="i" class="skeleton-row-card">
+                            <div class="skeleton-row skeleton">
+                                <div class="sk-cell" style="width: 25%"></div>
+                                <div class="sk-cell" style="width: 15%"></div>
+                                <div class="sk-cell" style="width: 10%"></div>
+                                <div class="sk-cell" style="width: 15%"></div>
+                                <div class="sk-cell" style="width: 20%"></div>
+                            </div>
+                        </FpCard>
+                    </div>
+                    <!-- Skeletons for Mobile -->
+                    <div class="mobile-skeletons">
+                        <div v-for="i in 4" :key="i" class="mobile-skeleton-card skeleton">
+                            <div class="sk-line lg"></div>
+                            <div class="sk-row">
+                                <div class="sk-line md"></div>
+                                <div class="sk-line sm"></div>
+                            </div>
+                            <div class="skeleton-divider"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else-if="filteredUpdates.length === 0" class="empty-state">
                     <template v-if="searchQuery">
                         <p class="empty-text">В последних обновлениях не найдено</p>
                         <button class="search-global-btn" @click="handleSearch">
@@ -160,7 +189,8 @@ onMounted(async () => {
                                     </button>
                                 </td>
                                 <td>
-                                    <span class="category-tag" @click.stop="router.push(`/category/${item.category}`)">
+                                    <span class="category-tag-inline"
+                                        @click.stop="router.push(`/category/${item.category}`)">
                                         {{ item.category }}
                                     </span>
                                 </td>
@@ -234,7 +264,8 @@ onMounted(async () => {
 
                             <!-- Row 3: Category & Time -->
                             <div class="card-bottom">
-                                <span class="category-tag" @click.stop="router.push(`/category/${item.category}`)">
+                                <span class="category-tag-inline"
+                                    @click.stop="router.push(`/category/${item.category}`)">
                                     {{ item.category }}
                                 </span>
                                 <span class="last-update">{{ item.lastUpdateRelative }}</span>
@@ -253,12 +284,11 @@ onMounted(async () => {
 }
 
 .home-dashboard {
-    /* max-width handled by MainLayout */
     padding-bottom: var(--spacing-lg);
 }
 
 .dashboard-header {
-    margin-bottom: var(--spacing-lg); // Compact margin
+    margin-bottom: var(--spacing-lg);
     text-align: center;
 }
 
@@ -273,24 +303,21 @@ onMounted(async () => {
     gap: var(--spacing-md);
 }
 
-// Actions Section
 .actions-section {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); // 4 columns on desktop
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    // max-width: 900px;
-    // 
 
     @media (max-width: 600px) {
-        display: flex; // Flex row on mobile
-        justify-content: space-evenly; // Distribute evenly
+        display: flex;
+        justify-content: space-evenly;
         gap: 8px;
     }
 }
 
 .action-card {
     display: flex;
-    flex-direction: column; // Vertical layout
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 8px;
@@ -301,7 +328,7 @@ onMounted(async () => {
     border-radius: 16px;
     box-shadow: var(--shadow-sm);
     padding: 16px 8px;
-    height: 100px; // Fixed height for desktop
+    height: 100px;
     width: 100%;
     box-sizing: border-box;
 
@@ -315,8 +342,8 @@ onMounted(async () => {
         width: 60px;
         height: 60px;
         padding: 0;
-        border-radius: 50%; // Circular buttons
-        gap: 0; // No gap since no text
+        border-radius: 50%;
+        gap: 0;
     }
 }
 
@@ -333,7 +360,7 @@ onMounted(async () => {
     color: var(--color-text-primary);
 
     @media (max-width: 600px) {
-        background: transparent; // Clean look
+        background: transparent;
         width: 100%;
         height: 100%;
         font-size: 24px;
@@ -366,7 +393,7 @@ onMounted(async () => {
     text-align: center;
 
     @media (max-width: 600px) {
-        display: none; // Hide text on mobile
+        display: none;
     }
 
     .title {
@@ -384,22 +411,11 @@ onMounted(async () => {
     }
 }
 
-// Updates Section
 .section-header {
     display: flex;
     justify-content: center;
     align-items: center;
-    // margin-bottom: var(--spacing-md);
     padding-bottom: var(--spacing-sm);
-
-
-    h2 {
-        font-family: var(--font-heading);
-        font-size: var(--text-h3);
-        font-weight: 600;
-        margin: 0;
-        color: var(--color-text-primary);
-    }
 }
 
 .feed-tabs {
@@ -452,7 +468,6 @@ onMounted(async () => {
     transition: background 0.2s;
 
     &:hover {
-        background: var(--color-primary-dark, #0056b3); // Fallback if var missing
         filter: brightness(0.9);
     }
 }
@@ -481,17 +496,17 @@ onMounted(async () => {
 
     th,
     td {
-        padding: 16px 24px; // More padding
+        padding: 16px 24px;
         text-align: left;
     }
 
     th {
-        font-size: 1rem; // Increased header size
+        font-size: 1rem;
         color: var(--color-text-secondary);
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        background: #fafafa; // Light gray header
+        background: #fafafa;
         border-bottom: 1px solid var(--color-border);
     }
 
@@ -549,7 +564,7 @@ onMounted(async () => {
     font-size: var(--text-caption);
 }
 
-.category-tag {
+.category-tag-inline {
     background: rgba(var(--color-primary-rgb), 0.1);
     color: var(--color-primary);
     padding: 2px 8px;
@@ -557,19 +572,16 @@ onMounted(async () => {
     font-size: var(--text-caption);
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
 
     &:hover {
         background: rgba(var(--color-primary-rgb), 0.2);
     }
 }
 
-
-
 .mobile-feed {
     display: none;
     flex-direction: column;
-    gap: 8px; // Reduced gap between cards
+    gap: 8px;
 
     @media (max-width: 600px) {
         display: flex;
@@ -585,12 +597,9 @@ onMounted(async () => {
     cursor: pointer;
     transition: all 0.2s;
     margin: 0rem .5rem;
-
-    // Grid Layout
     display: grid;
-    grid-template-columns: 1fr auto; // Content space | Price space
-    grid-template-rows: auto auto auto; // Name | Details | Meta
-    gap: 4px 12px; // row-gap col-gap
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
 
     &:active {
         transform: scale(0.98);
@@ -598,23 +607,21 @@ onMounted(async () => {
     }
 }
 
-// Row 1: Name and Price
 .card-top {
     grid-column: 1 / -1;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 12px;
-    margin-bottom: 2px;
 }
 
 .card-title {
     font-weight: 600;
-    font-size: 15px; // Slightly smaller but bolder
+    font-size: 15px;
     line-height: 1.3;
     color: var(--color-text-primary);
     display: -webkit-box;
-    -webkit-line-clamp: 2; // Max 2 lines
+    -webkit-line-clamp: 2;
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -624,29 +631,16 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    flex-shrink: 0; // Prevent price shrinking
+    flex-shrink: 0;
 }
 
 .card-price {
-    font-weight: 800; // Extra bold
+    font-weight: 800;
     font-size: 18px;
     line-height: 1.2;
     white-space: nowrap;
-
-    &.text-success {
-        color: var(--color-success);
-    }
-
-    &.text-error {
-        color: var(--color-error);
-    }
-
-    &.text-neutral {
-        color: var(--color-text-primary);
-    }
 }
 
-// Row 2: Secondary Info (Unit Price + Store)
 .card-middle {
     grid-column: 1 / -1;
     display: flex;
@@ -656,12 +650,12 @@ onMounted(async () => {
 }
 
 .unit-price-badge {
-    font-size: 1rem;
+    font-size: 14px;
     color: var(--color-text-secondary);
 }
 
 .store-text {
-    font-size: 1rem;
+    font-size: 14px;
     color: var(--color-text-primary);
     font-weight: 500;
     display: flex;
@@ -672,7 +666,6 @@ onMounted(async () => {
     border-radius: 4px;
 }
 
-// Row 3: Meta (Category + Time)
 .card-bottom {
     grid-column: 1 / -1;
     display: flex;
@@ -680,23 +673,12 @@ onMounted(async () => {
     align-items: center;
     margin-top: 8px;
     padding-top: 8px;
-    border-top: 1px solid var(--color-border); // Separator
-}
-
-.category-tag {
-    // Override existing slightly for mobile context
-    font-size: 1rem;
-    padding: 2px 8px;
+    border-top: 1px solid var(--color-border);
 }
 
 .last-update {
-    font-size: 1rem;
+    font-size: 12px;
     color: var(--color-text-tertiary);
-}
-
-// Hide elements not used in new design if needed
-.avg-price-badge {
-    display: none; // Hide average price to reduce clutter on mobile
 }
 
 .fav-btn {
@@ -711,7 +693,7 @@ onMounted(async () => {
     justify-content: center;
 
     &.active {
-        color: #FFD700; // Gold
+        color: #FFD700;
     }
 
     &:hover {
@@ -727,6 +709,72 @@ onMounted(async () => {
     .fav-btn {
         padding: 0;
         margin-top: -2px;
+    }
+}
+
+// Skeleton Helper Classes
+.skeleton-row-card {
+    margin-bottom: 8px;
+    border: 1px solid var(--color-border);
+}
+
+.skeleton-row {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+}
+
+.mobile-skeleton-card {
+    background: var(--color-surface);
+    padding: 16px;
+    border-radius: 12px;
+    margin: 0 0.5rem 8px 0.5rem;
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .sk-line {
+        height: 14px;
+
+        &.lg {
+            width: 70%;
+            height: 18px;
+        }
+
+        &.md {
+            width: 40%;
+        }
+
+        &.sm {
+            width: 20%;
+        }
+    }
+
+    .sk-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .skeleton-divider {
+        margin-top: 4px;
+        border-top: 1px solid var(--color-border);
+        padding-top: 8px;
+    }
+}
+
+.desktop-skeletons {
+    @media (max-width: 600px) {
+        display: none;
+    }
+}
+
+.mobile-skeletons {
+    display: none;
+
+    @media (max-width: 600px) {
+        display: flex;
+        flex-direction: column;
     }
 }
 </style>
