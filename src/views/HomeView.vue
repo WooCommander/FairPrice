@@ -10,7 +10,13 @@ const router = useRouter()
 
 // Stats Data
 // Destructure for easier use and reactivity in template
-const { recentUpdates, favoriteProductIds, isFavorite } = catalogStore
+const {
+    recentUpdates,
+    favoriteProductIds,
+    isFavorite,
+    totalProductCount,
+    totalCategoryCount
+} = catalogStore
 const { uncheckedItems } = shoppingListStore
 
 const shoppingItemsLeft = computed(() => uncheckedItems.value.length)
@@ -71,6 +77,7 @@ onMounted(async () => {
         await Promise.all([
             catalogStore.loadRecentProducts(),
             catalogStore.loadFavorites(),
+            catalogStore.loadDashboardStats(),
             // Ensure shopping list is loaded for stats
             shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
         ])
@@ -126,6 +133,22 @@ onMounted(async () => {
                     <div class="stat-info">
                         <span class="stat-value">{{ goodDeals.length }}</span>
                         <span class="stat-label">Скидки</span>
+                    </div>
+                </FpCard>
+
+                <FpCard class="stat-card" @click="router.push('/catalog')">
+                    <div class="stat-icon products">📦</div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ totalProductCount }}</span>
+                        <span class="stat-label">Товаров</span>
+                    </div>
+                </FpCard>
+
+                <FpCard class="stat-card" @click="router.push('/catalog')">
+                    <div class="stat-icon categories">📂</div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ totalCategoryCount }}</span>
+                        <span class="stat-label">Категорий</span>
                     </div>
                 </FpCard>
             </section>

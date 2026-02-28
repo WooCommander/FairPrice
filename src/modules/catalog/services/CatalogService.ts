@@ -509,6 +509,30 @@ class CatalogService {
             return true // Is favorite now
         }
     }
+
+    async getDashboardStats(): Promise<{ productCount: number, categoryCount: number }> {
+        // 1. Get total products
+        const { count: productCount, error: productError } = await supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+
+        // 2. Get unique categories
+        const { data: categories, error: categoryError } = await supabase
+            .from('products')
+            .select('category')
+
+        if (productError || categoryError) {
+            console.error('Error fetching dashboard stats:', productError || categoryError)
+            return { productCount: 0, categoryCount: 0 }
+        }
+
+        const uniqueCategories = new Set(categories?.map(p => p.category).filter(Boolean))
+
+        return {
+            productCount: productCount || 0,
+            categoryCount: uniqueCategories.size
+        }
+    }
 }
 
 export const instance = new CatalogService()

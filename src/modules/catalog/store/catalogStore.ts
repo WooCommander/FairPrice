@@ -7,6 +7,8 @@ const recentUpdates = ref<ProductModel[]>([])
 const currentProduct = ref<ProductModel | null>(null)
 const isSearching = ref(false)
 const favoriteProductIds = ref<Set<string>>(new Set())
+const totalProductCount = ref(0)
+const totalCategoryCount = ref(0)
 
 // Pagination State
 const currentPage = ref(1)
@@ -47,6 +49,8 @@ export const catalogStore = {
     error: ref<string | null>(null), // Add error state
     favoriteProductIds: readonly(favoriteProductIds), // Expose read-only
     searchHistory: readonly(searchHistory),
+    totalProductCount: readonly(totalProductCount),
+    totalCategoryCount: readonly(totalCategoryCount),
     addToHistory,
     removeFromHistory,
     clearHistory,
@@ -131,6 +135,16 @@ export const catalogStore = {
             hasMore.value = searchResults.value.length < total
         } finally {
             isSearching.value = false
+        }
+    },
+
+    async loadDashboardStats() {
+        try {
+            const stats = await CatalogService.getDashboardStats()
+            totalProductCount.value = stats.productCount
+            totalCategoryCount.value = stats.categoryCount
+        } catch (e) {
+            console.error('Failed to load dashboard stats', e)
         }
     },
 
