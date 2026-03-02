@@ -61,8 +61,6 @@ const formatPrice = computed(() => (val: number) => {
     return CurrencyService.format(CurrencyService.convert(val, 'RUB', currency), currency)
 })
 
-const currencies: Array<'RUB' | 'USD' | 'EUR'> = ['RUB', 'USD', 'EUR']
-
 onMounted(async () => {
     isLoading.value = true
     try {
@@ -93,12 +91,6 @@ onMounted(async () => {
                     <p class="hero-subtitle">Твой прогресс в Fair Price</p>
                 </div>
 
-                <div class="currency-selector">
-                    <button v-for="code in currencies" :key="code" class="curr-btn"
-                        :class="{ active: currentCurrency === code }" @click="catalogStore.setCurrency(code)">
-                        {{ code }}
-                    </button>
-                </div>
             </div>
 
             <FpCard v-if="userStats" class="profile-card">
@@ -273,31 +265,6 @@ onMounted(async () => {
         margin: 4px 0 0;
     }
 
-    .currency-selector {
-        display: flex;
-        background: var(--color-surface);
-        padding: 4px;
-        border-radius: 12px;
-        border: 1px solid var(--color-border);
-        gap: 2px;
-
-        .curr-btn {
-            background: none;
-            border: none;
-            padding: 4px 8px;
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--color-text-tertiary);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-
-            &.active {
-                background: var(--color-primary);
-                color: white;
-            }
-        }
-    }
 }
 
 // Profile Card

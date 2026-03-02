@@ -3,6 +3,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { computed, ref } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { authStore } from '@/modules/auth/store/authStore'
+import { catalogStore } from '@/modules/catalog/store/catalogStore'
 
 const router = useRouter()
 const route = useRoute()
@@ -47,6 +48,9 @@ const navigate = (path: string) => {
 	router.push(path)
 }
 
+const { currentCurrency } = catalogStore
+const currencies: Array<'RUB' | 'USD' | 'EUR'> = ['RUB', 'USD', 'EUR']
+
 const isMenuOpen = ref(false)
 
 const handleLogout = async () => {
@@ -80,6 +84,13 @@ const handleLogout = async () => {
 				</div>
 
 				<div class="actions">
+					<div class="currency-selector">
+						<button v-for="code in currencies" :key="code" class="curr-btn"
+							:class="{ active: currentCurrency === code }"
+							@click="catalogStore.setCurrency(code)">
+							{{ code }}
+						</button>
+					</div>
 					<div v-if="!authStore.user.value">
 						<button class="login-btn" @click="router.push('/login')">
 							<span class="btn-text">Войти</span>
@@ -295,6 +306,38 @@ const handleLogout = async () => {
 	display: flex;
 	align-items: center;
 	gap: 12px;
+}
+
+.actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.currency-selector {
+	display: flex;
+	background: var(--color-surface);
+	padding: 3px;
+	border-radius: 10px;
+	border: 1px solid var(--color-border);
+	gap: 2px;
+
+	.curr-btn {
+		background: none;
+		border: none;
+		padding: 3px 7px;
+		font-size: 10px;
+		font-weight: 700;
+		color: var(--color-text-tertiary);
+		border-radius: 7px;
+		cursor: pointer;
+		transition: all 0.2s;
+
+		&.active {
+			background: var(--color-primary);
+			color: white;
+		}
+	}
 }
 
 .hamburger-btn,

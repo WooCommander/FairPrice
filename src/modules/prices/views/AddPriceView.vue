@@ -28,8 +28,8 @@ const storeName = ref('')
 const storeResults = ref<{ id: string, name: string }[]>([])
 const isSearchingStores = ref(false)
 const price = ref('')
-const quantity = ref('')
-const unit = ref('г')
+const quantity = ref('1')
+const unit = ref('кг')
 const isSuccess = ref(false)
 
 // Create product state
@@ -77,6 +77,9 @@ const selectProduct = (p: { id: string, name: string }) => {
     }
     if (fullProduct?.unit) {
         unit.value = fullProduct.unit
+    }
+    if (fullProduct?.lastStore) {
+        storeName.value = fullProduct.lastStore
     }
     step.value = 2
 }
@@ -163,6 +166,7 @@ onMounted(() => {
                 const p = catalogStore.currentProduct.value
                 currentProduct.value = { id: p.id, name: p.name, category: p.category, unit: p.unit }
                 if (p.unit) unit.value = p.unit
+                if (p.lastStore) storeName.value = p.lastStore
                 step.value = 2
             }
         })
