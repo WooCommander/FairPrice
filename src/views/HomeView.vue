@@ -14,9 +14,9 @@ const router = useRouter()
 // Stats Data
 // Destructure for easier use and reactivity in template
 const {
-    recentUpdates,
+    // recentUpdates,
     favoriteProductIds,
-    isFavorite,
+    // isFavorite,
     totalProductCount,
     totalCategoryCount,
     totalUserCount,
@@ -52,9 +52,9 @@ const categoryIcons: Record<string, string> = {
     'Разное': '📦'
 }
 
-const toggleFavorite = async (productId: string) => {
-    await catalogStore.toggleFavorite(productId)
-}
+// const toggleFavorite = async (productId: string) => {
+//     await catalogStore.toggleFavorite(productId)
+// }
 
 const formatPrice = computed(() => (val: number) => {
     const currency = currentCurrency.value
