@@ -154,13 +154,13 @@ onMounted(async () => {
             <!-- Global Insights (Small) -->
             <div class="global-mini-stats">
                 <div class="mini-stat">
-                    <span>📦 {{ totalProductCount }} товаров</span>
+                    <span>📦<br> {{ totalProductCount }}<br> товаров</span>
                 </div>
                 <div class="mini-stat">
-                    <span>👥 {{ totalUserCount }} контрибьюторов</span>
+                    <span>👥<br> {{ totalUserCount }}<br> контрибьюторов</span>
                 </div>
                 <div class="mini-stat">
-                    <span>📂 {{ totalCategoryCount }} категорий</span>
+                    <span>📂<br> {{ totalCategoryCount }}<br> категорий</span>
                 </div>
             </div>
 
@@ -415,8 +415,16 @@ onMounted(async () => {
         justify-content: center;
     }
 
+    .stat-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .1rem;
+    }
+
     .stat-value {
         font-size: 18px;
+
         font-weight: 800;
         color: var(--color-text-primary);
     }
@@ -437,7 +445,7 @@ onMounted(async () => {
     padding: 0 4px;
 
     .mini-stat {
-        font-size: 11px;
+        font-size: 1rem;
         color: var(--color-text-tertiary);
         font-weight: 600;
         background: var(--color-surface);

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { AuthService } from '@/modules/auth/services/AuthService'
 import FpCard from '@/design-system/components/FpCard.vue'
@@ -15,6 +15,10 @@ const currencies: { code: CurrencyCode; symbol: string; label: string }[] = [
 ]
 
 const { currentCurrency } = catalogStore
+const formatPrice = computed(() => (price: number) => {
+  const currency = currentCurrency.value
+  return CurrencyService.format(CurrencyService.convert(price, 'RUB', currency), currency)
+})
 const currencySaved = ref(false)
 const ratesSaved = ref(false)
 
@@ -175,7 +179,7 @@ onMounted(async () => {
               <span class="act-time">{{ act.time }}</span>
             </div>
             <span class="act-item">{{ act.item }}</span>
-            <span class="act-details">{{ act.details }}</span>
+            <span class="act-details">{{ formatPrice(act.price) }}</span>
           </div>
         </FpCard>
       </div>
