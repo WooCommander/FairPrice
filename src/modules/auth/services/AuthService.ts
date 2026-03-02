@@ -48,13 +48,19 @@ class AuthService {
         if (!user) return null
 
         // Parallel fetch for speed
-        const [products, prices] = await Promise.all([
+        const [products, prices, verStats] = await Promise.all([
             supabase.from('products').select('id', { count: 'exact', head: true }).eq('created_by', user.id),
-            supabase.from('prices').select('id', { count: 'exact', head: true }).eq('created_by', user.id)
+            supabase.from('prices').select('id', { count: 'exact', head: true }).eq('created_by', user.id),
+            supabase.from('price_verifications')
+                .select('vote, prices!inner(created_by)')
+                .eq('prices.created_by', user.id)
         ])
 
+        const verificationPoints = (verStats.data || []).reduce((acc: number, v: any) =>
+            acc + (v.vote === 'confirm' ? 1 : -1), 0)
+
         // Level Calculation
-        const totalPoints = (products.count || 0) * 20 + (prices.count || 0) * 5
+        const totalPoints = (products.count || 0) * 20 + (prices.count || 0) * 5 + verificationPoints
         let level = 1
         let title = 'Новичок'
         let nextLevelThreshold = 100

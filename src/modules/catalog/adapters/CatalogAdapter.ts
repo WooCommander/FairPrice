@@ -34,6 +34,11 @@ export interface ProductHistoryModel {
     unit: string
     dateRelative: string
     createdBy?: string
+    confirmCount: number
+    denyCount: number
+    userVote?: 'confirm' | 'deny'
+    freshnessScore: number
+    freshnessLabel: string
 }
 
 export function adaptProduct(dto: ProductDTO): ProductModel {
@@ -81,9 +86,28 @@ export function adaptProduct(dto: ProductDTO): ProductModel {
             author: h.author,
             unit: h.unit,
             dateRelative: new Date(h.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
-            createdBy: h.createdBy
+            createdBy: h.createdBy,
+            confirmCount:   h.confirmCount ?? 0,
+            denyCount:      h.denyCount ?? 0,
+            userVote:       h.userVote,
+            freshnessScore: h.freshnessScore ?? 0,
+            freshnessLabel: buildFreshnessLabel(h)
         }))
     }
+}
+
+function buildFreshnessLabel(h: import('../services/CatalogService').ProductHistoryDTO): string {
+    const confirmCount = h.confirmCount ?? 0
+    const denyCount    = h.denyCount ?? 0
+    if (confirmCount === 0 && denyCount === 0) return ''
+    const net = confirmCount - denyCount
+    const ageHours = (Date.now() - new Date(h.date).getTime()) / 3_600_000
+    if (net > 0) {
+        if (ageHours < 24) return `✓ подтверждено ${Math.floor(ageHours)} ч. назад`
+        return `✓ подтверждено`
+    }
+    if (net < 0) return `✗ данные оспорены`
+    return `± неоднозначно`
 }
 
 function formatTimeAgo(date: Date): string {

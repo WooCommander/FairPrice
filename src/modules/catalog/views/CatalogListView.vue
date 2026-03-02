@@ -6,11 +6,14 @@ import { PRODUCT_CATEGORIES } from '../constants'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import { CurrencyService } from '../services/CurrencyService'
+import { CatalogService } from '../services/CatalogService'
 
 const router = useRouter()
 const route = useRoute()
 const searchQuery = ref(route.query.q as string || '')
 const selectedCategory = ref<string | null>(route.query.category as string || null)
+const selectedStoreId = ref<string | null>(route.query.storeId as string || null)
+const selectedStoreName = ref<string | null>(null)
 
 const { currentCurrency } = catalogStore
 const formatPrice = computed(() => (price: number) => {
@@ -23,7 +26,8 @@ const isLoading = computed(() => catalogStore.isLoading.value)
 
 const handleSearch = () => {
   catalogStore.searchProducts(searchQuery.value, {
-    category: selectedCategory.value || undefined
+    category: selectedCategory.value || undefined,
+    storeId: selectedStoreId.value || undefined
   })
 }
 
@@ -31,12 +35,21 @@ const toggleCategory = (cat: string) => {
   selectedCategory.value = selectedCategory.value === cat ? null : cat
 }
 
-// Watch for changes in search query and selected category to trigger search
-watch([searchQuery, selectedCategory], () => {
+const clearStoreFilter = () => {
+  selectedStoreId.value = null
+  selectedStoreName.value = null
+  router.replace({ query: { ...route.query, storeId: undefined } })
+}
+
+watch([searchQuery, selectedCategory, selectedStoreId], () => {
   handleSearch()
 })
 
-onMounted(() => {
+onMounted(async () => {
+  if (selectedStoreId.value) {
+    const store = await CatalogService.getStoreDetails(selectedStoreId.value)
+    selectedStoreName.value = store?.name || null
+  }
   handleSearch()
 })
 
@@ -55,6 +68,14 @@ const addPrice = (productId: string) => {
     <div class="sticky-search-wrapper">
       <div class="search-input-group">
         <FpInput v-model="searchQuery" placeholder="Поиск товара..." @keydown.enter="handleSearch" class="flex-grow" />
+      </div>
+
+      <div class="active-filters" v-if="selectedStoreName">
+        <div class="filter-chip">
+          <span class="chip-icon">🏪</span>
+          <span class="chip-label">{{ selectedStoreName }}</span>
+          <button class="chip-clear" @click="clearStoreFilter">✕</button>
+        </div>
       </div>
 
       <div class="category-filters">
@@ -79,8 +100,8 @@ const addPrice = (productId: string) => {
         <div class="empty-icon">🔍</div>
         <h3>Ничего не нашли</h3>
         <p>Попробуйте изменить запрос или категорию</p>
-        <FpButton v-if="searchQuery || selectedCategory" variant="outline" size="sm"
-          @click="searchQuery = ''; selectedCategory = null">
+        <FpButton v-if="searchQuery || selectedCategory || selectedStoreId" variant="outline" size="sm"
+          @click="searchQuery = ''; selectedCategory = null; clearStoreFilter()">
           Сбросить фильтры
         </FpButton>
       </div>
@@ -114,6 +135,52 @@ const addPrice = (productId: string) => {
 <style scoped lang="scss">
 .catalog-list-view {
   padding: 0 0.5rem;
+}
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 0 2px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(var(--color-primary-rgb), 0.1);
+  border: 1px solid var(--color-primary);
+  border-radius: 20px;
+  padding: 4px 10px 4px 8px;
+  font-size: 13px;
+  color: var(--color-primary);
+
+  .chip-icon {
+    font-size: 14px;
+  }
+
+  .chip-label {
+    font-weight: 500;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chip-clear {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0 0 0 2px;
+    line-height: 1;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
 }
 
 .empty {

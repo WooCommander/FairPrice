@@ -28,6 +28,10 @@ export interface ProductHistoryDTO {
     author: string;
     unit: string;
     createdBy?: string; // Add createdBy
+    confirmCount: number;
+    denyCount: number;
+    userVote?: 'confirm' | 'deny';
+    freshnessScore: number;
 }
 
 class CatalogService {
@@ -35,7 +39,18 @@ class CatalogService {
     // Mock data removed
     // private mockProducts: ProductDTO[] = []
 
-    async searchProducts(query: string, filters?: { category?: string, sort?: string }, page: number = 1, limit: number = 20): Promise<{ items: ProductDTO[], total: number }> {
+    async searchProducts(query: string, filters?: { category?: string, sort?: string, storeId?: string }, page: number = 1, limit: number = 20): Promise<{ items: ProductDTO[], total: number }> {
+        // If filtering by store, resolve product IDs first
+        let storeProductIds: string[] | null = null
+        if (filters?.storeId) {
+            const { data: priceRows } = await supabase
+                .from('prices')
+                .select('product_id')
+                .eq('store_id', filters.storeId)
+            storeProductIds = [...new Set((priceRows || []).map((p: any) => p.product_id))]
+            if (storeProductIds.length === 0) return { items: [], total: 0 }
+        }
+
         // Calculate range
         const from = (page - 1) * limit
         const to = from + limit - 1
@@ -65,15 +80,8 @@ class CatalogService {
             queryBuilder = queryBuilder.eq('category', filters.category)
         }
 
-        // Sorting logic (if needed) - currently default is created_at desc
-        if (filters?.sort) {
-            // TODO: Add dynamic sorting if requested
-            if (filters.sort === 'price_asc') {
-                // Sorting by price is tricky because price is in a joined table or computed.
-                // For MVP/Supabase, we might need a derived column or client-side sort (bad for large data).
-                // Alternatively, use an RPC or specific index. 
-                // For now, keep default sort or improve later.
-            }
+        if (storeProductIds) {
+            queryBuilder = queryBuilder.in('id', storeProductIds)
         }
 
         const { data, error, count } = await queryBuilder
@@ -260,7 +268,8 @@ class CatalogService {
                     created_by,
                     quantity,
                     quantity_unit,
-                    normalized_price
+                    normalized_price,
+                    price_verifications ( user_id, vote )
                 )
             `)
             .eq('id', id)
@@ -268,7 +277,11 @@ class CatalogService {
 
         if (error || !data) return undefined
 
-        return this.mapToDTO(data)
+        const priceIds = (data.prices || []).map((p: any) => p.id)
+        const { VerificationService } = await import('@/modules/prices/services/VerificationService')
+        const userVotes = await VerificationService.getUserVotes(priceIds)
+
+        return this.mapToDTO(data, userVotes)
     }
 
     async getProductsByIds(ids: string[]): Promise<ProductDTO[]> {
@@ -332,7 +345,7 @@ class CatalogService {
         }
     }
 
-    private mapToDTO(p: any): ProductDTO {
+    private mapToDTO(p: any, userVotes: Record<string, string> = {}): ProductDTO {
         // Find latest price from the joined prices array if available
         let lastPriceObj = null
         if (p.prices && Array.isArray(p.prices) && p.prices.length > 0) {
@@ -348,24 +361,39 @@ class CatalogService {
             unit: p.unit,
             created_by: p.created_by,
             lastPrice: lastPriceObj?.price,
-            normalizedPrice: lastPriceObj?.normalized_price, // Map normalized price
+            normalizedPrice: lastPriceObj?.normalized_price,
             quantity: lastPriceObj?.quantity,
             quantityUnit: lastPriceObj?.quantity_unit,
             lastStore: lastPriceObj?.stores?.name,
-            lastStoreId: lastPriceObj?.store_id, // Added field
-            lastUpdate: lastPriceObj?.created_at || p.created_at, // Use price update time or product creation
+            lastStoreId: lastPriceObj?.store_id,
+            lastUpdate: lastPriceObj?.created_at || p.created_at,
             priceRange: this.calculatePriceRange(p.prices),
-            averagePrice: this.calculateAveragePrice(p.prices), // Calculate average
-            history: p.prices?.map((price: any) => ({
-                id: price.id,
-                price: price.price,
-                date: price.created_at,
-                storeName: price.stores?.name || 'Неизвестно',
-                storeId: price.store_id,
-                unit: price.unit || p.unit,
-                author: 'User', // TODO: Join with profiles if available
-                createdBy: price.created_by // Map created_by
-            }))
+            averagePrice: this.calculateAveragePrice(p.prices),
+            history: p.prices?.map((price: any) => {
+                const verifications: Array<{ user_id: string; vote: string }> = price.price_verifications || []
+                const confirmCount = verifications.filter(v => v.vote === 'confirm').length
+                const denyCount    = verifications.filter(v => v.vote === 'deny').length
+                const userVote     = userVotes[price.id] as 'confirm' | 'deny' | undefined
+
+                const ageHours = (Date.now() - new Date(price.created_at).getTime()) / 3_600_000
+                const recencyScore = Math.max(0, 720 - ageHours) / 720 * 100
+                const freshnessScore = recencyScore + confirmCount * 5 - denyCount * 3
+
+                return {
+                    id: price.id,
+                    price: price.price,
+                    date: price.created_at,
+                    storeName: price.stores?.name || 'Неизвестно',
+                    storeId: price.store_id,
+                    unit: price.unit || p.unit,
+                    author: 'User',
+                    createdBy: price.created_by,
+                    confirmCount,
+                    denyCount,
+                    userVote,
+                    freshnessScore
+                }
+            })
         }
     }
 

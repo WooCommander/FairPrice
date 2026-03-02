@@ -19,7 +19,7 @@ const currentPage = ref(1)
 const totalResults = ref(0)
 const hasMore = ref(false)
 const currentQuery = ref('')
-const currentFilters = ref<{ category?: string, sort?: string }>({})
+const currentFilters = ref<{ category?: string, sort?: string, storeId?: string }>({})
 
 // Search History
 const searchHistory = ref<string[]>(JSON.parse(localStorage.getItem('fp_search_history') || '[]'))
@@ -108,7 +108,7 @@ export const catalogStore = {
         }
     },
 
-    async searchProducts(query: string, filters?: { category?: string, sort?: string }, isLoadMore = false) {
+    async searchProducts(query: string, filters?: { category?: string, sort?: string, storeId?: string }, isLoadMore = false) {
         if (!isLoadMore) {
             isSearching.value = true
             currentPage.value = 1

@@ -14,6 +14,7 @@ import CheapPlacesList from '@/modules/analytics/components/CheapPlacesList.vue'
 import { AnalyticsService } from '@/modules/analytics/services/AnalyticsService'
 import type { CheapPlace } from '@/modules/analytics/services/AnalyticsService'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
+import { VerificationService } from '@/modules/prices/services/VerificationService'
 
 const route = useRoute()
 const router = useRouter()
@@ -187,6 +188,31 @@ const priceStatusLabel = computed(() => {
 	return '⚖️ Обычная цена'
 })
 
+const sortedHistory = computed(() =>
+	[...latestHistory.value].sort((a, b) => b.freshnessScore - a.freshnessScore)
+)
+
+const votingInProgress = ref<Set<string>>(new Set())
+
+async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'deny') {
+	if (!priceId || votingInProgress.value.has(priceId)) return
+	votingInProgress.value = new Set([...votingInProgress.value, priceId])
+	try {
+		const item = latestHistory.value.find(h => h.id === priceId)
+		if (item?.userVote === voteType) {
+			await VerificationService.removeVote(priceId)
+		} else {
+			await VerificationService.vote(priceId, voteType)
+		}
+		await catalogStore.loadProductById(route.params.id as string)
+	} catch (e) {
+		console.error('Vote failed:', e)
+	} finally {
+		const next = new Set(votingInProgress.value)
+		next.delete(priceId)
+		votingInProgress.value = next
+	}
+}
 
 </script>
 
@@ -296,13 +322,33 @@ const priceStatusLabel = computed(() => {
 			<!-- HISTORY LIST (Compact) -->
 			<div class="history-section">
 				<div class="history-cards-list">
-					<div v-for="(item, idx) in latestHistory" :key="idx" class="history-card-item">
+					<div v-for="(item, idx) in sortedHistory" :key="item.id || idx" class="history-card-item">
 						<div class="h-card-left">
 							<div class="h-price">{{ formatPrice(item.price) }}</div>
 							<div class="h-store">{{ item.storeName }}</div>
+							<div v-if="item.freshnessLabel" class="h-freshness-label">{{ item.freshnessLabel }}</div>
 						</div>
 						<div class="h-card-right">
 							<div class="h-date">{{ item.dateRelative }}</div>
+
+							<div v-if="item.createdBy !== currentUserId" class="vote-row">
+								<button
+									class="vote-btn confirm"
+									:class="{ active: item.userVote === 'confirm' }"
+									:disabled="votingInProgress.has(item.id!)"
+									@click.stop="handleVote(item.id, 'confirm')"
+								>
+									👍<span v-if="item.confirmCount > 0"> {{ item.confirmCount }}</span>
+								</button>
+								<button
+									class="vote-btn deny"
+									:class="{ active: item.userVote === 'deny' }"
+									:disabled="votingInProgress.has(item.id!)"
+									@click.stop="handleVote(item.id, 'deny')"
+								>
+									👎<span v-if="item.denyCount > 0"> {{ item.denyCount }}</span>
+								</button>
+							</div>
 
 							<button v-if="item.createdBy === currentUserId && item.id" class="delete-price-btn"
 								@click.stop="confirmDeletePrice(item.id)">
@@ -793,6 +839,54 @@ const priceStatusLabel = computed(() => {
 	&:hover {
 		color: var(--color-error);
 		background: rgba(var(--color-error-rgb), 0.1);
+	}
+}
+
+.h-freshness-label {
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--color-text-tertiary);
+	margin-top: 2px;
+}
+
+.vote-row {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	margin-top: 2px;
+}
+
+.vote-btn {
+	background: transparent;
+	border: 1px solid var(--color-border);
+	border-radius: 6px;
+	padding: 2px 6px;
+	font-size: 12px;
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s;
+	min-width: 28px;
+	color: var(--color-text-secondary);
+	line-height: 1.4;
+
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	&.confirm.active {
+		background: rgba(var(--color-success-rgb), 0.15);
+		border-color: var(--color-success);
+		color: var(--color-success);
+	}
+
+	&.deny.active {
+		background: rgba(var(--color-error-rgb), 0.12);
+		border-color: var(--color-error);
+		color: var(--color-error);
+	}
+
+	&:active:not(:disabled) {
+		background: var(--color-surface-hover);
 	}
 }
 
