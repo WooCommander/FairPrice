@@ -1,4 +1,6 @@
 
+import { supabase } from '@/api/supabase'
+
 export interface PricePoint {
     date: string
     price: number
@@ -11,35 +13,49 @@ export interface CheapPlace {
 }
 
 class AnalyticsService {
-    async getPriceHistory(_productId: string, period: '7d' | '30d' | '90d' = '7d'): Promise<PricePoint[]> {
-        // Generate mock history
+    async getPriceHistory(productId: string, period: '7d' | '30d' | '90d' = '30d'): Promise<PricePoint[]> {
         const days = period === '7d' ? 7 : period === '30d' ? 30 : 90
-        const data: PricePoint[] = []
-        const now = new Date()
+        const since = new Date()
+        since.setDate(since.getDate() - days)
 
-        // Base price ~5000 +- 20%
-        const basePrice = 5000
+        const { data, error } = await supabase
+            .from('prices')
+            .select('price, created_at')
+            .eq('product_id', productId)
+            .gte('created_at', since.toISOString())
+            .order('created_at', { ascending: true })
 
-        for (let i = days; i >= 0; i--) {
-            const d = new Date(now)
-            d.setDate(d.getDate() - i)
+        if (error || !data) return []
 
-            const randomVar = (Math.random() - 0.5) * 1000
-            data.push({
-                date: d.toLocaleDateString(),
-                price: Math.floor(basePrice + randomVar)
-            })
-        }
-
-        return data
+        return data.map(p => ({
+            date: new Date(p.created_at).toLocaleDateString('ru-RU'),
+            price: p.price
+        }))
     }
 
-    async getBestPlaces(_productId: string): Promise<CheapPlace[]> {
-        return [
-            { placeName: 'Makro (Yunusabad)', price: 4500, distance: '2 km' },
-            { placeName: 'Chorsu Bazaar', price: 4200, distance: '5 km' },
-            { placeName: 'Korzinka (Aeroport)', price: 4800, distance: '8 km' }
-        ]
+    async getBestPlaces(productId: string): Promise<CheapPlace[]> {
+        const { data, error } = await supabase
+            .from('prices')
+            .select('price, stores(name)')
+            .eq('product_id', productId)
+            .order('price', { ascending: true })
+            .limit(30)
+
+        if (error || !data) return []
+
+        // Min price per store
+        const storeMap = new Map<string, number>()
+        for (const p of data) {
+            const storeName = (p.stores as any)?.name || 'Неизвестно'
+            if (!storeMap.has(storeName) || storeMap.get(storeName)! > p.price) {
+                storeMap.set(storeName, p.price)
+            }
+        }
+
+        return Array.from(storeMap.entries())
+            .sort((a, b) => a[1] - b[1])
+            .slice(0, 5)
+            .map(([placeName, price]) => ({ placeName, price }))
     }
 }
 

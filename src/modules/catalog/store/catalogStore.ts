@@ -1,6 +1,7 @@
 import { ref, readonly } from 'vue'
 import { CatalogService } from '../services/CatalogService'
 import { adaptProduct, type ProductModel } from '../adapters/CatalogAdapter'
+import { AuthService } from '@/modules/auth/services/AuthService'
 
 const searchResults = ref<ProductModel[]>([])
 const recentUpdates = ref<ProductModel[]>([])
@@ -156,6 +157,15 @@ export const catalogStore = {
     setCurrency(code: 'RUB' | 'USD' | 'EUR' | 'KZT') {
         currentCurrency.value = code
         localStorage.setItem('fp_currency', code)
+        AuthService.setCurrencyPreference(code).catch(() => {})
+    },
+
+    syncCurrencyFromUserMeta(meta: Record<string, any>) {
+        const preferred = meta?.preferred_currency
+        if (preferred && ['RUB', 'USD', 'EUR', 'KZT'].includes(preferred)) {
+            currentCurrency.value = preferred as 'RUB' | 'USD' | 'EUR' | 'KZT'
+            localStorage.setItem('fp_currency', preferred)
+        }
     },
 
     async loadProductById(id: string) {

@@ -76,6 +76,12 @@ class AuthService {
         }
     }
 
+    async setCurrencyPreference(code: string): Promise<void> {
+        await supabase.auth.updateUser({
+            data: { preferred_currency: code }
+        })
+    }
+
     async getUserActivity(limit: number = 5) {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return []

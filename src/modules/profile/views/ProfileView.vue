@@ -3,6 +3,25 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { AuthService } from '@/modules/auth/services/AuthService'
 import FpCard from '@/design-system/components/FpCard.vue'
+import { catalogStore } from '@/modules/catalog/store/catalogStore'
+
+type CurrencyCode = 'RUB' | 'USD' | 'EUR' | 'KZT'
+
+const currencies: { code: CurrencyCode; symbol: string; label: string }[] = [
+  { code: 'RUB', symbol: '₽', label: 'Рубль' },
+  { code: 'USD', symbol: '$', label: 'Доллар' },
+  { code: 'EUR', symbol: '€', label: 'Евро' },
+  { code: 'KZT', symbol: '₸', label: 'Тенге' },
+]
+
+const { currentCurrency } = catalogStore
+const currencySaved = ref(false)
+
+const changeCurrency = (code: CurrencyCode) => {
+  catalogStore.setCurrency(code)
+  currencySaved.value = true
+  setTimeout(() => { currencySaved.value = false }, 2000)
+}
 
 const router = useRouter()
 
@@ -83,6 +102,25 @@ onMounted(async () => {
         <span class="stat-value">⭐</span>
         <span class="stat-label">Избранное</span>
       </FpCard>
+    </section>
+
+    <!-- Currency Settings -->
+    <section class="settings-section">
+      <h2>Валюта отображения</h2>
+      <div class="currency-options">
+        <button
+          v-for="c in currencies"
+          :key="c.code"
+          class="currency-option-btn"
+          :class="{ active: currentCurrency === c.code }"
+          @click="changeCurrency(c.code)"
+        >
+          <span class="currency-symbol">{{ c.symbol }}</span>
+          <span class="currency-code">{{ c.code }}</span>
+          <span class="currency-label">{{ c.label }}</span>
+        </button>
+      </div>
+      <p class="settings-saved" v-if="currencySaved">✓ Сохранено</p>
     </section>
 
     <section class="activity-section">
@@ -284,6 +322,62 @@ onMounted(async () => {
       color: var(--color-text-secondary);
     }
   }
+}
+
+.settings-section {
+  h2 {
+    font-size: var(--text-h5);
+    font-weight: 700;
+    margin: 0 0 var(--spacing-md);
+  }
+}
+
+.currency-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.currency-option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--spacing-md) var(--spacing-sm);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &.active {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb, 98, 0, 238), 0.06);
+  }
+
+  .currency-symbol {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  .currency-code {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  .currency-label {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+  }
+}
+
+.settings-saved {
+  margin-top: var(--spacing-sm);
+  font-size: 13px;
+  color: var(--color-success);
+  font-weight: 600;
 }
 
 .activity-section {

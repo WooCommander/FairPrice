@@ -1,5 +1,6 @@
 import { ref, readonly, computed } from 'vue'
 import { AuthService, type User, type Session } from '../services/AuthService'
+import { catalogStore } from '@/modules/catalog/store/catalogStore'
 
 const user = ref<User | null>(null)
 const session = ref<Session | null>(null)
@@ -21,6 +22,9 @@ export const authStore = {
             const { session: currentSession } = await AuthService.getSession()
             session.value = currentSession
             user.value = currentSession?.user || null
+            if (currentSession?.user?.user_metadata) {
+                catalogStore.syncCurrencyFromUserMeta(currentSession.user.user_metadata)
+            }
         } catch (e: any) {
             console.error('Auth init error:', e)
         } finally {
@@ -32,6 +36,9 @@ export const authStore = {
             console.log('Auth event:', event)
             session.value = currentSession
             user.value = currentSession?.user || null
+            if (currentSession?.user?.user_metadata) {
+                catalogStore.syncCurrencyFromUserMeta(currentSession.user.user_metadata)
+            }
             isLoading.value = false
         })
     },

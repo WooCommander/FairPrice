@@ -10,14 +10,27 @@ import { shoppingListStore } from '@/modules/shopping-list/state/shoppingListSto
 import { authStore } from '@/modules/auth/store/authStore'
 
 import PriceChart from '@/components/PriceChart.vue'
+import CheapPlacesList from '@/modules/analytics/components/CheapPlacesList.vue'
+import { AnalyticsService } from '@/modules/analytics/services/AnalyticsService'
+import type { CheapPlace } from '@/modules/analytics/services/AnalyticsService'
+import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 
 const route = useRoute()
 const router = useRouter()
-const { currentProduct } = catalogStore
+const { currentProduct, currentCurrency } = catalogStore
+
+const formatPrice = (price: number) => {
+	const converted = CurrencyService.convert(price, 'RUB', currentCurrency.value)
+	return CurrencyService.format(converted, currentCurrency.value)
+}
 
 // Product Editing State
 const isEditingProduct = ref(false)
 const productForm = ref({ name: '', category: '' })
+
+// Analytics
+const selectedPeriod = ref<'7d' | '30d' | '90d' | 'all'>('all')
+const bestPlaces = ref<CheapPlace[]>([])
 
 const currentUserId = computed(() => authStore.user.value?.id)
 
@@ -30,6 +43,9 @@ onMounted(async () => {
 	const id = route.params.id as string
 	if (id) {
 		await catalogStore.loadProductById(id)
+		AnalyticsService.getBestPlaces(id).then(places => {
+			bestPlaces.value = places
+		})
 	}
 })
 
@@ -42,8 +58,14 @@ const latestHistory = computed(() => {
 
 const chartData = computed(() => {
 	if (!latestHistory.value) return []
-	// Filter out invalid prices/dates if any
-	return latestHistory.value
+	let history = latestHistory.value
+	if (selectedPeriod.value !== 'all') {
+		const days = selectedPeriod.value === '7d' ? 7 : selectedPeriod.value === '30d' ? 30 : 90
+		const since = new Date()
+		since.setDate(since.getDate() - days)
+		history = history.filter(h => new Date(h.date) >= since)
+	}
+	return history
 		.map(h => ({
 			date: new Date(h.date),
 			price: h.price
@@ -206,7 +228,7 @@ const priceStatusLabel = computed(() => {
 				</div>
 
 				<div class="price-hero">
-					<span class="main-price">{{ currentProduct.formattedPrice }}</span>
+					<span class="main-price">{{ currentProduct.lastPrice ? formatPrice(currentProduct.lastPrice) : 'Нет цены' }}</span>
 					<span class="unit-label" v-if="currentProduct.unit">за {{ currentProduct.unit }}</span>
 				</div>
 
@@ -214,8 +236,7 @@ const priceStatusLabel = computed(() => {
 					<span class="analysis-pill" :class="currentProduct.priceStatus">
 						{{ priceStatusLabel }}
 					</span>
-					<span class="avg-ref" v-if="currentProduct.averagePrice">Средняя: ~{{
-						Math.round(currentProduct.averagePrice) }} ₽</span>
+					<span class="avg-ref" v-if="currentProduct.averagePrice">Средняя: ~{{ formatPrice(currentProduct.averagePrice) }}</span>
 				</div>
 
 				<!-- Cheapest Store Insight -->
@@ -223,7 +244,7 @@ const priceStatusLabel = computed(() => {
 					@click="router.push(`/store/${cheapestStore.storeId}`)">
 					<div class="insight-label">Лучшая цена была здесь:</div>
 					<div class="insight-value">
-						<span class="price">{{ cheapestStore.price }} ₽</span>
+						<span class="price">{{ formatPrice(cheapestStore.price) }}</span>
 						<span class="store">🏪 {{ cheapestStore.storeName }}</span>
 					</div>
 				</div>
@@ -237,9 +258,29 @@ const priceStatusLabel = computed(() => {
 			</div>
 
 			<!-- SEPARATE CHART BLOCK -->
-			<div class="chart-card" v-if="chartData.length > 1">
-				<div class="chart-title">Динамика цен</div>
-				<PriceChart :data="chartData" :average-price="currentProduct.averagePrice" :height="120" />
+			<div class="chart-card" v-if="latestHistory.length > 1">
+				<div class="chart-header">
+					<div class="chart-title">Динамика цен</div>
+					<div class="period-tabs">
+						<button
+							v-for="p in [{ key: '7d', label: '7д' }, { key: '30d', label: '30д' }, { key: '90d', label: '90д' }, { key: 'all', label: 'Всё' }]"
+							:key="p.key"
+							class="period-tab"
+							:class="{ active: selectedPeriod === p.key }"
+							@click="selectedPeriod = p.key as any"
+						>{{ p.label }}</button>
+					</div>
+				</div>
+				<div v-if="chartData.length > 1">
+					<PriceChart :data="chartData" :average-price="currentProduct.averagePrice" :height="120" />
+				</div>
+				<div v-else class="chart-empty-period">Нет данных за выбранный период</div>
+			</div>
+
+			<!-- BEST PLACES BLOCK -->
+			<div class="best-places-card" v-if="bestPlaces.length > 0">
+				<div class="chart-title">Лучшие цены по магазинам</div>
+				<CheapPlacesList :places="bestPlaces" />
 			</div>
 
 			<!-- SECONDARY ACTIONS -->
@@ -257,7 +298,7 @@ const priceStatusLabel = computed(() => {
 				<div class="history-cards-list">
 					<div v-for="(item, idx) in latestHistory" :key="idx" class="history-card-item">
 						<div class="h-card-left">
-							<div class="h-price">{{ item.price }} ₽</div>
+							<div class="h-price">{{ formatPrice(item.price) }}</div>
 							<div class="h-store">{{ item.storeName }}</div>
 						</div>
 						<div class="h-card-right">
@@ -624,13 +665,62 @@ const priceStatusLabel = computed(() => {
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
+.chart-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+
 .chart-title {
 	font-size: 14px;
 	font-weight: 600;
 	color: var(--color-text-secondary);
-	margin-bottom: 12px;
-	text-align: left;
 	padding-left: 4px;
+}
+
+.period-tabs {
+	display: flex;
+	gap: 4px;
+}
+
+.period-tab {
+	background: transparent;
+	border: 1px solid var(--color-border);
+	border-radius: 8px;
+	padding: 4px 8px;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--color-text-secondary);
+	cursor: pointer;
+	transition: background 0.15s, color 0.15s;
+
+	&.active {
+		background: var(--color-primary);
+		border-color: var(--color-primary);
+		color: #fff;
+	}
+}
+
+.chart-empty-period {
+	height: 80px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 13px;
+	color: var(--color-text-disabled);
+}
+
+.best-places-card {
+	background: var(--color-surface);
+	border-radius: 20px;
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+
+	.chart-title {
+		margin-bottom: 12px;
+	}
 }
 
 .history-cards-list {
