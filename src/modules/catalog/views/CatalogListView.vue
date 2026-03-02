@@ -5,11 +5,18 @@ import { useRouter, useRoute } from 'vue-router'
 import { PRODUCT_CATEGORIES } from '../constants'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import { CurrencyService } from '../services/CurrencyService'
 
 const router = useRouter()
 const route = useRoute()
 const searchQuery = ref(route.query.q as string || '')
 const selectedCategory = ref<string | null>(route.query.category as string || null)
+
+const { currentCurrency } = catalogStore
+const formatPrice = computed(() => (price: number) => {
+  const currency = currentCurrency.value
+  return CurrencyService.format(CurrencyService.convert(price, 'RUB', currency), currency)
+})
 
 const products = computed(() => catalogStore.searchResults.value)
 const isLoading = computed(() => catalogStore.isLoading.value)
@@ -87,7 +94,7 @@ const addPrice = (productId: string) => {
           </div>
 
           <div class="tile-footer">
-            <span class="main-value">{{ product.formattedPrice }}</span>
+            <span class="main-value">{{ product.lastPrice ? formatPrice(product.lastPrice) : 'Нет цены' }}</span>
             <FpButton size="sm" variant="secondary" @click.stop="addPrice(product.id)">
               + Цена
             </FpButton>

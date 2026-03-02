@@ -3,12 +3,19 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { CatalogService, type ProductDTO } from '@/modules/catalog/services/CatalogService'
 import { catalogStore } from '../store/catalogStore'
+import { CurrencyService } from '../services/CurrencyService'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpInput from '@/design-system/components/FpInput.vue'
 import { FpSpinner } from '@/design-system'
 import { PRODUCT_CATEGORIES } from '../constants'
 
 const router = useRouter()
+const { currentCurrency } = catalogStore
+const formatPrice = computed(() => (price: number) => {
+    const currency = currentCurrency.value
+    return CurrencyService.format(CurrencyService.convert(price, 'RUB', currency), currency)
+})
+
 const favorites = ref<ProductDTO[]>([])
 const isLoading = ref(true)
 const searchQuery = ref('')
@@ -87,7 +94,7 @@ const toggleFavorite = async (productId: string) => {
                 </div>
 
                 <div class="tile-footer">
-                    <div class="main-value">{{ item.lastPrice ? `${item.lastPrice} ₽` : '---' }}</div>
+                    <div class="main-value">{{ item.lastPrice ? formatPrice(item.lastPrice) : '---' }}</div>
                     <button class="fav-btn active" @click.stop="toggleFavorite(item.id)" title="Убрать">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor"
                             stroke-width="2">

@@ -3,6 +3,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpButton from '@/design-system/components/FpButton.vue'
+import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import { FpSpinner } from '@/design-system'
 
 const route = useRoute()
@@ -10,7 +11,11 @@ const router = useRouter()
 const categoryName = ref('')
 const isLoading = ref(true)
 
-const { searchResults } = catalogStore
+const { searchResults, currentCurrency } = catalogStore
+const formatPrice = computed(() => (price: number) => {
+    const currency = currentCurrency.value
+    return CurrencyService.format(CurrencyService.convert(price, 'RUB', currency), currency)
+})
 
 const groupedProducts = computed(() => {
     const groups: Record<string, any[]> = {}
@@ -85,7 +90,7 @@ const goToAddProduct = () => {
                                 <span class="subtitle">{{ product.unit }}</span>
                             </div>
                             <div class="tile-footer">
-                                <span class="main-value">{{ product.formattedPrice }}</span>
+                                <span class="main-value">{{ product.lastPrice ? formatPrice(product.lastPrice) : 'Нет цены' }}</span>
                                 <span class="extra-info">{{ product.lastUpdateRelative }}</span>
                             </div>
                         </div>

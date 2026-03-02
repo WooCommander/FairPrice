@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
+import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpBackButton from '@/design-system/components/FpBackButton.vue'
 import FpInput from '@/design-system/components/FpInput.vue'
 
 const router = useRouter()
-const { searchResults, isSearching, hasMore } = catalogStore
+const { searchResults, isSearching, hasMore, currentCurrency } = catalogStore
+const formatPrice = computed(() => (price: number) => {
+    const currency = currentCurrency.value
+    return CurrencyService.format(CurrencyService.convert(price, 'RUB', currency), currency)
+})
 
 const query = ref('')
 const selectedCategory = ref<string | null>(null)
@@ -119,7 +124,7 @@ const goToProduct = (id: string) => {
                             <span class="category">{{ item.category }}</span>
                         </div>
                         <div class="price-info">
-                            <span class="price">{{ item.formattedPrice }}</span>
+                            <span class="price">{{ item.lastPrice ? formatPrice(item.lastPrice) : 'Нет цены' }}</span>
                             <span v-if="item.lastStore" class="store">{{ item.lastStore }}</span>
                         </div>
                     </div>

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpCard from '@/design-system/components/FpCard.vue'
+import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import FpButton from '@/design-system/components/FpButton.vue'
 
 import { FpSpinner } from '@/design-system'
@@ -17,7 +18,11 @@ const isLoading = ref(true)
     We reuse searchResults from catalogStore to display the list, 
     since it's just a list of products.
 */
-const { searchResults } = catalogStore
+const { searchResults, currentCurrency } = catalogStore
+const formatPrice = computed(() => (price: number) => {
+    const currency = currentCurrency.value
+    return CurrencyService.format(CurrencyService.convert(price, 'RUB', currency), currency)
+})
 
 onMounted(async () => {
     isLoading.value = true
@@ -128,7 +133,7 @@ const saveEdit = async () => {
                     <span class="category">{{ product.category }}</span>
                 </div>
                 <div class="price-info">
-                    <span class="price">{{ product.formattedPrice }}</span>
+                    <span class="price">{{ product.lastPrice ? formatPrice(product.lastPrice) : 'Нет цены' }}</span>
                     <span class="date">{{ product.lastUpdateRelative }}</span>
                 </div>
             </FpCard>
