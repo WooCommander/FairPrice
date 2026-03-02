@@ -2,6 +2,7 @@ import { ref, readonly } from 'vue'
 import { CatalogService } from '../services/CatalogService'
 import { adaptProduct, type ProductModel } from '../adapters/CatalogAdapter'
 import { AuthService } from '@/modules/auth/services/AuthService'
+import { CurrencyService } from '../services/CurrencyService'
 
 const searchResults = ref<ProductModel[]>([])
 const recentUpdates = ref<ProductModel[]>([])
@@ -11,7 +12,7 @@ const favoriteProductIds = ref<Set<string>>(new Set())
 const totalProductCount = ref(0)
 const totalCategoryCount = ref(0)
 const totalUserCount = ref(0)
-const currentCurrency = ref<'RUB' | 'USD' | 'EUR' | 'KZT'>(localStorage.getItem('fp_currency') as any || 'RUB')
+const currentCurrency = ref<'RUB' | 'USD' | 'EUR'>(localStorage.getItem('fp_currency') as any || 'RUB')
 
 // Pagination State
 const currentPage = ref(1)
@@ -154,7 +155,7 @@ export const catalogStore = {
         }
     },
 
-    setCurrency(code: 'RUB' | 'USD' | 'EUR' | 'KZT') {
+    setCurrency(code: 'RUB' | 'USD' | 'EUR') {
         currentCurrency.value = code
         localStorage.setItem('fp_currency', code)
         AuthService.setCurrencyPreference(code).catch(() => {})
@@ -162,9 +163,14 @@ export const catalogStore = {
 
     syncCurrencyFromUserMeta(meta: Record<string, any>) {
         const preferred = meta?.preferred_currency
-        if (preferred && ['RUB', 'USD', 'EUR', 'KZT'].includes(preferred)) {
-            currentCurrency.value = preferred as 'RUB' | 'USD' | 'EUR' | 'KZT'
+        if (preferred && ['RUB', 'USD', 'EUR'].includes(preferred)) {
+            currentCurrency.value = preferred as 'RUB' | 'USD' | 'EUR'
             localStorage.setItem('fp_currency', preferred)
+        }
+        const usd = Number(meta?.usd_rate)
+        const eur = Number(meta?.eur_rate)
+        if (usd > 0 || eur > 0) {
+            CurrencyService.setRates(usd || 0, eur || 0)
         }
     },
 

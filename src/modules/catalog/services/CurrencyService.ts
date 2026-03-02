@@ -1,45 +1,42 @@
-export type CurrencyCode = 'RUB' | 'USD' | 'EUR' | 'KZT'
+export type CurrencyCode = 'RUB' | 'USD' | 'EUR'
 
 export interface ExchangeRates {
-  [key: string]: number
+  USD: number
+  EUR: number
 }
 
 class CurrencyService {
-  // Base currency is RUB for now
-  private rates: ExchangeRates = {
-    'RUB': 1,
-    'USD': 92.5,
-    'EUR': 100.2,
-    'KZT': 0.205
-  }
+  // Rates: how many RUB per 1 unit of currency
+  private usdRate = 92.5
+  private eurRate = 100.2
 
   getRates(): ExchangeRates {
-    return { ...this.rates }
+    return { USD: this.usdRate, EUR: this.eurRate }
   }
 
-  /**
-   * Converts amount from one currency to another
-   * @param amount Amount to convert
-   * @param from Source currency code
-   * @param to Target currency code
-   */
+  setRates(usd: number, eur: number) {
+    if (usd > 0) this.usdRate = usd
+    if (eur > 0) this.eurRate = eur
+  }
+
   convert(amount: number, from: CurrencyCode, to: CurrencyCode): number {
     if (from === to) return amount
-
-    // Convert to base (RUB) first
-    const baseAmount = amount * (this.rates[from] || 1)
-
-    // Convert from base to target
-    return baseAmount / (this.rates[to] || 1)
+    // Convert to RUB first
+    const rub = from === 'RUB' ? amount
+      : from === 'USD' ? amount * this.usdRate
+      : amount * this.eurRate
+    // Convert from RUB to target
+    if (to === 'RUB') return rub
+    if (to === 'USD') return rub / this.usdRate
+    return rub / this.eurRate
   }
 
   format(amount: number, code: CurrencyCode): string {
-    const formatter = new Intl.NumberFormat('ru-RU', {
+    return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
       currency: code,
-      maximumFractionDigits: 2
-    })
-    return formatter.format(amount)
+      maximumFractionDigits: code === 'RUB' ? 0 : 2
+    }).format(amount)
   }
 }
 

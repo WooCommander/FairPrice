@@ -1,6 +1,16 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import FpCard from '@/design-system/components/FpCard.vue'
 import type { CheapPlace } from '../services/AnalyticsService'
+import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
+import { catalogStore } from '@/modules/catalog/store/catalogStore'
+
+const { currentCurrency } = catalogStore
+
+const formatPrice = computed(() => (price: number) => {
+    const currency = currentCurrency.value
+    return CurrencyService.format(CurrencyService.convert(price, 'RUB', currency), currency)
+})
 
 interface Props {
     places: CheapPlace[]
@@ -17,7 +27,7 @@ const props = defineProps<Props>()
                 <span class="place-dist" v-if="place.distance">{{ place.distance }}</span>
             </div>
             <div class="place-price">
-                {{ place.price.toLocaleString() }} UZS
+                {{ formatPrice(place.price) }}
             </div>
         </FpCard>
     </div>

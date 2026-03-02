@@ -4,23 +4,39 @@ import { useRouter } from 'vue-router'
 import { AuthService } from '@/modules/auth/services/AuthService'
 import FpCard from '@/design-system/components/FpCard.vue'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
+import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 
-type CurrencyCode = 'RUB' | 'USD' | 'EUR' | 'KZT'
+type CurrencyCode = 'RUB' | 'USD' | 'EUR'
 
 const currencies: { code: CurrencyCode; symbol: string; label: string }[] = [
   { code: 'RUB', symbol: '₽', label: 'Рубль' },
   { code: 'USD', symbol: '$', label: 'Доллар' },
   { code: 'EUR', symbol: '€', label: 'Евро' },
-  { code: 'KZT', symbol: '₸', label: 'Тенге' },
 ]
 
 const { currentCurrency } = catalogStore
 const currencySaved = ref(false)
+const ratesSaved = ref(false)
 
 const changeCurrency = (code: CurrencyCode) => {
   catalogStore.setCurrency(code)
   currencySaved.value = true
   setTimeout(() => { currencySaved.value = false }, 2000)
+}
+
+// Exchange rates
+const savedRates = CurrencyService.getRates()
+const usdRate = ref(savedRates.USD)
+const eurRate = ref(savedRates.EUR)
+
+const saveRates = async () => {
+  const usd = Number(usdRate.value)
+  const eur = Number(eurRate.value)
+  if (usd <= 0 || eur <= 0) return
+  CurrencyService.setRates(usd, eur)
+  await AuthService.setExchangeRates(usd, eur)
+  ratesSaved.value = true
+  setTimeout(() => { ratesSaved.value = false }, 2000)
 }
 
 const router = useRouter()
@@ -121,6 +137,25 @@ onMounted(async () => {
         </button>
       </div>
       <p class="settings-saved" v-if="currencySaved">✓ Сохранено</p>
+
+      <!-- Exchange Rates -->
+      <div class="rates-section">
+        <p class="rates-hint">Курс к рублю</p>
+        <div class="rates-inputs">
+          <div class="rate-field">
+            <label>1 $ =</label>
+            <input v-model.number="usdRate" type="number" min="1" step="0.01" class="rate-input" />
+            <span>₽</span>
+          </div>
+          <div class="rate-field">
+            <label>1 € =</label>
+            <input v-model.number="eurRate" type="number" min="1" step="0.01" class="rate-input" />
+            <span>₽</span>
+          </div>
+        </div>
+        <button class="save-rates-btn" @click="saveRates">Применить курсы</button>
+        <p class="settings-saved" v-if="ratesSaved">✓ Сохранено</p>
+      </div>
     </section>
 
     <section class="activity-section">
@@ -378,6 +413,81 @@ onMounted(async () => {
   font-size: 13px;
   color: var(--color-success);
   font-weight: 600;
+}
+
+.rates-section {
+  margin-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--spacing-md);
+}
+
+.rates-hint {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rates-inputs {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.rate-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+
+  label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+  }
+
+  span {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+  }
+}
+
+.rate-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+}
+
+.save-rates-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:active {
+    opacity: 0.85;
+  }
 }
 
 .activity-section {

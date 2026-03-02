@@ -19,10 +19,10 @@ const route = useRoute()
 const router = useRouter()
 const { currentProduct, currentCurrency } = catalogStore
 
-const formatPrice = (price: number) => {
-	const converted = CurrencyService.convert(price, 'RUB', currentCurrency.value)
-	return CurrencyService.format(converted, currentCurrency.value)
-}
+const formatPrice = computed(() => (price: number) => {
+	const currency = currentCurrency.value
+	return CurrencyService.format(CurrencyService.convert(price, 'RUB', currency), currency)
+})
 
 // Product Editing State
 const isEditingProduct = ref(false)

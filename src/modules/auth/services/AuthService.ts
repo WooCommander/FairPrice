@@ -82,6 +82,12 @@ class AuthService {
         })
     }
 
+    async setExchangeRates(usd: number, eur: number): Promise<void> {
+        await supabase.auth.updateUser({
+            data: { usd_rate: usd, eur_rate: eur }
+        })
+    }
+
     async getUserActivity(limit: number = 5) {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return []

@@ -56,12 +56,12 @@ const toggleFavorite = async (productId: string) => {
     await catalogStore.toggleFavorite(productId)
 }
 
-const formatPrice = (val: number) => {
-    const converted = CurrencyService.convert(val, 'RUB', currentCurrency.value)
-    return CurrencyService.format(converted, currentCurrency.value)
-}
+const formatPrice = computed(() => (val: number) => {
+    const currency = currentCurrency.value
+    return CurrencyService.format(CurrencyService.convert(val, 'RUB', currency), currency)
+})
 
-const currencies: Array<'RUB' | 'USD' | 'EUR' | 'KZT'> = ['RUB', 'USD', 'EUR', 'KZT']
+const currencies: Array<'RUB' | 'USD' | 'EUR'> = ['RUB', 'USD', 'EUR']
 
 onMounted(async () => {
     isLoading.value = true
