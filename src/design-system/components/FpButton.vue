@@ -160,6 +160,14 @@ const classes = computed(() => [
   &--danger {
     background-color: var(--color-error);
     color: #fff;
+
+    &:hover:not(:disabled) {
+      filter: brightness(1.1);
+    }
+
+    &:active:not(:disabled) {
+      filter: brightness(1.2);
+    }
   }
 
   &:disabled {
