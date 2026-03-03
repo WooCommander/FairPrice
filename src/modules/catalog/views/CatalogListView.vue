@@ -244,9 +244,7 @@ onMounted(async () => {
             </div>
             <div class="tile-footer">
               <span class="main-value">{{ product.lastPrice ? formatPrice(product.lastPrice) : 'Нет цены' }}</span>
-              <FpButton size="sm" variant="secondary" @click.stop="openAddPrice(product)">
-                + Цена
-              </FpButton>
+              <FpButton size="icon" variant="secondary" @click.stop="openAddPrice(product)">+</FpButton>
             </div>
           </div>
         </div>
@@ -265,6 +263,11 @@ onMounted(async () => {
 <style scoped lang="scss">
 .catalog-list-view {
   padding: 0 0.5rem;
+}
+
+// ── Tile overrides ──
+.fp-tile .title {
+  font-size: 16px;
 }
 
 // ── Add-price form ──

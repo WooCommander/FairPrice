@@ -3,7 +3,7 @@ import { computed } from 'vue'
 
 interface Props {
   variant?: 'primary' | 'secondary' | 'danger' | 'text' | 'outline'
-  size?: 'sm' | 'md' | 'lg' | 'full'
+  size?: 'sm' | 'md' | 'lg' | 'full' | 'icon'
   disabled?: boolean
   loading?: boolean
   type?: 'button' | 'submit' | 'reset'
@@ -64,6 +64,17 @@ const classes = computed(() => [
     border-radius: var(--radius-sm);
   }
 
+  &--icon {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    font-size: 18px;
+    border-radius: var(--radius-sm);
+    text-transform: none;
+    letter-spacing: 0;
+    min-width: unset;
+  }
+
   &--md {
     height: 48px;
     padding: 0 32px; // Wider padding for elegance
@@ -93,15 +104,28 @@ const classes = computed(() => [
     color: var(--color-on-primary);
     box-shadow: var(--shadow-1);
 
+    &:hover:not(:disabled) {
+      filter: brightness(1.08);
+      box-shadow: var(--shadow-2);
+    }
+
     &:active:not(:disabled) {
       box-shadow: var(--shadow-2);
-      filter: brightness(1.1);
+      filter: brightness(1.15);
     }
   }
 
   &--secondary {
     background-color: var(--color-secondary);
     color: var(--color-on-secondary);
+
+    &:hover:not(:disabled) {
+      filter: brightness(0.95);
+    }
+
+    &:active:not(:disabled) {
+      filter: brightness(0.88);
+    }
   }
 
   &--text {
@@ -109,8 +133,12 @@ const classes = computed(() => [
     color: var(--color-primary);
     box-shadow: none;
 
-    &:hover {
-      background-color: rgba(98, 0, 238, 0.04);
+    &:hover:not(:disabled) {
+      background-color: rgba(var(--color-primary-rgb), 0.07);
+    }
+
+    &:active:not(:disabled) {
+      background-color: rgba(var(--color-primary-rgb), 0.14);
     }
   }
 
@@ -118,6 +146,15 @@ const classes = computed(() => [
     background-color: transparent;
     border: 1px solid var(--color-border);
     color: var(--color-text-primary);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-surface-hover);
+      border-color: var(--color-text-secondary);
+    }
+
+    &:active:not(:disabled) {
+      background-color: var(--color-surface-hover);
+    }
   }
 
   &--danger {
