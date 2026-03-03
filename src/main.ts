@@ -4,13 +4,11 @@ import App from './App.vue'
 import router from './router'
 
 
-const app = createApp(App)
-
-app.use(router)
-
-// Initialize Auth
 import { authStore } from '@/modules/auth/store/authStore'
 
+const app = createApp(App)
+
 authStore.init().then(() => {
+    app.use(router)
     app.mount('#app')
 })

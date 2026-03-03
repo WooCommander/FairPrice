@@ -82,24 +82,46 @@ class AuthService {
         }
     }
 
-    async getProfile(): Promise<{ display_name: string | null }> {
+    async getProfile(): Promise<{
+        display_name: string | null
+        first_name: string | null
+        last_name: string | null
+        gender: string | null
+        birth_date: string | null
+    }> {
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return { display_name: null }
+        if (!user) return { display_name: null, first_name: null, last_name: null, gender: null, birth_date: null }
         const { data } = await supabase
             .from('profiles')
-            .select('display_name')
+            .select('display_name, first_name, last_name, gender, birth_date')
             .eq('id', user.id)
             .single()
-        return { display_name: data?.display_name ?? null }
+        return {
+            display_name: data?.display_name ?? null,
+            first_name:   data?.first_name ?? null,
+            last_name:    data?.last_name ?? null,
+            gender:       data?.gender ?? null,
+            birth_date:   data?.birth_date ?? null,
+        }
     }
 
-    async setDisplayName(name: string): Promise<void> {
+    async saveProfile(updates: {
+        display_name?: string | null
+        first_name?: string | null
+        last_name?: string | null
+        gender?: string | null
+        birth_date?: string | null
+    }): Promise<void> {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) throw new Error('Not authenticated')
         const { error } = await supabase
             .from('profiles')
-            .upsert({ id: user.id, display_name: name.trim() || null }, { onConflict: 'id' })
+            .upsert({ id: user.id, ...updates }, { onConflict: 'id' })
         if (error) throw error
+    }
+
+    async setDisplayName(name: string): Promise<void> {
+        return this.saveProfile({ display_name: name.trim() || null })
     }
 
     async setCurrencyPreference(code: string): Promise<void> {

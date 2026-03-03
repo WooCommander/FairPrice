@@ -93,6 +93,57 @@ const saveDisplayName = async () => {
   }
 }
 
+// Personal info
+interface PersonalProfile {
+  first_name: string
+  last_name: string
+  gender: string
+  birth_date: string
+}
+const profile = ref<PersonalProfile>({ first_name: '', last_name: '', gender: '', birth_date: '' })
+const profileEdit = ref<PersonalProfile>({ first_name: '', last_name: '', gender: '', birth_date: '' })
+const isEditingProfile = ref(false)
+const isSavingProfile = ref(false)
+
+const genderOptions = [
+  { value: 'male',   label: 'Мужской' },
+  { value: 'female', label: 'Женский' },
+  { value: 'other',  label: 'Другой' },
+]
+
+function genderLabel(g: string | null) {
+  return genderOptions.find(o => o.value === g)?.label ?? '—'
+}
+
+function formatBirthDate(d: string | null) {
+  if (!d) return '—'
+  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+const startEditProfile = () => {
+  profileEdit.value = { ...profile.value }
+  isEditingProfile.value = true
+}
+const cancelEditProfile = () => { isEditingProfile.value = false }
+const savePersonalProfile = async () => {
+  isSavingProfile.value = true
+  try {
+    await AuthService.saveProfile({
+      first_name: profileEdit.value.first_name.trim() || null,
+      last_name:  profileEdit.value.last_name.trim()  || null,
+      gender:     profileEdit.value.gender || null,
+      birth_date: profileEdit.value.birth_date || null,
+    })
+    profile.value = { ...profileEdit.value }
+    isEditingProfile.value = false
+    notify('Данные сохранены', 'success')
+  } catch (e: any) {
+    notify('Не удалось сохранить данные', 'error')
+  } finally {
+    isSavingProfile.value = false
+  }
+}
+
 onMounted(async () => {
   try {
     const { user: authUser } = await AuthService.getUser()
@@ -102,11 +153,17 @@ onMounted(async () => {
       user.value.role = authUser.role || 'Пользователь'
     }
 
-    const [rawStats, profile] = await Promise.all([
+    const [rawStats, profileData] = await Promise.all([
       AuthService.getUserStats(),
       AuthService.getProfile()
     ])
-    displayName.value = profile.display_name || ''
+    displayName.value = profileData.display_name || ''
+    profile.value = {
+      first_name: profileData.first_name || '',
+      last_name:  profileData.last_name  || '',
+      gender:     profileData.gender     || '',
+      birth_date: profileData.birth_date || '',
+    }
     if (rawStats) {
       stats.value = rawStats
     }
@@ -179,6 +236,69 @@ onMounted(async () => {
       <FpCard class="stat-card" @click="router.push('/favorites')" style="cursor: pointer">
         <span class="stat-value">⭐</span>
         <span class="stat-label">Избранное</span>
+      </FpCard>
+    </section>
+
+    <!-- Personal Info -->
+    <section class="personal-info-section">
+      <div class="section-title-row">
+        <h2>Личные данные</h2>
+        <button v-if="!isEditingProfile" class="edit-profile-btn" @click="startEditProfile">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Изменить
+        </button>
+      </div>
+
+      <FpCard v-if="!isEditingProfile" class="info-card">
+        <div class="info-row">
+          <span class="info-label">Имя</span>
+          <span class="info-value">{{ profile.first_name || '—' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Фамилия</span>
+          <span class="info-value">{{ profile.last_name || '—' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Пол</span>
+          <span class="info-value">{{ genderLabel(profile.gender) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Дата рождения</span>
+          <span class="info-value">{{ formatBirthDate(profile.birth_date) }}</span>
+        </div>
+      </FpCard>
+
+      <FpCard v-else class="info-card edit-mode">
+        <div class="edit-field">
+          <label class="field-label">Имя</label>
+          <input v-model="profileEdit.first_name" class="field-input" placeholder="Введите имя" maxlength="64" />
+        </div>
+        <div class="edit-field">
+          <label class="field-label">Фамилия</label>
+          <input v-model="profileEdit.last_name" class="field-input" placeholder="Введите фамилию" maxlength="64" />
+        </div>
+        <div class="edit-field">
+          <label class="field-label">Пол</label>
+          <div class="gender-options">
+            <button v-for="g in genderOptions" :key="g.value"
+              class="gender-btn" :class="{ active: profileEdit.gender === g.value }"
+              @click="profileEdit.gender = profileEdit.gender === g.value ? '' : g.value">
+              {{ g.label }}
+            </button>
+          </div>
+        </div>
+        <div class="edit-field">
+          <label class="field-label">Дата рождения</label>
+          <input type="date" v-model="profileEdit.birth_date" class="field-input" />
+        </div>
+        <div class="edit-actions">
+          <button class="cancel-btn" @click="cancelEditProfile">Отмена</button>
+          <button class="save-btn" @click="savePersonalProfile" :disabled="isSavingProfile">Сохранить</button>
+        </div>
       </FpCard>
     </section>
 
@@ -785,5 +905,166 @@ onMounted(async () => {
 
   &:hover { border-color: var(--color-primary); color: var(--color-primary); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.personal-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+
+  h2 {
+    font-size: var(--text-h5);
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.2px;
+  }
+
+  .section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.edit-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { border-color: var(--color-primary); color: var(--color-primary); }
+}
+
+.info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-child { border-bottom: none; }
+}
+
+.info-label {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.edit-mode {
+  gap: var(--spacing-md);
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.field-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: 15px;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+}
+
+.gender-options {
+  display: flex;
+  gap: 8px;
+}
+
+.gender-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+
+  &.active {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.08);
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 11px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  background: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { border-color: var(--color-text-secondary); }
+}
+
+.save-btn {
+  flex: 2;
+  padding: 11px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &:active:not(:disabled) { opacity: 0.85; }
 }
 </style>
