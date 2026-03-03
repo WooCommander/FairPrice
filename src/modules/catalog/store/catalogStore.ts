@@ -101,10 +101,10 @@ export const catalogStore = {
 
     async registerPriceUpdate(productId: string, _price: number, _storeName: string, _unit: string) {
         // Validation/Logging could happen here
-        await this.loadRecentProducts()
+        await catalogStore.loadRecentProducts()
         // Also refresh specific product if it's the current one
         if (currentProduct.value && currentProduct.value.id === productId) {
-            await this.loadProductById(productId)
+            await catalogStore.loadProductById(productId)
         }
     },
 
@@ -202,28 +202,28 @@ export const catalogStore = {
     async updateProduct(id: string, updates: { name?: string, category?: string }) {
         await CatalogService.updateProduct(id, updates)
         if (currentProduct.value && currentProduct.value.id === id) {
-            await this.loadProductById(id)
+            await catalogStore.loadProductById(id)
         }
     },
 
     async loadMore() {
         if (!hasMore.value || isSearching.value) return
         currentPage.value++
-        await this.searchProducts(currentQuery.value, currentFilters.value, true)
+        await catalogStore.searchProducts(currentQuery.value, currentFilters.value, true)
     },
 
     async updateStoreName(id: string, name: string) {
         await CatalogService.updateStoreName(id, name)
         // Refresh product to see updated store name in history
         if (currentProduct.value) {
-            await this.loadProductById(currentProduct.value.id)
+            await catalogStore.loadProductById(currentProduct.value.id)
         }
     },
 
     async deletePrice(id: string) {
         await CatalogService.deletePrice(id)
         if (currentProduct.value) {
-            await this.loadProductById(currentProduct.value.id)
+            await catalogStore.loadProductById(currentProduct.value.id)
         }
     },
 

@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { catalogStore } from '../store/catalogStore'
+import { priceStore } from '@/modules/prices/store/priceStore'
 import { useRouter, useRoute } from 'vue-router'
 import { PRODUCT_CATEGORIES } from '../constants'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import FpCombobox from '@/design-system/components/FpCombobox.vue'
+import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import { CurrencyService } from '../services/CurrencyService'
 import { CatalogService } from '../services/CatalogService'
 
@@ -24,6 +27,63 @@ const formatPrice = computed(() => (price: number) => {
 const products = computed(() => catalogStore.searchResults.value)
 const isLoading = computed(() => catalogStore.isLoading.value)
 
+// ── Inline add-price form ──
+const addingPriceFor = ref<{ id: string; name: string; unit?: string; lastStore?: string; lastPrice?: number } | null>(null)
+const apStoreName = ref('')
+const apStoreResults = ref<{ id: string, name: string }[]>([])
+const apPrice = ref('')
+const apQuantity = ref('1')
+const apUnit = ref('шт')
+const apSubmitting = ref(false)
+const apSuccess = ref(false)
+
+const unitItems = ['г', 'кг', 'мл', 'л', 'шт', 'уп'].map(u => ({ id: u, name: u }))
+
+const openAddPrice = async (product: Readonly<{ id: string; name: string; unit?: string; lastStore?: string; lastPrice?: number }>) => {
+  addingPriceFor.value = product
+  apPrice.value = ''
+  apQuantity.value = '1'
+  apUnit.value = product.unit || 'шт'
+  apStoreName.value = product.lastStore || ''
+  apSuccess.value = false
+  // prefetch stores
+  apStoreResults.value = await priceStore.getStores('')
+  document.querySelector('.page-content')?.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const cancelAddPrice = () => {
+  addingPriceFor.value = null
+}
+
+const handleStoreSearch = async (q: string) => {
+  apStoreName.value = q
+  apStoreResults.value = await priceStore.getStores(q)
+}
+
+const submitPrice = async () => {
+  if (!addingPriceFor.value || !apStoreName.value || !apPrice.value) return
+  apSubmitting.value = true
+  try {
+    await priceStore.submitPrice({
+      productId: addingPriceFor.value.id,
+      storeName: apStoreName.value,
+      price: parseFloat(apPrice.value),
+      currency: 'RUB',
+      quantity: parseFloat(apQuantity.value) || 1,
+      quantityUnit: apUnit.value
+    })
+    apSuccess.value = true
+    setTimeout(() => {
+      addingPriceFor.value = null
+    }, 1200)
+  } catch (e: any) {
+    alert(`Ошибка: ${e.message || e}`)
+  } finally {
+    apSubmitting.value = false
+  }
+}
+
+// ── Search & filters ──
 const handleSearch = () => {
   catalogStore.searchProducts(searchQuery.value, {
     category: selectedCategory.value || undefined,
@@ -52,83 +112,153 @@ onMounted(async () => {
   }
   handleSearch()
 })
-
-const addPrice = (productId: string) => {
-  router.push(`/add-price/${productId}`)
-}
 </script>
 
 <template>
   <div class="catalog-list-view">
-    <div class="page-title-row">
-      <h1 class="page-title">Каталог товаров</h1>
-      <FpButton size="sm" @click="router.push('/create-product')">Добавить</FpButton>
-    </div>
 
-    <div class="sticky-search-wrapper">
-      <div class="search-input-group">
-        <FpInput v-model="searchQuery" placeholder="Поиск товара..." @keydown.enter="handleSearch" class="flex-grow" />
-      </div>
-
-      <div class="active-filters" v-if="selectedStoreName">
-        <div class="filter-chip">
-          <span class="chip-icon">🏪</span>
-          <span class="chip-label">{{ selectedStoreName }}</span>
-          <button class="chip-clear" @click="clearStoreFilter">✕</button>
-        </div>
-      </div>
-
-      <div class="category-filters">
-        <button v-for="cat in PRODUCT_CATEGORIES" :key="cat" class="category-tag"
-          :class="{ active: selectedCategory === cat }" @click="toggleCategory(cat)">
-          {{ cat }}
+    <!-- ── INLINE ADD-PRICE FORM ── -->
+    <div v-if="addingPriceFor">
+      <div class="ap-header">
+        <button class="ap-back-btn" @click="cancelAddPrice">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+          </svg>
         </button>
+        <div class="ap-header-info">
+          <span class="ap-title">Добавить цену</span>
+          <span class="ap-product-name">{{ addingPriceFor.name }}</span>
+        </div>
+      </div>
+
+      <div v-if="apSuccess" class="ap-success">
+        <div class="ap-success-icon">✓</div>
+        <span>Цена добавлена!</span>
+      </div>
+
+      <div v-else class="ap-form">
+        <FpCombobox
+          v-model="apStoreName"
+          :items="apStoreResults"
+          label="Магазин"
+          placeholder="Введите название магазина"
+          allow-create
+          create-label="Новый магазин"
+          @update:modelValue="handleStoreSearch"
+          @select="(s) => apStoreName = s.name"
+          @create="(name) => apStoreName = name"
+        />
+
+        <FpInput
+          v-model="apPrice"
+          label="Цена (₽)"
+          placeholder="Например: 149"
+          type="number"
+          inputmode="decimal"
+        />
+
+        <div class="ap-qty-row">
+          <FpInput
+            v-model="apQuantity"
+            label="Количество"
+            placeholder="1"
+            type="number"
+            inputmode="decimal"
+            class="ap-qty-input"
+          />
+          <FpMobilePicker
+            v-model="apUnit"
+            label="Единица"
+            :items="unitItems"
+            title="Единица измерения"
+            class="ap-unit-input"
+          />
+        </div>
+
+        <FpButton
+          size="md"
+          width="full"
+          :disabled="!apStoreName || !apPrice || apSubmitting"
+          @click="submitPrice"
+        >
+          {{ apSubmitting ? 'Сохранение...' : 'Добавить цену' }}
+        </FpButton>
       </div>
     </div>
 
-    <section class="list-section">
-      <div v-if="isLoading && products.length === 0" class="standard-grid">
-        <div v-for="i in 6" :key="i" class="fp-tile skeleton">
-          <div class="tile-info">
-            <div class="skeleton-line sm"></div>
-            <div class="skeleton-line lg"></div>
+    <!-- ── CATALOG ── -->
+    <div v-else>
+      <div class="page-title-row">
+        <h1 class="page-title">Каталог товаров</h1>
+        <FpButton size="sm" @click="router.push('/create-product')">Добавить</FpButton>
+      </div>
+
+      <div class="sticky-search-wrapper">
+        <div class="search-input-group">
+          <FpInput v-model="searchQuery" placeholder="Поиск товара..." @keydown.enter="handleSearch" class="flex-grow" />
+        </div>
+
+        <div class="active-filters" v-if="selectedStoreName">
+          <div class="filter-chip">
+            <span class="chip-icon">🏪</span>
+            <span class="chip-label">{{ selectedStoreName }}</span>
+            <button class="chip-clear" @click="clearStoreFilter">✕</button>
           </div>
+        </div>
+
+        <div class="category-filters">
+          <button v-for="cat in PRODUCT_CATEGORIES" :key="cat" class="category-tag"
+            :class="{ active: selectedCategory === cat }" @click="toggleCategory(cat)">
+            {{ cat }}
+          </button>
         </div>
       </div>
 
-      <div v-else-if="products.length === 0" class="empty">
-        <div class="empty-icon">🔍</div>
-        <h3>Ничего не нашли</h3>
-        <p>Попробуйте изменить запрос или категорию</p>
-        <FpButton v-if="searchQuery || selectedCategory || selectedStoreId" variant="outline" size="sm"
-          @click="searchQuery = ''; selectedCategory = null; clearStoreFilter()">
-          Сбросить фильтры
-        </FpButton>
-      </div>
-
-      <div v-else class="standard-grid">
-        <div v-for="product in products" :key="product.id" class="fp-tile"
-          @click="router.push(`/product/${product.id}`)">
-          <div class="tile-info">
-            <span class="subtitle">{{ product.category }}</span>
-            <h3 class="title">{{ product.name }}</h3>
-          </div>
-
-          <div class="tile-footer">
-            <span class="main-value">{{ product.lastPrice ? formatPrice(product.lastPrice) : 'Нет цены' }}</span>
-            <FpButton size="sm" variant="secondary" @click.stop="addPrice(product.id)">
-              + Цена
-            </FpButton>
+      <section class="list-section">
+        <div v-if="isLoading && products.length === 0" class="standard-grid">
+          <div v-for="i in 6" :key="i" class="fp-tile skeleton">
+            <div class="tile-info">
+              <div class="skeleton-line sm"></div>
+              <div class="skeleton-line lg"></div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div v-if="catalogStore.hasMore.value" class="load-more">
-        <FpButton variant="outline" :loading="isLoading" @click="catalogStore.loadMore()">
-          Загрузить еще
-        </FpButton>
-      </div>
-    </section>
+        <div v-else-if="products.length === 0" class="empty">
+          <div class="empty-icon">🔍</div>
+          <h3>Ничего не нашли</h3>
+          <p>Попробуйте изменить запрос или категорию</p>
+          <FpButton v-if="searchQuery || selectedCategory || selectedStoreId" variant="outline" size="sm"
+            @click="searchQuery = ''; selectedCategory = null; clearStoreFilter()">
+            Сбросить фильтры
+          </FpButton>
+        </div>
+
+        <div v-else class="standard-grid">
+          <div v-for="product in products" :key="product.id" class="fp-tile"
+            @click="router.push(`/product/${product.id}`)">
+            <div class="tile-info">
+              <span class="subtitle">{{ product.category }}</span>
+              <h3 class="title">{{ product.name }}</h3>
+            </div>
+            <div class="tile-footer">
+              <span class="main-value">{{ product.lastPrice ? formatPrice(product.lastPrice) : 'Нет цены' }}</span>
+              <FpButton size="sm" variant="secondary" @click.stop="openAddPrice(product)">
+                + Цена
+              </FpButton>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="catalogStore.hasMore.value" class="load-more">
+          <FpButton variant="outline" :loading="isLoading" @click="catalogStore.loadMore()">
+            Загрузить еще
+          </FpButton>
+        </div>
+      </section>
+    </div>
+
   </div>
 </template>
 
@@ -137,6 +267,87 @@ const addPrice = (productId: string) => {
   padding: 0 0.5rem;
 }
 
+// ── Add-price form ──
+.ap-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0 20px;
+}
+
+.ap-back-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  &:active { background: var(--color-surface-hover); }
+}
+
+.ap-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ap-title {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+
+.ap-product-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ap-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ap-qty-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ap-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 0;
+  color: var(--color-success);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ap-success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(var(--color-success-rgb), 0.15);
+  border: 2px solid var(--color-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+// ── Store filter chip ──
 .active-filters {
   display: flex;
   flex-wrap: wrap;
@@ -155,10 +366,7 @@ const addPrice = (productId: string) => {
   font-size: 13px;
   color: var(--color-primary);
 
-  .chip-icon {
-    font-size: 14px;
-  }
-
+  .chip-icon { font-size: 14px; }
   .chip-label {
     font-weight: 500;
     max-width: 160px;
@@ -166,7 +374,6 @@ const addPrice = (productId: string) => {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
   .chip-clear {
     background: none;
     border: none;
@@ -176,13 +383,11 @@ const addPrice = (productId: string) => {
     padding: 0 0 0 2px;
     line-height: 1;
     opacity: 0.7;
-
-    &:hover {
-      opacity: 1;
-    }
+    &:hover { opacity: 1; }
   }
 }
 
+// ── Empty state ──
 .empty {
   text-align: center;
   padding: 4rem 2rem;
@@ -197,13 +402,11 @@ const addPrice = (productId: string) => {
     margin-bottom: 16px;
     opacity: 0.5;
   }
-
   h3 {
     margin: 0;
     font-size: 18px;
     color: var(--color-text-primary);
   }
-
   p {
     margin: 0 0 16px 0;
     font-size: 14px;

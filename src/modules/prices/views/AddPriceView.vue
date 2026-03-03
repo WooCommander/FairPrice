@@ -230,7 +230,7 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
                 </div>
             </div>
 
-            <div v-else class="standard-grid">
+            <div v-else-if="!isLoading && !isCreating" class="standard-grid">
                 <!-- Create New Tile -->
                 <div class="fp-tile create-tile" @click="startCreation">
                     <div class="tile-info">
@@ -250,7 +250,7 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
             </div>
 
             <!-- Load More Container -->
-            <div v-if="hasMore" class="load-more-container">
+            <div v-if="hasMore && !isCreating" class="load-more-container">
                 <FpButton variant="outline" size="full" :loading="isLoading" @click="catalogStore.loadMore">
                     Загрузить еще
                 </FpButton>
