@@ -82,6 +82,26 @@ class AuthService {
         }
     }
 
+    async getProfile(): Promise<{ display_name: string | null }> {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return { display_name: null }
+        const { data } = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('id', user.id)
+            .single()
+        return { display_name: data?.display_name ?? null }
+    }
+
+    async setDisplayName(name: string): Promise<void> {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new Error('Not authenticated')
+        const { error } = await supabase
+            .from('profiles')
+            .upsert({ id: user.id, display_name: name.trim() || null }, { onConflict: 'id' })
+        if (error) throw error
+    }
+
     async setCurrencyPreference(code: string): Promise<void> {
         await supabase.auth.updateUser({
             data: { preferred_currency: code }

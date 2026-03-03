@@ -68,6 +68,31 @@ const pendingProducts = ref<Array<{ id: string, name: string, category: string, 
 const pendingError = ref('')
 const { notify } = useNotify()
 
+// Display name
+const displayName = ref('')
+const displayNameEdit = ref('')
+const isEditingName = ref(false)
+const isSavingName = ref(false)
+
+const startEditName = () => {
+  displayNameEdit.value = displayName.value
+  isEditingName.value = true
+}
+const cancelEditName = () => { isEditingName.value = false }
+const saveDisplayName = async () => {
+  isSavingName.value = true
+  try {
+    await AuthService.setDisplayName(displayNameEdit.value)
+    displayName.value = displayNameEdit.value.trim()
+    isEditingName.value = false
+    notify('Имя сохранено', 'success')
+  } catch (e: any) {
+    notify('Не удалось сохранить имя', 'error')
+  } finally {
+    isSavingName.value = false
+  }
+}
+
 onMounted(async () => {
   try {
     const { user: authUser } = await AuthService.getUser()
@@ -77,7 +102,11 @@ onMounted(async () => {
       user.value.role = authUser.role || 'Пользователь'
     }
 
-    const rawStats = await AuthService.getUserStats()
+    const [rawStats, profile] = await Promise.all([
+      AuthService.getUserStats(),
+      AuthService.getProfile()
+    ])
+    displayName.value = profile.display_name || ''
     if (rawStats) {
       stats.value = rawStats
     }
@@ -102,7 +131,23 @@ onMounted(async () => {
         {{ user.email.charAt(0).toUpperCase() }}
       </div>
       <div class="user-info">
-        <h1>{{ user.email.split('@')[0] }}</h1>
+        <!-- Display name -->
+        <div v-if="!isEditingName" class="display-name-row">
+          <h1>{{ displayName || user.email.split('@')[0] }}</h1>
+          <button class="edit-name-btn" @click="startEditName" title="Изменить имя">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </button>
+        </div>
+        <div v-else class="display-name-edit">
+          <input v-model="displayNameEdit" class="name-input" placeholder="Введите имя" maxlength="32"
+            @keydown.enter="saveDisplayName" @keydown.escape="cancelEditName" />
+          <button class="name-save-btn" @click="saveDisplayName" :disabled="isSavingName">✓</button>
+          <button class="name-cancel-btn" @click="cancelEditName">✕</button>
+        </div>
         <p class="email">{{ user.email }}</p>
         <div class="badges">
           <span class="badge" v-if="stats">⭐ {{ stats.reputation }} Репутация</span>
@@ -299,8 +344,8 @@ onMounted(async () => {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--spacing-sm);
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -311,22 +356,23 @@ onMounted(async () => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-lg);
-    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    gap: 4px;
     text-align: center;
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: 1px solid rgba(var(--color-primary-rgb), 0.2);
     transition: all 0.2s;
-    min-height: 120px;
+    min-height: 100px;
+    border-radius: 14px;
 
     &:hover {
       border-color: var(--color-primary);
       box-shadow: var(--shadow-1);
-      transform: translateY(-2px);
+      transform: translateY(-1px);
     }
 
     .stat-value {
-      font-size: 32px; // Big number
+      font-size: 26px;
       font-weight: 800;
       color: var(--color-primary);
       line-height: 1;
@@ -342,38 +388,34 @@ onMounted(async () => {
   }
 
   .level-card {
-    grid-column: span 3;
-
-    @media (max-width: 768px) {
-      grid-column: span 1;
-    }
+    grid-column: span 2;
 
     .level-info {
       display: flex;
       align-items: baseline;
-      gap: 12px;
-      margin-bottom: 8px;
+      gap: 8px;
+      margin-bottom: 6px;
     }
 
     .level-number {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 800;
       color: var(--color-primary);
     }
 
     .level-title {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 600;
       color: var(--color-text-primary);
     }
 
     .progress-bar-container {
       width: 100%;
-      height: 8px;
+      height: 6px;
       background: var(--color-background);
       border-radius: 4px;
       overflow: hidden;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .progress-bar {
@@ -383,23 +425,28 @@ onMounted(async () => {
     }
 
     .xp-text {
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: var(--color-text-secondary);
     }
   }
 }
 
 .settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+
   h2 {
     font-size: var(--text-h5);
-    font-weight: 700;
-    margin: 0 0 var(--spacing-md);
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.2px;
   }
 }
 
 .currency-options {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: var(--spacing-sm);
 }
 
@@ -408,21 +455,25 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: var(--spacing-md) var(--spacing-sm);
-  background: var(--color-surface);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-md);
+  padding: 14px 10px;
+  background: linear-gradient(180deg, var(--color-surface), rgba(var(--color-primary-rgb), 0.02));
+  border: 1.5px solid var(--color-border);
+  border-radius: 14px;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s, background 0.15s;
+  min-height: 92px;
 
   &.active {
     border-color: var(--color-primary);
-    background: rgba(var(--color-primary-rgb, 98, 0, 238), 0.06);
+    background: radial-gradient(circle at 30% 20%, rgba(var(--color-primary-rgb), 0.12), rgba(var(--color-primary-rgb), 0.04) 55%, transparent 80%),
+      linear-gradient(180deg, var(--color-surface), rgba(var(--color-primary-rgb), 0.06));
+    box-shadow: 0 10px 20px rgba(var(--color-primary-rgb), 0.18);
+    transform: translateY(-2px);
   }
 
   .currency-symbol {
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 800;
     color: var(--color-primary);
   }
 
@@ -449,6 +500,9 @@ onMounted(async () => {
   margin-top: var(--spacing-lg);
   border-top: 1px solid var(--color-border);
   padding-top: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
 }
 
 .rates-hint {
@@ -461,10 +515,10 @@ onMounted(async () => {
 }
 
 .rates-inputs {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-md);
-  flex-wrap: wrap;
 }
 
 .rate-field {
@@ -506,13 +560,13 @@ onMounted(async () => {
 
 .save-rates-btn {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background: var(--color-primary);
   color: #fff;
   border: none;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
   transition: opacity 0.15s;
 
@@ -678,5 +732,58 @@ onMounted(async () => {
 .badge.muted {
   background: var(--color-background);
   color: var(--color-text-secondary);
+}
+
+.display-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  h1 { margin: 0; }
+}
+
+.edit-name-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+
+  &:hover { color: var(--color-primary); }
+}
+
+.display-name-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.name-input {
+  border: 1.5px solid var(--color-primary);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  outline: none;
+  width: 160px;
+}
+
+.name-save-btn,
+.name-cancel-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+
+  &:hover { border-color: var(--color-primary); color: var(--color-primary); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 </style>
