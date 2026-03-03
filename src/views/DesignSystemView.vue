@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpInput from '@/design-system/components/FpInput.vue'
+import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import FpCombobox, { type ComboboxItem } from '@/design-system/components/FpCombobox.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
 
@@ -13,6 +14,11 @@ const toggleLoading = () => btnLoading.value = !btnLoading.value
 const textVal = ref('')
 const numberVal = ref('')
 const errorVal = ref('Invalid input')
+
+// NumberInput demo
+const numVal1 = ref(1)
+const numVal2 = ref(0.5)
+const numVal3 = ref(5)
 
 // Combobox demo
 const comboVal = ref('')
@@ -82,6 +88,23 @@ const handleCreate = (val: string) => {
 
                 <FpCard>
                     <FpInput v-model="errorVal" label="Error State" error="This field is required" />
+                </FpCard>
+            </div>
+        </section>
+
+        <section class="ds-section">
+            <h2>Number Input</h2>
+            <div class="ds-grid">
+                <FpCard>
+                    <FpNumberInput v-model="numVal1" label="Количество (целые)" :min="1" :max="99" />
+                    <p style="margin-top: 8px; font-size: 13px; color: var(--color-text-secondary)">Значение: {{ numVal1 }}</p>
+                </FpCard>
+                <FpCard>
+                    <FpNumberInput v-model="numVal2" label="Дробное (шаг 0.1)" :min="0" :max="10" :step="0.1" />
+                    <p style="margin-top: 8px; font-size: 13px; color: var(--color-text-secondary)">Значение: {{ numVal2 }}</p>
+                </FpCard>
+                <FpCard>
+                    <FpNumberInput v-model="numVal3" label="Заблокировано" :min="1" :max="10" disabled />
                 </FpCard>
             </div>
         </section>

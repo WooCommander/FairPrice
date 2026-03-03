@@ -16,6 +16,7 @@ interface Props {
     allowCreate?: boolean
     createLabel?: string
     title?: string
+    variant?: 'default' | 'bordered'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -24,7 +25,8 @@ const props = withDefaults(defineProps<Props>(), {
     allowCreate: false,
     createLabel: 'Добавить',
     placeholder: 'Поиск...',
-    title: 'Выбор'
+    title: 'Выбор',
+    variant: 'default'
 })
 
 const emit = defineEmits<{
@@ -78,9 +80,10 @@ watch(searchQuery, (q) => {
 </script>
 
 <template>
-    <div class="fp-mobile-picker">
+    <div class="fp-mobile-picker" :class="`fp-mobile-picker--${variant}`">
         <div class="picker-trigger" @click="openPicker">
-            <div v-if="label" class="trigger-label" :class="{ 'has-value': modelValue }">{{ label }}</div>
+            <div v-if="label" class="trigger-label" :class="{ 'has-value': modelValue || variant === 'bordered' }">{{
+                label }}</div>
             <div class="trigger-value">{{ modelValue || (label && !modelValue ? '' : placeholder) }}</div>
             <div class="chevron">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -136,9 +139,10 @@ watch(searchQuery, (q) => {
 
 .picker-trigger {
     position: relative;
+    align-items: flex-end;
     background-color: var(--color-surface);
     border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-    border-bottom: 2px solid var(--color-border);
+    // border-bottom: 2px solid var(--color-border);
     height: 56px;
     padding: 8px 16px;
     display: flex;
@@ -258,6 +262,47 @@ watch(searchQuery, (q) => {
     padding: 40px;
     text-align: center;
     color: var(--color-text-secondary);
+}
+
+// Bordered variant — matches FpNumberInput visual style
+.fp-mobile-picker--bordered {
+    .picker-trigger {
+        border: 1.5px solid var(--color-border);
+        border-radius: 12px;
+        border-bottom: 1.5px solid var(--color-border);
+        height: 48px;
+        padding: 4px 12px 4px 14px;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1px;
+        transition: border-color 0.2s;
+
+        &:active {
+            border-color: var(--color-primary);
+            background-color: transparent;
+        }
+    }
+
+    .trigger-label {
+        position: static;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        letter-spacing: 0.01em;
+    }
+
+    .trigger-value {
+        font-size: 15px;
+        font-weight: 600;
+        padding-right: 20px;
+    }
+
+    .chevron {
+        position: absolute;
+        right: 10px;
+        bottom: 50%;
+        transform: translateY(50%);
+    }
 }
 
 // Transitions

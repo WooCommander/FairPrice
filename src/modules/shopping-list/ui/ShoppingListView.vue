@@ -3,21 +3,21 @@ import { ref, onMounted, computed } from 'vue'
 import { shoppingListStore } from '../state/shoppingListStore'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 
-import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
+import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import { FpSpinner } from '@/design-system'
 
 
 const newItemText = ref('')
 const selectedProduct = ref<any>(null)
-const newItemPrice = ref('')
-const newItemQuantity = ref('1')
+const newItemPrice = ref(0)
+const newItemQuantity = ref(1)
 
 const editingItemId = ref<string | null>(null)
-const editPrice = ref<string>('')
-const editQuantity = ref<string>('1')
+const editPrice = ref(0)
+const editQuantity = ref(1)
 
 const uncheckedItems = computed(() => shoppingListStore.uncheckedItems.value)
 const checkedItems = computed(() => shoppingListStore.checkedItems.value)
@@ -47,8 +47,8 @@ const addItem = async () => {
             newItemText.value,
             selectedProduct.value?.id,
             {
-                price: Number(newItemPrice.value) || undefined,
-                quantity: Number(newItemQuantity.value) || undefined,
+                price: newItemPrice.value || undefined,
+                quantity: newItemQuantity.value || undefined,
                 unit: selectedProduct.value?.unit
             }
         )
@@ -56,8 +56,8 @@ const addItem = async () => {
         // Reset
         newItemText.value = ''
         selectedProduct.value = null
-        newItemPrice.value = ''
-        newItemQuantity.value = '1'
+        newItemPrice.value = 0
+        newItemQuantity.value = 1
     } catch (e: any) {
         console.error('Failed to add item:', e)
         alert('Не удалось добавить в список: ' + (e.message || 'ошибка базы данных'))
@@ -68,8 +68,8 @@ const toggleItem = (item: any) => {
     if (!item.isChecked) {
         // Prepare to enter price when checking
         editingItemId.value = item.id
-        editPrice.value = item.price ? String(item.price) : ''
-        editQuantity.value = item.quantity ? String(item.quantity) : '1'
+        editPrice.value = item.price ?? 0
+        editQuantity.value = item.quantity ?? 1
     } else {
         shoppingListStore.toggleItem(item.id, false)
     }
@@ -78,8 +78,8 @@ const toggleItem = (item: any) => {
 const confirmPurchase = async () => {
     if (editingItemId.value) {
         await shoppingListStore.toggleItem(editingItemId.value, true, {
-            price: Number(editPrice.value) || 0,
-            quantity: Number(editQuantity.value) || 1
+            price: editPrice.value || 0,
+            quantity: editQuantity.value || 1
         })
         editingItemId.value = null
     }
@@ -120,8 +120,8 @@ const formatPrice = (p: number) => {
                         @create="newItemText = $event" class="flex-grow" />
                 </div>
                 <div class="row details-row">
-                    <FpInput v-model="newItemPrice" type="number" label="Цена (рек.)" placeholder="0" size="sm" />
-                    <FpInput v-model="newItemQuantity" type="number" label="Кол-во" placeholder="1" size="sm" />
+                    <FpNumberInput v-model="newItemPrice" label="Цена (рек.)" :min="0" :step="0.01" />
+                    <FpNumberInput v-model="newItemQuantity" label="Кол-во" :min="1" :step="1" />
                     <FpButton @click="addItem" :disabled="!newItemText.trim()" variant="primary">Добавить</FpButton>
                 </div>
             </div>
@@ -172,8 +172,8 @@ const formatPrice = (p: number) => {
                         <!-- Quick Price/Qty Edit when checking -->
                         <div v-if="editingItemId === item.id" class="edit-overlay">
                             <div class="edit-fields">
-                                <FpInput v-model="editPrice" type="number" placeholder="Цена" size="sm" />
-                                <FpInput v-model="editQuantity" type="number" placeholder="Кол-во" size="sm" />
+                                <FpNumberInput v-model="editPrice" label="Цена" :min="0" :step="0.01" />
+                                <FpNumberInput v-model="editQuantity" label="Кол-во" :min="1" :step="1" />
                                 <FpButton size="sm" @click="confirmPurchase">Ок</FpButton>
                                 <FpButton size="sm" variant="secondary" @click="editingItemId = null">Отмена</FpButton>
                             </div>

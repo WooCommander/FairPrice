@@ -6,10 +6,10 @@ import { priceStore } from '../store/priceStore'
 import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import {
   FpButton,
-  FpInput,
   FpCard,
   FpCombobox,
-  FpMobilePicker
+  FpMobilePicker,
+  FpNumberInput
 } from '@/design-system'
 
 const route = useRoute()
@@ -27,8 +27,8 @@ const currentProduct = ref<{ id: string, name: string, category: string, unit?: 
 const storeName = ref('')
 const storeResults = ref<{ id: string, name: string }[]>([])
 const isSearchingStores = ref(false)
-const price = ref('')
-const quantity = ref('1')
+const price = ref(0)
+const quantity = ref(1)
 const unit = ref('кг')
 const isSuccess = ref(false)
 
@@ -45,8 +45,8 @@ const products = computed(() => catalogStore.searchResults.value)
 const filteredGridProducts = computed(() => products.value)
 
 const calculatedUnitPrice = computed(() => {
-  const p = parseFloat(price.value)
-  const q = parseFloat(quantity.value)
+  const p = price.value
+  const q = quantity.value
   if (!p || !q) return null
 
   const res = (p / q) * (unit.value === 'кг' || unit.value === 'л' ? 1 : 1000)
@@ -138,9 +138,9 @@ const submit = async () => {
     await priceStore.submitPrice({
       productId: currentProduct.value.id,
       storeName: storeName.value,
-      price: parseFloat(price.value),
+      price: price.value,
       currency: 'RUB',
-      quantity: parseFloat(quantity.value) || 1,
+      quantity: quantity.value || 1,
       quantityUnit: unit.value
     })
     isSuccess.value = true
@@ -285,14 +285,14 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
             @search="handleSearchStore" />
 
           <div class="price-row">
-            <FpInput v-model="price" label="Цена (₽)" type="number" placeholder="0" class="price-input" />
+            <FpNumberInput v-model="price" label="Цена (₽)" :min="0" :step="0.01" class="price-input" />
           </div>
 
           <div class="quantity-row">
-            <FpInput v-model="quantity" label="Вес/Объем" type="number" placeholder="900" class="quantity-input" />
+            <FpNumberInput v-model="quantity" label="Вес/Объем" :min="0" :step="50" class="quantity-input" />
             <div class="unit-select">
               <FpMobilePicker v-model="unit" label="Ед." :items="unitItems" placeholder="г" title="Единица изм."
-                allow-create @create="unit = $event" />
+                variant="bordered" allow-create @create="unit = $event" />
             </div>
           </div>
 
@@ -398,6 +398,7 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
 .quantity-row {
   display: flex;
   gap: 12px;
+  align-items: flex-end;
 }
 
 .price-input,

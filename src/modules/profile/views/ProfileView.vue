@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { AuthService } from '@/modules/auth/services/AuthService'
 import FpCard from '@/design-system/components/FpCard.vue'
+import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 
@@ -146,16 +147,8 @@ onMounted(async () => {
       <div class="rates-section">
         <p class="rates-hint">Курс к рублю</p>
         <div class="rates-inputs">
-          <div class="rate-field">
-            <label>1 $ =</label>
-            <input v-model.number="usdRate" type="number" min="1" step="0.01" class="rate-input" />
-            <span>₽</span>
-          </div>
-          <div class="rate-field">
-            <label>1 € =</label>
-            <input v-model.number="eurRate" type="number" min="1" step="0.01" class="rate-input" />
-            <span>₽</span>
-          </div>
+          <FpNumberInput v-model="usdRate" label="1 $ в рублях" :min="1" :step="0.5" />
+          <FpNumberInput v-model="eurRate" label="1 € в рублях" :min="1" :step="0.5" />
         </div>
         <button class="save-rates-btn" @click="saveRates">Применить курсы</button>
         <p class="settings-saved" v-if="ratesSaved">✓ Сохранено</p>

@@ -4,10 +4,10 @@ import { catalogStore } from '../store/catalogStore'
 import { priceStore } from '@/modules/prices/store/priceStore'
 import { useRouter, useRoute } from 'vue-router'
 import { PRODUCT_CATEGORIES } from '../constants'
-import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
+import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import { CurrencyService } from '../services/CurrencyService'
 import { CatalogService } from '../services/CatalogService'
 
@@ -31,8 +31,8 @@ const isLoading = computed(() => catalogStore.isLoading.value)
 const addingPriceFor = ref<{ id: string; name: string; unit?: string; lastStore?: string; lastPrice?: number } | null>(null)
 const apStoreName = ref('')
 const apStoreResults = ref<{ id: string, name: string }[]>([])
-const apPrice = ref('')
-const apQuantity = ref('1')
+const apPrice = ref(0)
+const apQuantity = ref(1)
 const apUnit = ref('шт')
 const apSubmitting = ref(false)
 const apSuccess = ref(false)
@@ -41,8 +41,8 @@ const unitItems = ['г', 'кг', 'мл', 'л', 'шт', 'уп'].map(u => ({ id: u
 
 const openAddPrice = async (product: Readonly<{ id: string; name: string; unit?: string; lastStore?: string; lastPrice?: number }>) => {
   addingPriceFor.value = product
-  apPrice.value = ''
-  apQuantity.value = '1'
+  apPrice.value = 0
+  apQuantity.value = 1
   apUnit.value = product.unit || 'шт'
   apStoreName.value = product.lastStore || ''
   apSuccess.value = false
@@ -67,9 +67,9 @@ const submitPrice = async () => {
     await priceStore.submitPrice({
       productId: addingPriceFor.value.id,
       storeName: apStoreName.value,
-      price: parseFloat(apPrice.value),
+      price: apPrice.value,
       currency: 'RUB',
-      quantity: parseFloat(apQuantity.value) || 1,
+      quantity: apQuantity.value || 1,
       quantityUnit: apUnit.value
     })
     apSuccess.value = true
@@ -150,21 +150,19 @@ onMounted(async () => {
           @create="(name) => apStoreName = name"
         />
 
-        <FpInput
+        <FpNumberInput
           v-model="apPrice"
           label="Цена (₽)"
-          placeholder="Например: 149"
-          type="number"
-          inputmode="decimal"
+          :min="0"
+          :step="0.01"
         />
 
         <div class="ap-qty-row">
-          <FpInput
+          <FpNumberInput
             v-model="apQuantity"
             label="Количество"
-            placeholder="1"
-            type="number"
-            inputmode="decimal"
+            :min="0"
+            :step="0.5"
             class="ap-qty-input"
           />
           <FpMobilePicker
@@ -172,6 +170,7 @@ onMounted(async () => {
             label="Единица"
             :items="unitItems"
             title="Единица измерения"
+            variant="bordered"
             class="ap-unit-input"
           />
         </div>
@@ -322,9 +321,10 @@ onMounted(async () => {
 }
 
 .ap-qty-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  align-items: flex-end;
   gap: 12px;
+
 }
 
 .ap-success {

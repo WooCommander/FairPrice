@@ -8,6 +8,7 @@ import { FpSpinner } from '@/design-system'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { shoppingListStore } from '@/modules/shopping-list/state/shoppingListStore'
 import { authStore } from '@/modules/auth/store/authStore'
+import { useNotify } from '@/composables/useNotify'
 
 import PriceChart from '@/components/PriceChart.vue'
 import CheapPlacesList from '@/modules/analytics/components/CheapPlacesList.vue'
@@ -19,6 +20,7 @@ import { VerificationService } from '@/modules/prices/services/VerificationServi
 const route = useRoute()
 const router = useRouter()
 const { currentProduct, currentCurrency } = catalogStore
+const { notify } = useNotify()
 
 const formatPrice = computed(() => (price: number) => {
 	const currency = currentCurrency.value
@@ -107,10 +109,10 @@ const handleDeleteConfirm = async () => {
 	if (currentProduct.value) {
 		try {
 			await catalogStore.deleteProduct(currentProduct.value.id)
-			router.back() // Return to previous page as requested
+			router.back()
 		} catch (e: any) {
 			console.error('Failed to delete product:', e)
-			alert(`Не удалось удалить товар: ${e.message || e}`)
+			notify(`Не удалось удалить товар: ${e.message || e}`, 'error')
 		}
 	}
 }
@@ -132,7 +134,7 @@ const handleDeletePrice = async () => {
 			priceToDeleteId.value = null
 		} catch (e: any) {
 			console.error('Failed to delete price:', e)
-			alert(`Не удалось удалить цену: ${e.message || e}`)
+			notify(`Не удалось удалить цену: ${e.message || e}`, 'error')
 		}
 	}
 }
@@ -160,9 +162,9 @@ const addToShoppingList = async () => {
 	if (currentProduct.value) {
 		try {
 			await shoppingListStore.addItem(currentProduct.value.name, currentProduct.value.id)
-			alert('Добавлено в список покупок!')
+			notify('Добавлено в список покупок!', 'success')
 		} catch (e) {
-			alert('Не удалось добавить в список')
+			notify('Не удалось добавить в список', 'error')
 		}
 	}
 }
@@ -314,7 +316,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 				<FpButton variant="outline" size="sm" @click="addToShoppingList">
 					📝 В список
 				</FpButton>
-				<FpButton variant="outline" size="sm" @click="router.push(`/category/${currentProduct.category}`)">
+				<FpButton variant="outline" size="sm" @click="router.push({ path: '/catalog', query: { category: currentProduct.category } })">
 					📂 В категорию
 				</FpButton>
 			</div>

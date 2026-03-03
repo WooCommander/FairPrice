@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 
 const router = useRouter()
 
@@ -21,8 +21,8 @@ interface CalcItem {
 
 const STORAGE_KEY = 'fp-quick-calc-items'
 
-const price = ref<string>('')
-const amount = ref<string>('')
+const price = ref(0)
+const amount = ref(0)
 const unit = ref<'g' | 'kg'>('g')
 
 const items = ref<CalcItem[]>([])
@@ -47,8 +47,8 @@ const saveItems = () => {
 loadItems()
 
 const calculate = () => {
-    const p = parseFloat(price.value)
-    const a = parseFloat(amount.value)
+    const p = price.value
+    const a = amount.value
 
     if (!p || !a) return
 
@@ -75,8 +75,8 @@ const calculate = () => {
     items.value.unshift(newItem)
     saveItems()
 
-    price.value = ''
-    amount.value = ''
+    price.value = 0
+    amount.value = 0
 }
 
 const removeItem = (id: string) => {
@@ -130,14 +130,11 @@ const formatPrice = (val: number) => {
         <section class="calc-input-section">
             <div class="input-row">
                 <div class="field-group">
-                    <label>Цена (₽)</label>
-                    <FpInput v-model="price" type="number" placeholder="0" inputmode="decimal" />
+                    <FpNumberInput v-model="price" label="Цена (₽)" :min="0" :step="1" />
                 </div>
                 <div class="field-group">
-                    <label>Вес ({{ unit }})</label>
-                    <div class="amount-group">
-                        <FpInput v-model="amount" type="number" placeholder="0" inputmode="decimal"
-                            @keydown.enter="calculate" />
+                    <div class="amount-group" @keydown.enter="calculate">
+                        <FpNumberInput v-model="amount" :label="`Вес (${unit})`" :min="0" :step="unit === 'g' ? 50 : 0.1" />
                         <button class="unit-toggle" @click="unit = unit === 'g' ? 'kg' : 'g'">
                             {{ unit }}
                         </button>

@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import MainLayout from '@/layouts/MainLayout.vue'
+import FpNotificationContainer from '@/design-system/components/FpNotificationContainer.vue'
 
 const { initTheme } = useTheme()
 
@@ -12,6 +13,7 @@ onMounted(() => {
 
 <template>
   <MainLayout />
+  <FpNotificationContainer />
 </template>
 
 <style lang="scss">
