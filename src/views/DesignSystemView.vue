@@ -5,6 +5,7 @@ import FpInput from '@/design-system/components/FpInput.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import FpCombobox, { type ComboboxItem } from '@/design-system/components/FpCombobox.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
+import FpConfirmationModal from '@/design-system/components/FpConfirmationModal.vue'
 
 // Button demo
 const btnLoading = ref(false)
@@ -32,6 +33,10 @@ const comboItems = ref<ComboboxItem[]>([
 const handleCreate = (val: string) => {
     alert(`Create: ${val}`)
 }
+
+// ConfirmationModal demo
+const modalVisible = ref(false)
+const modalDangerVisible = ref(false)
 
 </script>
 
@@ -116,6 +121,25 @@ const handleCreate = (val: string) => {
                     allow-create @create="handleCreate" />
                 <p>Selected: {{ comboVal }}</p>
             </FpCard>
+        </section>
+
+        <section class="ds-section">
+            <h2>Confirmation Modal</h2>
+            <div class="ds-grid">
+                <FpCard>
+                    <div class="row">
+                        <FpButton variant="primary" @click="modalVisible = true">Открыть (primary)</FpButton>
+                        <FpButton variant="danger" @click="modalDangerVisible = true">Открыть (danger)</FpButton>
+                    </div>
+                </FpCard>
+            </div>
+
+            <FpConfirmationModal v-model:visible="modalVisible" title="Подтвердите действие"
+                message="Вы уверены, что хотите выполнить это действие?" confirm-text="Подтвердить" />
+
+            <FpConfirmationModal v-model:visible="modalDangerVisible" title="Удалить запись?"
+                message="Это действие необратимо. Данные будут удалены навсегда." confirm-text="Удалить"
+                variant="danger" />
         </section>
 
         <section class="ds-section">

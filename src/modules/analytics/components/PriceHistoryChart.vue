@@ -29,14 +29,18 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const sortedData = computed(() =>
+    [...props.data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+)
+
 const chartData = computed(() => ({
-    labels: props.data.map(d => d.date),
+    labels: sortedData.value.map(d => d.date),
     datasets: [
         {
             label: 'Price (UZS)',
             backgroundColor: '#6200ee',
             borderColor: '#6200ee',
-            data: props.data.map(d => d.price),
+            data: sortedData.value.map(d => d.price),
             tension: 0.3,
             fill: false
         }

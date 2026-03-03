@@ -110,11 +110,15 @@ const handleSubmit = async () => {
     min-height: 80vh;
     /* Centered vertically in layout */
     padding: var(--spacing-md);
+    background: radial-gradient(circle at 20% 20%, rgba(108, 93, 211, 0.08), transparent 32%),
+        radial-gradient(circle at 80% 10%, rgba(0, 210, 160, 0.06), transparent 28%),
+        var(--color-background);
 }
 
 .auth-card {
     width: 100%;
     max-width: 400px;
+    padding: 28px 24px 32px;
 }
 
 .title {
@@ -166,5 +170,14 @@ const handleSubmit = async () => {
     border-radius: var(--radius-sm);
     font-size: var(--text-caption);
     text-align: center;
+}
+
+/* Normalize browser autofill colors to match design system */
+:deep(input:-webkit-autofill),
+:deep(input:-webkit-autofill:hover),
+:deep(input:-webkit-autofill:focus) {
+    -webkit-text-fill-color: var(--color-text-primary);
+    box-shadow: 0 0 0px 1000px var(--color-surface) inset;
+    transition: background-color 9999s ease-in-out 0s;
 }
 </style>

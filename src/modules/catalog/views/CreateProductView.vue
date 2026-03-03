@@ -6,6 +6,9 @@ import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import { useNotify } from '@/composables/useNotify'
+
+const { notify } = useNotify()
 
 const router = useRouter()
 const name = ref('')
@@ -32,7 +35,7 @@ const handleCreate = async () => {
         router.push(`/product/${product.id}`)
     } catch (error: any) {
         console.error('Failed to create product:', error)
-        alert(`Ошибка: ${error.message || error}`)
+        notify(error.message || 'Не удалось создать товар', 'error')
     } finally {
         isSubmitting.value = false
     }

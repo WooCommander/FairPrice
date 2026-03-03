@@ -63,6 +63,18 @@ const avgLineY = computed(() => {
     // Clamp to 0-100
     return Math.max(0, Math.min(100, y))
 })
+
+const firstLabel = computed(() => {
+    const first = sortedData.value[0]
+    if (!first) return ''
+    return first.date instanceof Date ? first.date.toLocaleDateString() : new Date(first.date).toLocaleDateString()
+})
+
+const lastLabel = computed(() => {
+    const last = sortedData.value[sortedData.value.length - 1]
+    if (!last) return ''
+    return last.date instanceof Date ? last.date.toLocaleDateString() : new Date(last.date).toLocaleDateString()
+})
 </script>
 
 <template>
@@ -100,8 +112,8 @@ const avgLineY = computed(() => {
         </div>
 
         <div class="chart-labels" v-if="points.length >= 2">
-            <span>{{ new Date(props.data[0].date).toLocaleDateString() }}</span>
-            <span>{{ new Date(props.data[props.data.length - 1].date).toLocaleDateString() }}</span>
+            <span>{{ firstLabel }}</span>
+            <span>{{ lastLabel }}</span>
         </div>
     </div>
 </template>

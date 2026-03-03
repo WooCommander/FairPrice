@@ -7,6 +7,7 @@ import FpButton from '@/design-system/components/FpButton.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
+import FpConfirmationModal from '@/design-system/components/FpConfirmationModal.vue'
 import { FpSpinner } from '@/design-system'
 
 
@@ -60,7 +61,6 @@ const addItem = async () => {
         newItemQuantity.value = 1
     } catch (e: any) {
         console.error('Failed to add item:', e)
-        alert('Не удалось добавить в список: ' + (e.message || 'ошибка базы данных'))
     }
 }
 
@@ -85,16 +85,29 @@ const confirmPurchase = async () => {
     }
 }
 
+const showDeleteItemModal = ref(false)
+const itemToDeleteId = ref<string | null>(null)
+
 const removeItem = (id: string) => {
-    if (confirm('Удалить из списка?')) {
-        shoppingListStore.removeItem(id)
+    itemToDeleteId.value = id
+    showDeleteItemModal.value = true
+}
+
+const confirmRemoveItem = () => {
+    if (itemToDeleteId.value) {
+        shoppingListStore.removeItem(itemToDeleteId.value)
+        itemToDeleteId.value = null
     }
 }
 
+const showDeleteCheckedModal = ref(false)
+
 const deleteChecked = () => {
-    if (confirm('Удалить все купленные товары?')) {
-        shoppingListStore.deleteChecked()
-    }
+    showDeleteCheckedModal.value = true
+}
+
+const confirmDeleteChecked = () => {
+    shoppingListStore.deleteChecked()
 }
 
 const formatPrice = (p: number) => {
@@ -107,7 +120,7 @@ const formatPrice = (p: number) => {
         <div class="page-title-row">
             <h1 class="page-title">Список покупок</h1>
             <FpButton v-if="uncheckedItems.length > 0 || checkedItems.length > 0" variant="text" size="sm"
-                class="danger-text" @click="shoppingListStore.deleteChecked">
+                class="danger-text" @click="deleteChecked">
                 Очистить купленное
             </FpButton>
         </div>
@@ -120,9 +133,13 @@ const formatPrice = (p: number) => {
                         @create="newItemText = $event" class="flex-grow" />
                 </div>
                 <div class="row details-row">
-                    <FpNumberInput v-model="newItemPrice" label="Цена (рек.)" :min="0" :step="0.01" />
-                    <FpNumberInput v-model="newItemQuantity" label="Кол-во" :min="1" :step="1" />
-                    <FpButton @click="addItem" :disabled="!newItemText.trim()" variant="primary">Добавить</FpButton>
+                    <div class="details-inputs">
+                        <FpNumberInput v-model="newItemPrice" label="Цена (рек.)" :min="0" :step="0.01" />
+                        <FpNumberInput v-model="newItemQuantity" label="Кол-во" :min="1" :step="1" />
+                    </div>
+                    <FpButton @click="addItem" :disabled="!newItemText.trim()" variant="primary" class="add-btn">
+                        Добавить
+                    </FpButton>
                 </div>
             </div>
         </div>
@@ -185,7 +202,7 @@ const formatPrice = (p: number) => {
                 <div v-if="checkedItems.length > 0" class="checked-group">
                     <div class="group-header">
                         <h3>Куплено ({{ checkedItems.length }})</h3>
-                        <button class="clear-btn" @click="deleteChecked">Очистить</button>
+                        <button class="clear-btn" @click="deleteChecked()">Очистить</button>
                     </div>
                     <div v-for="item in checkedItems" :key="item.id" class="list-item checked">
                         <label class="checkbox-label">
@@ -205,6 +222,14 @@ const formatPrice = (p: number) => {
             </div>
         </section>
     </div>
+
+    <FpConfirmationModal v-model:visible="showDeleteItemModal" title="Удалить товар?"
+        message="Этот товар будет удалён из списка покупок." confirm-text="Удалить" variant="danger"
+        @confirm="confirmRemoveItem" />
+
+    <FpConfirmationModal v-model:visible="showDeleteCheckedModal" title="Очистить купленное?"
+        message="Все отмеченные товары будут удалены из списка." confirm-text="Очистить" variant="danger"
+        @confirm="confirmDeleteChecked" />
 </template>
 
 <style scoped lang="scss">
@@ -269,12 +294,23 @@ const formatPrice = (p: number) => {
     }
 
     .details-row {
-        justify-content: space-between;
+        flex-direction: column;
+        gap: 8px;
+    }
 
-        :deep(.fp-input-wrapper),
-        :deep(.fp-input-group) {
-            margin-bottom: 0;
+    .details-inputs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+
+        :deep(.fp-number-input) {
+            flex: 1;
+            min-width: 0;
         }
+    }
+
+    .add-btn {
+        width: 100%;
     }
 }
 

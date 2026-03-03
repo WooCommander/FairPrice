@@ -93,6 +93,16 @@ const routes = [
         path: '/stores',
         name: 'Stores',
         component: () => import('@/modules/prices/views/StoresListView.vue')
+    },
+    {
+        path: '/changelog',
+        name: 'Changelog',
+        component: () => import('@/views/ChangelogView.vue')
+    },
+    {
+        path: '/leaderboard',
+        name: 'Leaderboard',
+        component: () => import('@/modules/profile/views/LeaderboardView.vue')
     }
 ]
 

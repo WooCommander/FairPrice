@@ -569,6 +569,29 @@ class CatalogService {
             userCount: uniqueUsers.size || 0
         }
     }
+
+    async getPendingProductsForModeration(): Promise<Array<{ id: string, name: string, category: string, created_at: string, created_by: string }>> {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return []
+
+        try {
+            const { data, error } = await supabase
+                .from('products')
+                .select('id,name,category,created_at,created_by')
+                .eq('is_moderated', false)
+                .neq('created_by', user.id)
+                .order('created_at', { ascending: false })
+
+            if (error) throw error
+            return data || []
+        } catch (error: any) {
+            const msg = String(error?.message || '')
+            if (msg.includes('is_moderated')) {
+                throw new Error('Колонка products.is_moderated отсутствует. Добавьте boolean is_moderated DEFAULT false, иначе модерация недоступна.')
+            }
+            throw error
+        }
+    }
 }
 
 export const instance = new CatalogService()

@@ -4,10 +4,34 @@ import { computed, ref } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { authStore } from '@/modules/auth/store/authStore'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
+import { changelog } from '@/data/changelog'
 
 const router = useRouter()
 const route = useRoute()
 const { isDark, toggleTheme } = useTheme()
+const userRef = computed(() => authStore.user.value)
+const appVersion = changelog[0]?.version || ''
+const avatarUrl = computed(() => {
+	const meta = userRef.value?.user_metadata as Record<string, any> | undefined
+	return meta?.avatar_url || meta?.picture || null
+})
+const avatarLetter = computed(() => userRef.value?.email?.charAt(0).toUpperCase() || '?')
+const profileTooltip = computed(() => userRef.value?.email || 'Гость')
+
+const handleProfileClick = async () => {
+	if (userRef.value) {
+		router.push('/profile')
+		return
+	}
+	// try to rehydrate session before sending to login
+	if (authStore.isLoading.value) return
+	await authStore.init()
+	if (userRef.value) {
+		router.push('/profile')
+	} else {
+		router.push('/login')
+	}
+}
 
 const navItems = [
 	{
@@ -39,6 +63,11 @@ const navItems = [
 		label: 'Магазины',
 		path: '/stores',
 		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>'
+	},
+	{
+		label: 'Рейтинг',
+		path: '/leaderboard',
+		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>'
 	}
 ]
 
@@ -80,21 +109,24 @@ const handleLogout = async () => {
 
 					<div class="logo" @click="router.push('/')">
 						Fair Price
+						<span v-if="appVersion" class="version-pill">v{{ appVersion }}</span>
 					</div>
 				</div>
 
 				<div class="actions">
 					<div class="currency-selector">
 						<button v-for="code in currencies" :key="code" class="curr-btn"
-							:class="{ active: currentCurrency === code }"
-							@click="catalogStore.setCurrency(code)">
+							:class="{ active: currentCurrency === code }" @click="catalogStore.setCurrency(code)">
 							{{ code }}
 						</button>
 					</div>
-					<div v-if="!authStore.user.value">
-						<button class="login-btn" @click="router.push('/login')">
-							<span class="btn-text">Войти</span>
-						</button>
+					<!-- <button v-if="!user.value" class="login-btn" @click="router.push('/login')">
+						<span class="btn-text">Войти</span>
+					</button> -->
+					<div class="profile-chip" :class="{ guest: !userRef }" :title="profileTooltip"
+						@click="handleProfileClick">
+						<img v-if="avatarUrl" :src="avatarUrl" alt="avatar" referrerpolicy="no-referrer" />
+						<span v-else class="avatar-letter">{{ avatarLetter }}</span>
 					</div>
 				</div>
 			</div>
@@ -235,6 +267,16 @@ const handleLogout = async () => {
 							</span>
 							Стенд
 						</a>
+						<a class="drawer-link" :class="{ active: currentPath === '/changelog' }"
+							@click.prevent="navigate('/changelog'); isMenuOpen = false">
+							<span class="link-icon">
+								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+									stroke-linecap="round" stroke-linejoin="round">
+									<path d="M8 2h8a2 2 0 0 1 2 2v16l-6-3-6 3V4a2 2 0 0 1 2-2z"></path>
+								</svg>
+							</span>
+							Changelog
+						</a>
 					</div>
 				</div>
 
@@ -291,15 +333,26 @@ const handleLogout = async () => {
 		justify-content: space-between;
 	}
 
-	.logo {
-		font-size: 20px;
+.logo {
+	font-size: 20px;
+	font-weight: 700;
+	color: var(--color-text-primary);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+
+	.version-pill {
+		font-size: 11px;
 		font-weight: 700;
-		color: var(--color-text-primary);
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		gap: 8px;
+		color: var(--color-text-tertiary);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		padding: 2px 8px;
+		line-height: 1.2;
 	}
+}
 }
 
 .logo-area {
@@ -337,6 +390,43 @@ const handleLogout = async () => {
 			background: var(--color-primary);
 			color: white;
 		}
+	}
+}
+
+.profile-chip {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: var(--color-primary);
+	color: #fff;
+	font-weight: 700;
+	font-size: 15px;
+	cursor: pointer;
+	transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s;
+	box-shadow: 0 6px 14px rgba(var(--color-primary-rgb), 0.24);
+
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 50%;
+	}
+
+	&:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 8px 18px rgba(var(--color-primary-rgb), 0.28);
+	}
+
+	&:active {
+		transform: scale(0.96);
+	}
+
+	&.guest {
+		background: var(--color-text-tertiary);
+		box-shadow: none;
 	}
 }
 
@@ -620,9 +710,10 @@ const handleLogout = async () => {
 		color: var(--color-text-tertiary);
 		text-decoration: none;
 		flex: 1;
-		gap: 2px;
+		gap: 4px;
 		cursor: pointer;
 		transition: all 0.2s;
+		position: relative;
 
 		.icon {
 			font-size: 20px;
@@ -635,10 +726,32 @@ const handleLogout = async () => {
 		}
 
 		&.active {
-			color: var(--color-primary);
+			color: #fff;
+
+			&::before {
+				content: '';
+				position: absolute;
+				width: 44px;
+				height: 44px;
+				top: -6px;
+				left: 50%;
+				transform: translateX(-50%);
+				background: linear-gradient(150deg, var(--color-primary), var(--color-primary-variant));
+				border-radius: 18px;
+				z-index: -1;
+				box-shadow: 0 10px 22px rgba(var(--color-primary-rgb), 0.35);
+				pointer-events: none;
+			}
 
 			.icon {
 				transform: translateY(-2px);
+				filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+			}
+
+			.label {
+				font-weight: 800;
+				letter-spacing: 0.05em;
+				color: #fff;
 			}
 		}
 

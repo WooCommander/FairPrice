@@ -4,8 +4,11 @@ import { useRouter } from 'vue-router'
 import { AuthService } from '@/modules/auth/services/AuthService'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
+import FpButton from '@/design-system/components/FpButton.vue'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
+import { CatalogService } from '@/modules/catalog/services/CatalogService'
+import { useNotify } from '@/composables/useNotify'
 
 type CurrencyCode = 'RUB' | 'USD' | 'EUR'
 
@@ -61,6 +64,9 @@ const isLoading = ref(true)
 const stats = ref<UserStats | null>(null)
 const activityFeed = ref<any[]>([])
 const user = ref({ email: '', id: '', role: '' })
+const pendingProducts = ref<Array<{ id: string, name: string, category: string, created_at: string, created_by: string }>>([])
+const pendingError = ref('')
+const { notify } = useNotify()
 
 onMounted(async () => {
   try {
@@ -76,6 +82,12 @@ onMounted(async () => {
       stats.value = rawStats
     }
     activityFeed.value = await AuthService.getUserActivity()
+    try {
+      pendingProducts.value = await CatalogService.getPendingProductsForModeration()
+    } catch (err: any) {
+      pendingError.value = err?.message || 'Не удалось загрузить модерацию'
+      notify(pendingError.value, 'error')
+    }
   } finally {
     isLoading.value = false
   }
@@ -129,13 +141,8 @@ onMounted(async () => {
     <section class="settings-section">
       <h2>Валюта отображения</h2>
       <div class="currency-options">
-        <button
-          v-for="c in currencies"
-          :key="c.code"
-          class="currency-option-btn"
-          :class="{ active: currentCurrency === c.code }"
-          @click="changeCurrency(c.code)"
-        >
+        <button v-for="c in currencies" :key="c.code" class="currency-option-btn"
+          :class="{ active: currentCurrency === c.code }" @click="changeCurrency(c.code)">
           <span class="currency-symbol">{{ c.symbol }}</span>
           <span class="currency-code">{{ c.code }}</span>
           <span class="currency-label">{{ c.label }}</span>
@@ -158,7 +165,7 @@ onMounted(async () => {
     <section class="activity-section">
       <div class="section-title-row">
         <h2>Последняя активность</h2>
-        <button class="link-btn" @click="router.push('/activity')">Смотреть всё</button>
+        <FpButton variant="text" size="sm" @click="router.push('/activity')">Смотреть всё</FpButton>
       </div>
       <div class="activity-list">
         <div v-if="activityFeed.length === 0" class="empty-feed">
@@ -174,6 +181,32 @@ onMounted(async () => {
             <span class="act-item">{{ act.item }}</span>
             <span class="act-details">{{ formatPrice(act.price) }}</span>
           </div>
+        </FpCard>
+      </div>
+    </section>
+
+    <section class="moderation-section">
+      <div class="section-title-row">
+        <h2>На модерации</h2>
+        <span class="caption" v-if="pendingProducts.length">Товары других пользователей, пока не в статистике</span>
+      </div>
+
+      <div v-if="pendingError" class="error-alert">{{ pendingError }}</div>
+
+      <div v-else-if="pendingProducts.length === 0" class="empty-feed">
+        Всё чисто — новых товаров для модерации нет.
+      </div>
+
+      <div v-else class="pending-list">
+        <FpCard v-for="p in pendingProducts" :key="p.id" class="pending-item" padding="sm">
+          <div class="pending-main">
+            <div class="pending-name">{{ p.name }}</div>
+            <div class="pending-meta">
+              <span class="badge muted">Категория: {{ p.category || '—' }}</span>
+              <span class="badge warning">На модерации</span>
+            </div>
+          </div>
+          <div class="pending-date">{{ new Date(p.created_at).toLocaleDateString('ru-RU') }}</div>
         </FpCard>
       </div>
     </section>
@@ -431,6 +464,7 @@ onMounted(async () => {
   display: flex;
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
 }
 
 .rate-field {
@@ -578,5 +612,71 @@ onMounted(async () => {
     font-size: var(--text-body-2);
     color: var(--color-text-secondary);
   }
+}
+
+.moderation-section {
+  .section-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .caption {
+      color: var(--color-text-secondary);
+      font-size: 13px;
+    }
+  }
+}
+
+.pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.pending-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-1);
+  }
+}
+
+.pending-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pending-name {
+  font-weight: 700;
+  font-size: var(--text-body-1);
+}
+
+.pending-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pending-date {
+  color: var(--color-text-secondary);
+  font-size: var(--text-caption);
+}
+
+.badge.warning {
+  background: rgba(var(--color-error-rgb, 255, 87, 87), 0.12);
+  color: var(--color-error);
+}
+
+.badge.muted {
+  background: var(--color-background);
+  color: var(--color-text-secondary);
 }
 </style>

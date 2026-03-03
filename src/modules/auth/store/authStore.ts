@@ -86,7 +86,9 @@ export const authStore = {
     },
 
     async logout() {
-        await AuthService.signOut()
-        // State cleanup is now handled by onAuthStateChange listener
+        // Immediate UI feedback
+        user.value = null
+        session.value = null
+        await AuthService.signOut().catch(console.error)
     }
 }
