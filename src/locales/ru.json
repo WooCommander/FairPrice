@@ -1,0 +1,28 @@
+{
+  "nav": {
+    "home": "Главная",
+    "search": "Поиск",
+    "favorites": "Избранное",
+    "profile": "Профиль",
+    "catalog": "Каталог",
+    "stores": "Магазины",
+    "leaderboard": "Рейтинг",
+    "shoppingList": "Список",
+    "addPrice": "Цена",
+    "menu": "Меню",
+    "tools": "Инструменты",
+    "dev": "Разработчику",
+    "designSystem": "Стенд",
+    "changelog": "Changelog"
+  },
+  "auth": {
+    "guest": "Гость"
+  },
+  "theme": {
+    "light": "Светлая тема",
+    "dark": "Тёмная тема"
+  },
+  "lang": {
+    "switch": "Язык"
+  }
+}

@@ -5,12 +5,18 @@ import { useTheme } from '@/composables/useTheme'
 import { authStore } from '@/modules/auth/store/authStore'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { changelog } from '@/data/changelog'
+import { setLocale, supportedLocales, i18n } from '@/i18n'
 
 const router = useRouter()
 const route = useRoute()
 const { isDark, toggleTheme } = useTheme()
 const userRef = computed(() => authStore.user.value)
 const appVersion = changelog[0]?.version || ''
+const currentLocale = computed(() => i18n.global.locale.value as string)
+const locales = supportedLocales.map(code => ({
+	code,
+	label: code.toUpperCase()
+}))
 const avatarUrl = computed(() => {
 	const meta = userRef.value?.user_metadata as Record<string, any> | undefined
 	return meta?.avatar_url || meta?.picture || null
@@ -114,12 +120,12 @@ const handleLogout = async () => {
 				</div>
 
 				<div class="actions">
-					<div class="currency-selector">
-						<button v-for="code in currencies" :key="code" class="curr-btn"
-							:class="{ active: currentCurrency === code }" @click="catalogStore.setCurrency(code)">
-							{{ code }}
-						</button>
-					</div>
+									<div class="locale-selector">
+					<button v-for="loc in locales" :key="loc.code" class="loc-btn"
+						:class="{ active: currentLocale === loc.code }" @click="setLocale(loc.code as any)">
+						{{ loc.label }}
+					</button>
+				</div>
 					<!-- <button v-if="!user.value" class="login-btn" @click="router.push('/login')">
 						<span class="btn-text">Войти</span>
 					</button> -->
@@ -365,6 +371,32 @@ const handleLogout = async () => {
 	display: flex;
 	align-items: center;
 	gap: 12px;
+}
+
+.locale-selector {
+	display: flex;
+	background: var(--color-surface);
+	padding: 3px;
+	border-radius: 10px;
+	border: 1px solid var(--color-border);
+	gap: 4px;
+
+	.loc-btn {
+		background: none;
+		border: none;
+		padding: 4px 8px;
+		font-size: 10px;
+		font-weight: 700;
+		color: var(--color-text-tertiary);
+		border-radius: 7px;
+		cursor: pointer;
+		transition: all 0.2s;
+
+		&.active {
+			background: var(--color-primary);
+			color: white;
+		}
+	}
 }
 
 .currency-selector {
@@ -784,3 +816,4 @@ const handleLogout = async () => {
 	}
 }
 </style>
+

@@ -1,0 +1,28 @@
+{
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "favorites": "Favorites",
+    "profile": "Profile",
+    "catalog": "Catalog",
+    "stores": "Stores",
+    "leaderboard": "Leaderboard",
+    "shoppingList": "List",
+    "addPrice": "Price",
+    "menu": "Menu",
+    "tools": "Tools",
+    "dev": "Developer",
+    "designSystem": "Design System",
+    "changelog": "Changelog"
+  },
+  "auth": {
+    "guest": "Guest"
+  },
+  "theme": {
+    "light": "Light mode",
+    "dark": "Dark mode"
+  },
+  "lang": {
+    "switch": "Language"
+  }
+}
