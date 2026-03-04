@@ -222,7 +222,7 @@ onMounted(async () => {
                             <span class="act-time">{{ act.time }}</span>
                         </div>
                     </div>
-                    <FpButton variant="text" size="sm" class="full-history-btn">Вся история в профиле</FpButton>
+                    <FpButton variant="text" size="sm" class="full-history-btn" @click="router.push('/activity')">Вся история</FpButton>
                 </div>
             </section>
         </div>

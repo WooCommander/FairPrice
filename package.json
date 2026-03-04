@@ -1,7 +1,7 @@
 {
   "name": "fair-price",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,8 @@
     "sync-android-version": "node scripts/sync-android-version.js",
     "update-android": "npm run build && npm run sync-android-version && npx cap sync android",
     "build-debug-apk": "cd android && gradlew assembleDebug",
+    "upload-release": "node scripts/upload-release.js",
+    "release": "npm run build-debug-apk && node scripts/upload-release.js",
     "test": "vitest"
   },
   "dependencies": {
