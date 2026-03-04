@@ -50,6 +50,39 @@ const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8'))
 const version = pkg.version
 console.log(`ℹ️   Version: ${version}`)
 
+// ── Read release notes from changelog.ts ─────────────────────────────────────
+function getChangelogNotes(ver) {
+    try {
+        const src = readFileSync(resolve(root, 'src/data/changelog.ts'), 'utf-8')
+        // Find the entry for this version
+        const versionBlockRe = new RegExp(`version:\\s*['"\`]${ver.replace(/\./g, '\\.')}['"\`][\\s\\S]*?(?=\\{\\s*version:|\\]\\s*$)`)
+        const block = src.match(versionBlockRe)?.[0] || ''
+
+        const extractList = (field) => {
+            const m = block.match(new RegExp(`${field}:\\s*\\[([\\s\\S]*?)\\]`))
+            if (!m) return []
+            return [...m[1].matchAll(/['"`]([^'"`]+)['"`]/g)].map(x => x[1])
+        }
+
+        const features = extractList('features')
+        const fixes    = extractList('fixes')
+        const highlights = extractList('highlights')
+
+        if (!features.length && !fixes.length && !highlights.length) return `Версия ${ver}`
+
+        const parts = []
+        if (highlights.length) parts.push(...highlights)
+        if (features.length)   parts.push(...features.map(f => `+ ${f}`))
+        if (fixes.length)      parts.push(...fixes.map(f => `✓ ${f}`))
+        return parts.join('\n')
+    } catch {
+        return `Версия ${ver}`
+    }
+}
+
+const releaseNotes = env.RELEASE_NOTES || getChangelogNotes(version)
+console.log(`ℹ️   Notes: ${releaseNotes.split('\n')[0]}${releaseNotes.includes('\n') ? '...' : ''}`)
+
 // ── Supabase client with service role (bypasses RLS) ─────────────────────────
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
     auth: { persistSession: false }
@@ -97,7 +130,7 @@ console.log('✓  APK uploaded')
 
 // ── Upload version.json ──────────────────────────────────────────────────────
 const apkUrl = `${SUPABASE_URL}/storage/v1/object/public/releases/app-latest.apk`
-const manifest = JSON.stringify({ version, apkUrl, notes: `Версия ${version}` }, null, 2)
+const manifest = JSON.stringify({ version, apkUrl, notes: releaseNotes }, null, 2)
 
 const { error: vErr } = await supabase.storage
     .from('releases')
