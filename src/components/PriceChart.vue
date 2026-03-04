@@ -1,5 +1,29 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Line } from 'vue-chartjs'
+import {
+    Chart as ChartJS,
+    Title,
+    Tooltip,
+    Legend,
+    LineElement,
+    LinearScale,
+    PointElement,
+    CategoryScale,
+    Filler,
+    type ChartOptions
+} from 'chart.js'
+
+ChartJS.register(
+    Title,
+    Tooltip,
+    Legend,
+    LineElement,
+    LinearScale,
+    PointElement,
+    CategoryScale,
+    Filler
+)
 
 interface ChartDataPoint {
     date: Date
@@ -20,101 +44,124 @@ const sortedData = computed(() => {
     return [...props.data].sort((a, b) => a.date.getTime() - b.date.getTime())
 })
 
-const points = computed(() => {
-    const data = sortedData.value
-    if (data.length < 2) return []
-
-    const prices = data.map(d => d.price)
-    const minPrice = Math.min(...prices) * 0.9 // 10% buffering
-    const maxPrice = Math.max(...prices) * 1.1
-
-    const startTime = data[0].date.getTime()
-    const endTime = data[data.length - 1].date.getTime()
-    const timeRange = endTime - startTime
-
-    // Prevent division by zero if all prices same or time same
-    const priceRange = maxPrice - minPrice || 1
-    const tRange = timeRange || 1
-
-    return data.map((d) => {
-        const x = ((d.date.getTime() - startTime) / tRange) * 100 // Percentage
-        // Y is inverted (0 is top)
-        const y = 100 - ((d.price - minPrice) / priceRange) * 100
-        return { x, y, price: d.price, date: d.date }
+const chartData = computed(() => {
+    const labels = sortedData.value.map(d => {
+        const date = new Date(d.date)
+        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
     })
+
+    const dataPoints = sortedData.value.map(d => d.price)
+
+    // primary color approximation, ideally we would read CSS variable
+    const primaryColor = '#18a058'
+    const primaryColorLight = 'rgba(24, 160, 88, 0.1)'
+
+    const datasets: any[] = [
+        {
+            label: 'Цена',
+            data: dataPoints,
+            borderColor: primaryColor,
+            backgroundColor: primaryColorLight,
+            borderWidth: 2.5,
+            pointBackgroundColor: '#ffffff',
+            pointBorderColor: primaryColor,
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            fill: true,
+            tension: 0.3
+        }
+    ]
+
+    if (props.averagePrice) {
+        datasets.push({
+            label: 'Средняя цена',
+            data: Array(sortedData.value.length).fill(props.averagePrice),
+            borderColor: 'rgba(150, 150, 150, 0.4)',
+            borderWidth: 1.5,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            fill: false,
+            tension: 0
+        })
+    }
+
+    return {
+        labels,
+        datasets
+    }
 })
 
-const polylinePoints = computed(() => {
-    return points.value.map(p => `${p.x},${p.y}`).join(' ')
-})
+const chartOptions = computed<ChartOptions<'line'>>(() => {
+    const minPrice = Math.min(...sortedData.value.map(d => d.price))
+    const maxPrice = Math.max(...sortedData.value.map(d => d.price))
 
-
-
-const avgLineY = computed(() => {
-    if (!props.averagePrice || points.value.length === 0) return null
-
-    const data = sortedData.value
-    const prices = data.map(d => d.price)
-    const minPrice = Math.min(...prices) * 0.9
-    const maxPrice = Math.max(...prices) * 1.1
-    const priceRange = maxPrice - minPrice || 1
-
-    const y = 100 - ((props.averagePrice - minPrice) / priceRange) * 100
-    // Clamp to 0-100
-    return Math.max(0, Math.min(100, y))
-})
-
-const firstLabel = computed(() => {
-    const first = sortedData.value[0]
-    if (!first) return ''
-    return first.date instanceof Date ? first.date.toLocaleDateString() : new Date(first.date).toLocaleDateString()
-})
-
-const lastLabel = computed(() => {
-    const last = sortedData.value[sortedData.value.length - 1]
-    if (!last) return ''
-    return last.date instanceof Date ? last.date.toLocaleDateString() : new Date(last.date).toLocaleDateString()
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            duration: 400
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                titleFont: { size: 12, family: 'Inter, sans-serif' },
+                bodyFont: { size: 14, weight: 'bold', family: 'Inter, sans-serif' },
+                padding: 12,
+                cornerRadius: 8,
+                displayColors: false,
+                callbacks: {
+                    label: function (context: any) {
+                        return `${context.parsed.y} ₽`
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    maxTicksLimit: 6,
+                    font: { size: 11, family: 'Inter, sans-serif' },
+                    color: '#888'
+                }
+            },
+            y: {
+                grid: {
+                    color: 'rgba(150, 150, 150, 0.1)'
+                },
+                ticks: {
+                    font: { size: 11, family: 'Inter, sans-serif' },
+                    color: '#888',
+                    callback: function (value: any) {
+                        return `${value} ₽`
+                    }
+                },
+                beginAtZero: false,
+                suggestedMin: minPrice * 0.9,
+                suggestedMax: maxPrice * 1.1
+            }
+        },
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+    }
 })
 </script>
 
 <template>
     <div class="price-chart-container" :style="{ height: height + 'px' }">
-        <div v-if="points.length < 2" class="chart-empty">
+        <div v-if="sortedData.length < 2" class="chart-empty">
             Недостаточно данных для графика
         </div>
-        <svg v-else viewBox="0 0 100 100" preserveAspectRatio="none" class="chart-svg">
-            <defs>
-                <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.2" />
-                    <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0" />
-                </linearGradient>
-            </defs>
-
-            <!-- Average Line -->
-            <line v-if="avgLineY !== null" x1="0" :y1="avgLineY" x2="100" :y2="avgLineY" class="avg-line"
-                vector-effect="non-scaling-stroke" />
-
-            <!-- Area Fill -->
-            <polygon :points="`0,100 ${polylinePoints} 100,100`" fill="url(#chartGradient)" />
-
-            <!-- Line -->
-            <polyline :points="polylinePoints" fill="none" class="chart-line" vector-effect="non-scaling-stroke" />
-
-            <!-- Points -->
-            <!-- Circles removed to avoid distortion from aspect-ratio scaling -->
-        </svg>
-
-        <!-- HTML Overlay for Points (Guarantees roundness) -->
-        <div class="points-overlay" v-if="points.length >= 2">
-            <div v-for="(p, i) in points" :key="i" class="chart-point" :style="{ left: p.x + '%', top: p.y + '%' }"
-                :title="`${p.price} ₽ (${p.date.toLocaleDateString()})`">
-            </div>
-        </div>
-
-        <div class="chart-labels" v-if="points.length >= 2">
-            <span>{{ firstLabel }}</span>
-            <span>{{ lastLabel }}</span>
-        </div>
+        <Line v-else :data="chartData" :options="chartOptions" />
     </div>
 </template>
 
@@ -122,72 +169,10 @@ const lastLabel = computed(() => {
 .price-chart-container {
     width: 100%;
     position: relative;
-    /* Removed background/border for cleaner look */
-    /* padding: 0; Reduced to zero */
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    margin-bottom: 8px; // Reduced margin
-}
-
-.chart-wrapper {
-    flex: 1; // Take remaining space after labels
-    position: relative;
-    width: 100%;
-    min-height: 0; // Crucial for nested flex scrolling/sizing
-}
-
-.chart-svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    overflow: visible;
-}
-
-.chart-line {
-    stroke: var(--color-primary);
-    stroke-width: 3px; // Thicker line for visibility
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-.points-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; // Let clicks pass through if needed, but points have pointer-events auto
-}
-
-.chart-point {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: white;
-    border: 2px solid var(--color-primary);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-    transition: transform 0.2s;
-    pointer-events: auto;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-    &:hover {
-        transform: translate(-50%, -50%) scale(1.5);
-        z-index: 10;
-        background: var(--color-primary);
-    }
-}
-
-.avg-line {
-    stroke: var(--color-text-tertiary);
-    stroke-width: 1px;
-    stroke-dasharray: 4;
-    opacity: 0.5;
+    margin-bottom: 8px;
 }
 
 .chart-empty {
@@ -197,15 +182,8 @@ const lastLabel = computed(() => {
     align-items: center;
     justify-content: center;
     color: var(--color-text-disabled);
-    font-size: var(--text-caption);
-}
-
-.chart-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 4px;
-    font-size: 14px; // Increased from 12px for visibility
-    color: var(--color-text-secondary);
-    font-weight: 500;
+    font-size: 13px;
+    background: rgba(150, 150, 150, 0.05);
+    border-radius: 12px;
 }
 </style>

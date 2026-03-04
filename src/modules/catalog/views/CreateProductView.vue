@@ -7,6 +7,8 @@ import FpInput from '@/design-system/components/FpInput.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import { useNotify } from '@/composables/useNotify'
+import { supportedLocales } from '@/i18n'
+import { CatalogService } from '@/modules/catalog/services/CatalogService'
 
 const { notify } = useNotify()
 
@@ -15,6 +17,11 @@ const name = ref('')
 const category = ref('Бакалея')
 const unit = ref('шт')
 const isSubmitting = ref(false)
+const translationInputs = ref<Record<string, string>>({})
+
+for (const lang of supportedLocales) {
+    translationInputs.value[lang] = ''
+}
 
 const categories = PRODUCT_CATEGORIES.map(c => ({ id: c, name: c }))
 const units = ['шт', 'кг', 'л', 'уп'].map(u => ({ id: u, name: u }))
@@ -32,6 +39,16 @@ const handleCreate = async () => {
             category: category.value as any,
             unit: unit.value
         })
+        for (const lang of supportedLocales) {
+            const trName = translationInputs.value[lang]
+            if (trName && trName.trim().length > 0) {
+                await CatalogService.upsertProductTranslation({
+                    productId: product.id,
+                    lang,
+                    name: trName.trim()
+                })
+            }
+        }
         router.push(`/product/${product.id}`)
     } catch (error: any) {
         console.error('Failed to create product:', error)
@@ -62,6 +79,16 @@ const createUnit = (val: string) => {
         <FpCard class="form-card">
             <div class="form-grid">
                 <FpInput v-model="name" label="Название товара" placeholder="Например: Сыр Российский" autofocus />
+                <div class="translation-block">
+                    <div class="translation-title">Translations</div>
+                    <FpInput
+                        v-for="lang in supportedLocales"
+                        :key="lang"
+                        v-model="translationInputs[lang]"
+                        :label="`Name (${lang.toUpperCase()})`"
+                        placeholder=""
+                    />
+                </div>
 
                 <FpMobilePicker v-model="category" label="Категория" :items="categoryItems" allow-create
                     title="Выбор категории" @create="createCategory" />
@@ -108,5 +135,19 @@ const createUnit = (val: string) => {
 
 .actions {
     margin-top: var(--spacing-md);
+}
+
+.translation-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.translation-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-secondary);
 }
 </style>

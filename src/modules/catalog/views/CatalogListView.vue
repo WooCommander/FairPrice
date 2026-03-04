@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import { catalogStore } from '../store/catalogStore'
 import { priceStore } from '@/modules/prices/store/priceStore'
 import { useRouter, useRoute } from 'vue-router'
@@ -8,6 +8,7 @@ import FpButton from '@/design-system/components/FpButton.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
+import { FpSpinner } from '@/design-system'
 import { CurrencyService } from '../services/CurrencyService'
 import { CatalogService } from '../services/CatalogService'
 
@@ -105,12 +106,36 @@ watch([searchQuery, selectedCategory, selectedStoreId], () => {
   handleSearch()
 })
 
+const loadMoreTrigger = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+
 onMounted(async () => {
   if (selectedStoreId.value) {
     const store = await CatalogService.getStoreDetails(selectedStoreId.value)
     selectedStoreName.value = store?.name || null
   }
   handleSearch()
+
+  observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && catalogStore.hasMore.value && !isLoading.value) {
+      catalogStore.loadMore()
+    }
+  }, { rootMargin: '200px' })
+
+  if (loadMoreTrigger.value) {
+    observer.observe(loadMoreTrigger.value)
+  }
+})
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+})
+
+watch(loadMoreTrigger, (el) => {
+  if (observer) {
+    observer.disconnect()
+    if (el) observer.observe(el)
+  }
 })
 </script>
 
@@ -123,7 +148,8 @@ onMounted(async () => {
         <button class="ap-back-btn" @click="cancelAddPrice">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
             stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
           </svg>
         </button>
         <div class="ap-header-info">
@@ -138,49 +164,20 @@ onMounted(async () => {
       </div>
 
       <div v-else class="ap-form">
-        <FpCombobox
-          v-model="apStoreName"
-          :items="apStoreResults"
-          label="Магазин"
-          placeholder="Введите название магазина"
-          allow-create
-          create-label="Новый магазин"
-          @update:modelValue="handleStoreSearch"
-          @select="(s) => apStoreName = s.name"
-          @create="(name) => apStoreName = name"
-        />
+        <FpCombobox v-model="apStoreName" :items="apStoreResults" label="Магазин"
+          placeholder="Введите название магазина" allow-create create-label="Новый магазин"
+          @update:modelValue="handleStoreSearch" @select="(s) => apStoreName = s.name"
+          @create="(name) => apStoreName = name" />
 
-        <FpNumberInput
-          v-model="apPrice"
-          label="Цена (₽)"
-          :min="0"
-          :step="0.01"
-        />
+        <FpNumberInput v-model="apPrice" label="Цена (₽)" :min="0" :step="0.01" />
 
         <div class="ap-qty-row">
-          <FpNumberInput
-            v-model="apQuantity"
-            label="Количество"
-            :min="0"
-            :step="0.5"
-            class="ap-qty-input"
-          />
-          <FpMobilePicker
-            v-model="apUnit"
-            label="Единица"
-            :items="unitItems"
-            title="Единица измерения"
-            variant="bordered"
-            class="ap-unit-input"
-          />
+          <FpNumberInput v-model="apQuantity" label="Количество" :min="0" :step="0.5" class="ap-qty-input" />
+          <FpMobilePicker v-model="apUnit" label="Единица" :items="unitItems" title="Единица измерения"
+            variant="bordered" class="ap-unit-input" />
         </div>
 
-        <FpButton
-          size="md"
-          width="full"
-          :disabled="!apStoreName || !apPrice || apSubmitting"
-          @click="submitPrice"
-        >
+        <FpButton size="md" width="full" :disabled="!apStoreName || !apPrice || apSubmitting" @click="submitPrice">
           {{ apSubmitting ? 'Сохранение...' : 'Добавить цену' }}
         </FpButton>
       </div>
@@ -195,7 +192,8 @@ onMounted(async () => {
 
       <div class="sticky-search-wrapper">
         <div class="search-input-group">
-          <FpInput v-model="searchQuery" placeholder="Поиск товара..." @keydown.enter="handleSearch" class="flex-grow" />
+          <FpInput v-model="searchQuery" placeholder="Поиск товара..." @keydown.enter="handleSearch"
+            class="flex-grow" />
         </div>
 
         <div class="active-filters" v-if="selectedStoreName">
@@ -249,9 +247,8 @@ onMounted(async () => {
         </div>
 
         <div v-if="catalogStore.hasMore.value" class="load-more">
-          <FpButton variant="outline" :loading="isLoading" @click="catalogStore.loadMore()">
-            Загрузить еще
-          </FpButton>
+          <div ref="loadMoreTrigger" class="load-more-trigger"></div>
+          <FpSpinner v-if="isLoading" />
         </div>
       </section>
     </div>
@@ -289,7 +286,10 @@ onMounted(async () => {
   justify-content: center;
   border-radius: 50%;
   flex-shrink: 0;
-  &:active { background: var(--color-surface-hover); }
+
+  &:active {
+    background: var(--color-surface-hover);
+  }
 }
 
 .ap-header-info {
@@ -369,7 +369,10 @@ onMounted(async () => {
   font-size: 13px;
   color: var(--color-primary);
 
-  .chip-icon { font-size: 14px; }
+  .chip-icon {
+    font-size: 14px;
+  }
+
   .chip-label {
     font-weight: 500;
     max-width: 160px;
@@ -377,6 +380,7 @@ onMounted(async () => {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
   .chip-clear {
     background: none;
     border: none;
@@ -386,7 +390,10 @@ onMounted(async () => {
     padding: 0 0 0 2px;
     line-height: 1;
     opacity: 0.7;
-    &:hover { opacity: 1; }
+
+    &:hover {
+      opacity: 1;
+    }
   }
 }
 
@@ -405,11 +412,13 @@ onMounted(async () => {
     margin-bottom: 16px;
     opacity: 0.5;
   }
+
   h3 {
     margin: 0;
     font-size: 18px;
     color: var(--color-text-primary);
   }
+
   p {
     margin: 0 0 16px 0;
     font-size: 14px;

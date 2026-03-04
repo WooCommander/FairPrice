@@ -5,8 +5,10 @@ import { authStore } from '../store/authStore'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
+const { t } = useI18n()
 
 const isLogin = ref(true)
 const email = ref('')
@@ -26,12 +28,12 @@ const handleSubmit = async () => {
 
     // Basic validation
     if (!email.value || !password.value) {
-        error.value = 'Заполните все поля'
+        error.value = t('login.errors.fillAll')
         return
     }
 
     if (password.value.length < 6) {
-        error.value = 'Пароль должен быть не менее 6 символов'
+        error.value = t('login.errors.shortPassword')
         return
     }
 
@@ -41,11 +43,11 @@ const handleSubmit = async () => {
             const redirectPath = (router.currentRoute.value.query.redirect as string) || '/'
             router.push(redirectPath)
         } else {
-            const errorMessage = authStore.error.value || 'Ошибка входа'
+            const errorMessage = authStore.error.value || t('login.errors.loginFailed')
             if (errorMessage.toLowerCase().includes('email not confirmed')) {
-                error.value = 'Email не подтвержден. Пожалуйста, проверьте свою почту.'
+                error.value = t('login.errors.notConfirmed')
             } else if (errorMessage.toLowerCase().includes('invalid login credentials')) {
-                error.value = 'Неверный email или пароль'
+                error.value = t('login.errors.invalidCredentials')
             } else {
                 error.value = errorMessage
             }
@@ -55,7 +57,7 @@ const handleSubmit = async () => {
         if (result.success) {
             if (result.message) {
                 // Email confirmation needed
-                successMessage.value = 'Регистрация успешна! Проверьте почту для подтверждения аккаунта.'
+                successMessage.value = t('login.successRegister')
                 isLogin.value = true
                 password.value = '' // Clear password for security
             } else {
@@ -63,7 +65,7 @@ const handleSubmit = async () => {
                 router.push(redirectPath)
             }
         } else {
-            error.value = result.error || 'Ошибка регистрации'
+            error.value = result.error || t('login.errors.registerFailed')
         }
     }
 }
@@ -72,29 +74,29 @@ const handleSubmit = async () => {
 <template>
     <div class="auth-view">
         <FpCard class="auth-card">
-            <h1 class="title">{{ isLogin ? 'Вход' : 'Регистрация' }}</h1>
+            <h1 class="title">{{ isLogin ? t('login.title') : t('login.registerTitle') }}</h1>
 
             <div class="form">
                 <div class="error-alert" v-if="error">{{ error }}</div>
                 <div class="success-alert" v-if="successMessage">{{ successMessage }}</div>
 
-                <FpInput v-model="email" label="Email" type="email" placeholder="name@example.com" />
+                <FpInput v-model="email" :label="t('login.email')" type="email" placeholder="name@example.com" />
 
-                <FpInput v-model="password" label="Пароль" type="password" placeholder="••••••"
+                <FpInput v-model="password" :label="t('login.password')" type="password" placeholder="••••••"
                     @keyup.enter="handleSubmit" />
 
                 <div class="actions">
                     <FpButton :loading="authStore.isLoading.value" size="full" @click="handleSubmit">
-                        {{ isLogin ? 'Войти' : 'Зарегистрироваться' }}
+                        {{ isLogin ? t('login.submitLogin') : t('login.submitRegister') }}
                     </FpButton>
                 </div>
 
                 <div class="toggle-mode">
                     <span v-if="isLogin">
-                        Нет аккаунта? <a href="#" @click.prevent="toggleMode">Создать</a>
+                        {{ t('login.noAccount') }} <a href="#" @click.prevent="toggleMode">{{ t('login.create') }}</a>
                     </span>
                     <span v-else>
-                        Есть аккаунт? <a href="#" @click.prevent="toggleMode">Войти</a>
+                        {{ t('login.haveAccount') }} <a href="#" @click.prevent="toggleMode">{{ t('login.enter') }}</a>
                     </span>
                 </div>
             </div>

@@ -9,14 +9,15 @@ import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { useNotify } from '@/composables/useNotify'
+import { useI18n } from 'vue-i18n'
 
 type CurrencyCode = 'RUB' | 'USD' | 'EUR'
 
-const currencies: { code: CurrencyCode; symbol: string; label: string }[] = [
-  { code: 'RUB', symbol: '₽', label: 'Рубль' },
-  { code: 'USD', symbol: '$', label: 'Доллар' },
-  { code: 'EUR', symbol: '€', label: 'Евро' },
-]
+const currencies = computed((): { code: CurrencyCode; symbol: string; label: string }[] => ([
+  { code: 'RUB', symbol: '₽', label: 'RUB' },
+  { code: 'USD', symbol: '$', label: 'USD' },
+  { code: 'EUR', symbol: '€', label: 'EUR' }
+]))
 
 const { currentCurrency } = catalogStore
 const formatPrice = computed(() => (price: number) => {
@@ -25,6 +26,7 @@ const formatPrice = computed(() => (price: number) => {
 })
 const currencySaved = ref(false)
 const ratesSaved = ref(false)
+const { t, locale } = useI18n()
 
 const changeCurrency = (code: CurrencyCode) => {
   catalogStore.setCurrency(code)
@@ -85,9 +87,9 @@ const saveDisplayName = async () => {
     await AuthService.setDisplayName(displayNameEdit.value)
     displayName.value = displayNameEdit.value.trim()
     isEditingName.value = false
-    notify('Имя сохранено', 'success')
+    notify(t('profile.saved'), 'success')
   } catch (e: any) {
-    notify('Не удалось сохранить имя', 'error')
+    notify(t('login.errors.registerFailed'), 'error')
   } finally {
     isSavingName.value = false
   }
@@ -105,19 +107,19 @@ const profileEdit = ref<PersonalProfile>({ first_name: '', last_name: '', gender
 const isEditingProfile = ref(false)
 const isSavingProfile = ref(false)
 
-const genderOptions = [
-  { value: 'male',   label: 'Мужской' },
-  { value: 'female', label: 'Женский' },
-  { value: 'other',  label: 'Другой' },
-]
+const genderOptions = computed(() => ([
+  { value: 'male',   label: t('profile.gender.male') },
+  { value: 'female', label: t('profile.gender.female') },
+  { value: 'other',  label: t('profile.gender.other') }
+]))
 
 function genderLabel(g: string | null) {
-  return genderOptions.find(o => o.value === g)?.label ?? '—'
+  return genderOptions.value.find(o => o.value === g)?.label ?? '—'
 }
 
 function formatBirthDate(d: string | null) {
   if (!d) return '—'
-  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+  return new Date(d).toLocaleDateString(locale.value || 'ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 const startEditProfile = () => {
@@ -136,9 +138,9 @@ const savePersonalProfile = async () => {
     })
     profile.value = { ...profileEdit.value }
     isEditingProfile.value = false
-    notify('Данные сохранены', 'success')
+    notify(t('profile.saved'), 'success')
   } catch (e: any) {
-    notify('Не удалось сохранить данные', 'error')
+    notify(t('login.errors.registerFailed'), 'error')
   } finally {
     isSavingProfile.value = false
   }
@@ -150,7 +152,7 @@ onMounted(async () => {
     if (authUser) {
       user.value.email = authUser.email || ''
       user.value.id = authUser.id
-      user.value.role = authUser.role || 'Пользователь'
+      user.value.role = authUser.role || t('auth.guest')
     }
 
     const [rawStats, profileData] = await Promise.all([
@@ -171,7 +173,7 @@ onMounted(async () => {
     try {
       pendingProducts.value = await CatalogService.getPendingProductsForModeration()
     } catch (err: any) {
-      pendingError.value = err?.message || 'Не удалось загрузить модерацию'
+      pendingError.value = err?.message || t('login.errors.registerFailed')
       notify(pendingError.value, 'error')
     }
   } finally {
@@ -191,7 +193,7 @@ onMounted(async () => {
         <!-- Display name -->
         <div v-if="!isEditingName" class="display-name-row">
           <h1>{{ displayName || user.email.split('@')[0] }}</h1>
-          <button class="edit-name-btn" @click="startEditName" title="Изменить имя">
+        <button class="edit-name-btn" @click="startEditName" :title="t('profile.personal.edit')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -200,14 +202,14 @@ onMounted(async () => {
           </button>
         </div>
         <div v-else class="display-name-edit">
-          <input v-model="displayNameEdit" class="name-input" placeholder="Введите имя" maxlength="32"
+          <input v-model="displayNameEdit" class="name-input" :placeholder="t('profile.personal.placeholderName')" maxlength="32"
             @keydown.enter="saveDisplayName" @keydown.escape="cancelEditName" />
           <button class="name-save-btn" @click="saveDisplayName" :disabled="isSavingName">✓</button>
           <button class="name-cancel-btn" @click="cancelEditName">✕</button>
         </div>
         <p class="email">{{ user.email }}</p>
         <div class="badges">
-          <span class="badge" v-if="stats">⭐ {{ stats.reputation }} Репутация</span>
+          <span class="badge" v-if="stats">⭐ {{ stats.reputation }} {{ t('profile.stats.reputation') }}</span>
           <span class="badge id-badge" title="User ID">🆔 {{ user.id.slice(0, 8) }}...</span>
         </div>
       </div>
@@ -231,58 +233,58 @@ onMounted(async () => {
 
       <FpCard class="stat-card">
         <span class="stat-value">{{ stats.pricesSubmitted }}</span>
-        <span class="stat-label">Цен добавлено</span>
+        <span class="stat-label">{{ t('profile.stats.prices') }}</span>
       </FpCard>
       <FpCard class="stat-card" @click="router.push('/favorites')" style="cursor: pointer">
         <span class="stat-value">⭐</span>
-        <span class="stat-label">Избранное</span>
+        <span class="stat-label">{{ t('profile.stats.favorites') }}</span>
       </FpCard>
     </section>
 
     <!-- Personal Info -->
     <section class="personal-info-section">
       <div class="section-title-row">
-        <h2>Личные данные</h2>
+        <h2>{{ t('profile.personal.title') }}</h2>
         <button v-if="!isEditingProfile" class="edit-profile-btn" @click="startEditProfile">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
-          Изменить
+          {{ t('profile.personal.edit') }}
         </button>
       </div>
 
       <FpCard v-if="!isEditingProfile" class="info-card">
         <div class="info-row">
-          <span class="info-label">Имя</span>
+          <span class="info-label">{{ t('profile.labels.name') }}</span>
           <span class="info-value">{{ profile.first_name || '—' }}</span>
         </div>
         <div class="info-row">
-          <span class="info-label">Фамилия</span>
+          <span class="info-label">{{ t('profile.labels.lastName') }}</span>
           <span class="info-value">{{ profile.last_name || '—' }}</span>
         </div>
         <div class="info-row">
-          <span class="info-label">Пол</span>
+          <span class="info-label">{{ t('profile.labels.gender') }}</span>
           <span class="info-value">{{ genderLabel(profile.gender) }}</span>
         </div>
         <div class="info-row">
-          <span class="info-label">Дата рождения</span>
+          <span class="info-label">{{ t('profile.labels.birthDate') }}</span>
           <span class="info-value">{{ formatBirthDate(profile.birth_date) }}</span>
         </div>
       </FpCard>
 
       <FpCard v-else class="info-card edit-mode">
         <div class="edit-field">
-          <label class="field-label">Имя</label>
-          <input v-model="profileEdit.first_name" class="field-input" placeholder="Введите имя" maxlength="64" />
+          <label class="field-label">{{ t('profile.personal.name') }}</label>
+          <input v-model="profileEdit.first_name" class="field-input" :placeholder="t('profile.personal.placeholderName')" maxlength="64" />
         </div>
         <div class="edit-field">
-          <label class="field-label">Фамилия</label>
-          <input v-model="profileEdit.last_name" class="field-input" placeholder="Введите фамилию" maxlength="64" />
+          <label class="field-label">{{ t('profile.personal.lastName') }}</label>
+          <input v-model="profileEdit.last_name" class="field-input" :placeholder="t('profile.personal.placeholderLastName')" maxlength="64" />
         </div>
         <div class="edit-field">
-          <label class="field-label">Пол</label>
+          <label class="field-label">{{ t('profile.personal.gender') }}</label>
           <div class="gender-options">
             <button v-for="g in genderOptions" :key="g.value"
               class="gender-btn" :class="{ active: profileEdit.gender === g.value }"
@@ -292,19 +294,19 @@ onMounted(async () => {
           </div>
         </div>
         <div class="edit-field">
-          <label class="field-label">Дата рождения</label>
+          <label class="field-label">{{ t('profile.personal.birthDate') }}</label>
           <input type="date" v-model="profileEdit.birth_date" class="field-input" />
         </div>
         <div class="edit-actions">
-          <button class="cancel-btn" @click="cancelEditProfile">Отмена</button>
-          <button class="save-btn" @click="savePersonalProfile" :disabled="isSavingProfile">Сохранить</button>
+          <button class="cancel-btn" @click="cancelEditProfile">{{ t('profile.personal.cancel') }}</button>
+          <button class="save-btn" @click="savePersonalProfile" :disabled="isSavingProfile">{{ t('profile.personal.save') }}</button>
         </div>
       </FpCard>
     </section>
 
     <!-- Currency Settings -->
     <section class="settings-section">
-      <h2>Валюта отображения</h2>
+      <h2>{{ t('profile.currencyTitle') }}</h2>
       <div class="currency-options">
         <button v-for="c in currencies" :key="c.code" class="currency-option-btn"
           :class="{ active: currentCurrency === c.code }" @click="changeCurrency(c.code)">
@@ -313,28 +315,28 @@ onMounted(async () => {
           <span class="currency-label">{{ c.label }}</span>
         </button>
       </div>
-      <p class="settings-saved" v-if="currencySaved">✓ Сохранено</p>
+      <p class="settings-saved" v-if="currencySaved">✓ {{ t('profile.saved') }}</p>
 
       <!-- Exchange Rates -->
       <div class="rates-section">
-        <p class="rates-hint">Курс к рублю</p>
+        <p class="rates-hint">{{ t('profile.ratesHint') }}</p>
         <div class="rates-inputs">
-          <FpNumberInput v-model="usdRate" label="1 $ в рублях" :min="1" :step="0.5" />
-          <FpNumberInput v-model="eurRate" label="1 € в рублях" :min="1" :step="0.5" />
+          <FpNumberInput v-model="usdRate" :label="t('rates.usdInRub')" :min="1" :step="0.5" />
+          <FpNumberInput v-model="eurRate" :label="t('rates.eurInRub')" :min="1" :step="0.5" />
         </div>
-        <button class="save-rates-btn" @click="saveRates">Применить курсы</button>
-        <p class="settings-saved" v-if="ratesSaved">✓ Сохранено</p>
+        <button class="save-rates-btn" @click="saveRates">{{ t('profile.applyRates') }}</button>
+        <p class="settings-saved" v-if="ratesSaved">✓ {{ t('profile.saved') }}</p>
       </div>
     </section>
 
     <section class="activity-section">
       <div class="section-title-row">
-        <h2>Последняя активность</h2>
-        <FpButton variant="text" size="sm" @click="router.push('/activity')">Смотреть всё</FpButton>
+        <h2>{{ t('profile.activityTitle') }}</h2>
+        <FpButton variant="text" size="sm" @click="router.push('/activity')">{{ t('profile.viewAll') }}</FpButton>
       </div>
       <div class="activity-list">
         <div v-if="activityFeed.length === 0" class="empty-feed">
-          Нет активности
+          {{ t('profile.noActivity') }}
         </div>
         <FpCard v-for="act in activityFeed" :key="act.id" class="activity-item" padding="sm">
           <div class="act-icon">{{ act.icon }}</div>
@@ -352,14 +354,14 @@ onMounted(async () => {
 
     <section class="moderation-section">
       <div class="section-title-row">
-        <h2>На модерации</h2>
-        <span class="caption" v-if="pendingProducts.length">Товары других пользователей, пока не в статистике</span>
+        <h2>{{ t('profile.moderation.title') }}</h2>
+        <span class="caption" v-if="pendingProducts.length">{{ t('profile.moderation.caption') }}</span>
       </div>
 
       <div v-if="pendingError" class="error-alert">{{ pendingError }}</div>
 
       <div v-else-if="pendingProducts.length === 0" class="empty-feed">
-        Всё чисто — новых товаров для модерации нет.
+        {{ t('profile.moderation.empty') }}
       </div>
 
       <div v-else class="pending-list">
@@ -367,8 +369,8 @@ onMounted(async () => {
           <div class="pending-main">
             <div class="pending-name">{{ p.name }}</div>
             <div class="pending-meta">
-              <span class="badge muted">Категория: {{ p.category || '—' }}</span>
-              <span class="badge warning">На модерации</span>
+              <span class="badge muted">{{ t('profile.labels.category') }}: {{ p.category || '—' }}</span>
+              <span class="badge warning">{{ t('profile.moderation.pending') }}</span>
             </div>
           </div>
           <div class="pending-date">{{ new Date(p.created_at).toLocaleDateString('ru-RU') }}</div>

@@ -1,6 +1,6 @@
 import { createI18n } from 'vue-i18n'
-import ru from '@/locales/ru.json'
-import en from '@/locales/en.json'
+import ru from '@/locales/ui_ru.json'
+import en from '@/locales/ui_en.json'
 
 const STORAGE_KEY = 'fp_locale'
 const supported = ['ru', 'en'] as const

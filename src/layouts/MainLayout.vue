@@ -6,10 +6,12 @@ import { authStore } from '@/modules/auth/store/authStore'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { changelog } from '@/data/changelog'
 import { setLocale, supportedLocales, i18n } from '@/i18n'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const route = useRoute()
 const { isDark, toggleTheme } = useTheme()
+const { t } = useI18n()
 const userRef = computed(() => authStore.user.value)
 const appVersion = changelog[0]?.version || ''
 const currentLocale = computed(() => i18n.global.locale.value as string)
@@ -22,7 +24,7 @@ const avatarUrl = computed(() => {
 	return meta?.avatar_url || meta?.picture || null
 })
 const avatarLetter = computed(() => userRef.value?.email?.charAt(0).toUpperCase() || '?')
-const profileTooltip = computed(() => userRef.value?.email || 'Гость')
+const profileTooltip = computed(() => userRef.value?.email || t('auth.guest'))
 
 const handleProfileClick = async () => {
 	if (userRef.value) {
@@ -39,43 +41,43 @@ const handleProfileClick = async () => {
 	}
 }
 
-const navItems = [
+const navItems = computed(() => [
 	{
-		label: 'Главная',
+		label: t('nav.home'),
 		path: '/',
 		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>'
 	},
 	{
-		label: 'Поиск',
+		label: t('nav.search'),
 		path: '/search',
 		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'
 	},
 	{
-		label: 'Избранное',
+		label: t('nav.favorites'),
 		path: '/favorites',
 		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2"></polygon></svg>'
 	},
 	{
-		label: 'Профиль',
+		label: t('nav.profile'),
 		path: '/profile',
 		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
 	},
 	{
-		label: 'Каталог',
+		label: t('nav.catalog'),
 		path: '/catalog',
 		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>'
 	},
 	{
-		label: 'Магазины',
+		label: t('nav.stores'),
 		path: '/stores',
 		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>'
 	},
 	{
-		label: 'Рейтинг',
+		label: t('nav.leaderboard'),
 		path: '/leaderboard',
 		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>'
 	}
-]
+])
 
 const currentPath = computed(() => route.path)
 
@@ -153,11 +155,11 @@ const handleLogout = async () => {
 		<nav class="bottom-nav">
 			<a class="nav-item" :class="{ active: route.path === '/' }" @click.prevent="router.push('/')">
 				<span class="icon">🏠</span>
-				<span class="label">Главная</span>
+				<span class="label">{{ t('nav.home') }}</span>
 			</a>
 			<a class="nav-item" :class="{ active: route.path === '/catalog' }" @click.prevent="router.push('/catalog')">
 				<span class="icon">📦</span>
-				<span class="label">Каталог</span>
+				<span class="label">{{ t('nav.catalog') }}</span>
 			</a>
 			<div class="nav-item action" @click="router.push('/add-price')">
 				<div class="plus-btn" :class="{ active: route.path === '/add-price' }">
@@ -167,16 +169,16 @@ const handleLogout = async () => {
 						<line x1="5" y1="12" x2="19" y2="12"></line>
 					</svg>
 				</div>
-				<span class="label">Цена</span>
+				<span class="label">{{ t('nav.addPrice') }}</span>
 			</div>
 			<a class="nav-item" :class="{ active: route.path === '/shopping-list' }"
 				@click.prevent="router.push('/shopping-list')">
 				<span class="icon">🛒</span>
-				<span class="label">Список</span>
+				<span class="label">{{ t('nav.shoppingList') }}</span>
 			</a>
 			<a class="nav-item" :class="{ active: route.path === '/favorites' }" @click.prevent="router.push('/favorites')">
 				<span class="icon">⭐</span>
-				<span class="label">Избр.</span>
+				<span class="label">{{ t('nav.favorites') }}</span>
 			</a>
 		</nav>
 
@@ -203,8 +205,8 @@ const handleLogout = async () => {
 							?
 						</div>
 						<div class="drawer-user-info">
-							<span class="drawer-email">Гость</span>
-							<button class="link-btn" @click="router.push('/login'); isMenuOpen = false">Войти</button>
+							<span class="drawer-email">{{ t('auth.guest') }}</span>
+							<button class="link-btn" @click="router.push('/login'); isMenuOpen = false">{{ t('auth.login') }}</button>
 						</div>
 					</div>
 
@@ -219,7 +221,7 @@ const handleLogout = async () => {
 
 				<div class="drawer-content">
 					<div class="nav-group">
-						<span class="nav-label">Меню</span>
+						<span class="nav-label">{{ t('nav.menu') }}</span>
 						<a v-for="item in navItems" :key="item.path" class="drawer-link"
 							:class="{ active: currentPath === item.path }" @click.prevent="navigate(item.path); isMenuOpen = false">
 							<span class="link-icon" v-html="item.icon"></span>
@@ -228,7 +230,7 @@ const handleLogout = async () => {
 					</div>
 
 					<div class="nav-group">
-						<span class="nav-label">Инструменты</span>
+						<span class="nav-label">{{ t('nav.tools') }}</span>
 						<a class="drawer-link" :class="{ active: currentPath === '/shopping-list' }"
 							@click.prevent="navigate('/shopping-list'); isMenuOpen = false">
 							<span class="link-icon">
@@ -239,7 +241,7 @@ const handleLogout = async () => {
 									<path d="M16 10a4 4 0 0 1-8 0"></path>
 								</svg>
 							</span>
-							Список покупок
+							{{ t('nav.shoppingList') }}
 						</a>
 						<a class="drawer-link" :class="{ active: currentPath === '/quick-calc' }"
 							@click.prevent="navigate('/quick-calc'); isMenuOpen = false">
@@ -256,12 +258,12 @@ const handleLogout = async () => {
 									<line x1="12" y1="18" x2="12" y2="18"></line>
 								</svg>
 							</span>
-							Быстрый расчет
+							{{ t('nav.quickCalc') }}
 						</a>
 					</div>
 
 					<div class="nav-group">
-						<span class="nav-label">Разработчику</span>
+						<span class="nav-label">{{ t('nav.dev') }}</span>
 						<a class="drawer-link" :class="{ active: currentPath === '/design-system' }"
 							@click.prevent="navigate('/design-system'); isMenuOpen = false">
 							<span class="link-icon">
@@ -271,7 +273,7 @@ const handleLogout = async () => {
 									<path d="M2 12l10 10 10-10"></path>
 								</svg>
 							</span>
-							Стенд
+							{{ t('nav.designSystem') }}
 						</a>
 						<a class="drawer-link" :class="{ active: currentPath === '/changelog' }"
 							@click.prevent="navigate('/changelog'); isMenuOpen = false">
@@ -281,7 +283,7 @@ const handleLogout = async () => {
 									<path d="M8 2h8a2 2 0 0 1 2 2v16l-6-3-6 3V4a2 2 0 0 1 2-2z"></path>
 								</svg>
 							</span>
-							Changelog
+							{{ t('nav.changelog') }}
 						</a>
 					</div>
 				</div>
@@ -289,7 +291,7 @@ const handleLogout = async () => {
 				<div class="drawer-footer">
 					<button class="theme-toggle-drawer" @click="toggleTheme">
 						<span class="icon">{{ isDark ? '🌞' : '🌙' }}</span>
-						<span>{{ isDark ? 'Светлая тема' : 'Темная тема' }}</span>
+						<span>{{ isDark ? t('theme.light') : t('theme.dark') }}</span>
 					</button>
 
 					<button v-if="authStore.user.value" class="logout-drawer" @click="handleLogout">
@@ -299,7 +301,7 @@ const handleLogout = async () => {
 							<polyline points="16 17 21 12 16 7"></polyline>
 							<line x1="21" y1="12" x2="9" y2="12"></line>
 						</svg>
-						Выйти
+						{{ t('auth.logout') }}
 					</button>
 				</div>
 			</div>

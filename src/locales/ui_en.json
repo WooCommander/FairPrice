@@ -9,6 +9,7 @@
     "leaderboard": "Leaderboard",
     "shoppingList": "List",
     "addPrice": "Price",
+    "quickCalc": "Quick calc",
     "menu": "Menu",
     "tools": "Tools",
     "dev": "Developer",
@@ -16,14 +17,13 @@
     "changelog": "Changelog"
   },
   "auth": {
-    "guest": "Guest"
+    "guest": "Guest",
+    "login": "Login",
+    "logout": "Logout"
   },
   "theme": {
     "light": "Light mode",
     "dark": "Dark mode"
-  },
-  "lang": {
-    "switch": "Language"
   },
   "login": {
     "title": "Login",
@@ -52,15 +52,46 @@
     "currencyTitle": "Display currency",
     "ratesHint": "Rate to RUB",
     "applyRates": "Apply rates",
+    "moderation": {
+      "title": "Pending moderation",
+      "empty": "No items to moderate",
+      "pending": "Pending",
+      "caption": "Items from other users are excluded from stats until approved"
+    },
     "stats": {
       "reputation": "Reputation",
       "prices": "Prices added",
       "favorites": "Favorites"
     },
-    "moderation": {
-      "title": "Pending moderation",
-      "empty": "No items to moderate",
-      "pending": "Pending"
-    }
+    "personal": {
+      "title": "Personal info",
+      "edit": "Edit",
+      "name": "First name",
+      "lastName": "Last name",
+      "gender": "Gender",
+      "birthDate": "Birth date",
+      "save": "Save",
+      "cancel": "Cancel",
+      "placeholderName": "Enter first name",
+      "placeholderLastName": "Enter last name"
+    },
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "labels": {
+      "name": "Name",
+      "lastName": "Last name",
+      "gender": "Gender",
+      "birthDate": "Birth date",
+      "category": "Category"
+    },
+    "saved": "Saved",
+    "noActivity": "No activity"
+  },
+  "rates": {
+    "usdInRub": "1 $ in rubles",
+    "eurInRub": "1 € in rubles"
   }
 }

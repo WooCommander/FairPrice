@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed, ref } from 'vue'
+import { onMounted, computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpInput from '@/design-system/components/FpInput.vue'
@@ -15,21 +15,29 @@ import CheapPlacesList from '@/modules/analytics/components/CheapPlacesList.vue'
 import { AnalyticsService } from '@/modules/analytics/services/AnalyticsService'
 import type { CheapPlace } from '@/modules/analytics/services/AnalyticsService'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
+import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { VerificationService } from '@/modules/prices/services/VerificationService'
+import { useI18n } from 'vue-i18n'
+import { supportedLocales } from '@/i18n'
 
 const route = useRoute()
 const router = useRouter()
 const { currentProduct, currentCurrency } = catalogStore
 const { notify } = useNotify()
+const { locale } = useI18n()
 
 const formatPrice = computed(() => (price: number) => {
 	const currency = currentCurrency.value
 	return CurrencyService.format(CurrencyService.convert(price, 'RUB', currency), currency)
 })
 
+const translationNames = ref<Record<string, string>>({})
+const translationCategory = ref('')
+
 // Product Editing State
 const isEditingProduct = ref(false)
 const productForm = ref({ name: '', category: '' })
+const translationEdits = ref<Record<string, string>>({})
 
 // Analytics
 const selectedPeriod = ref<'7d' | '30d' | '90d' | 'all'>('all')
@@ -49,7 +57,30 @@ onMounted(async () => {
 		AnalyticsService.getBestPlaces(id).then(places => {
 			bestPlaces.value = places
 		})
+		await loadTranslations(id)
 	}
+})
+
+watch(locale, async () => {
+	if (currentProduct.value?.id) {
+		await loadTranslations(currentProduct.value.id)
+	}
+})
+
+async function loadTranslations(productId: string) {
+	translationNames.value = {}
+	translationCategory.value = ''
+	const translations = await CatalogService.getProductTranslations(productId)
+	for (const tr of translations) {
+		if (tr.lang && tr.name) {
+			translationNames.value[tr.lang] = tr.name
+		}
+	}
+}
+
+const displayName = computed(() => {
+	const lang = locale.value as string
+	return translationNames.value[lang] || currentProduct.value?.name || ''
 })
 
 const latestHistory = computed(() => {
@@ -84,6 +115,7 @@ const startEditProduct = () => {
 			name: currentProduct.value.name,
 			category: currentProduct.value.category
 		}
+		translationEdits.value = { ...translationNames.value }
 		isEditingProduct.value = true
 	}
 }
@@ -95,7 +127,18 @@ const cancelEditProduct = () => {
 const saveProduct = async () => {
 	if (currentProduct.value) {
 		await catalogStore.updateProduct(currentProduct.value.id, productForm.value)
+		for (const lang of supportedLocales) {
+			const name = translationEdits.value[lang]
+			if (name && name.trim().length > 0) {
+				await CatalogService.upsertProductTranslation({
+					productId: currentProduct.value.id,
+					lang,
+					name: name.trim()
+				})
+			}
+		}
 		isEditingProduct.value = false
+		await loadTranslations(currentProduct.value.id)
 	}
 }
 
@@ -251,8 +294,8 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 			<!-- VALUE CARD -->
 			<div class="value-card">
 				<div class="card-header-info">
-					<span class="card-category">{{ currentProduct.category }}</span>
-					<h1 class="card-title">{{ currentProduct.name }}</h1>
+					<span class="card-category">{{ translationCategory || currentProduct.category }}</span>
+					<h1 class="card-title">{{ displayName || currentProduct.name }}</h1>
 				</div>
 
 				<div class="price-hero">
@@ -374,6 +417,16 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 					<div class="modal-form">
 						<FpInput v-model="productForm.name" label="Название товара" placeholder="Введите название" />
 						<FpInput v-model="productForm.category" label="Категория" placeholder="Категория" />
+						<div class="translation-block">
+							<div class="translation-title">Translations</div>
+							<FpInput
+								v-for="lang in supportedLocales"
+								:key="lang"
+								v-model="translationEdits[lang]"
+								:label="`Name (${lang.toUpperCase()})`"
+								placeholder=""
+							/>
+						</div>
 					</div>
 
 					<div class="modal-actions">
@@ -943,6 +996,21 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 	flex-direction: column;
 	gap: 8px;
 	margin-bottom: 24px;
+}
+
+.translation-block {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-top: 6px;
+}
+
+.translation-title {
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--color-text-secondary);
 }
 
 .modal-actions {

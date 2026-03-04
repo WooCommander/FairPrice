@@ -346,12 +346,21 @@ class CatalogService {
     }
 
     private mapToDTO(p: any, userVotes: Record<string, string> = {}): ProductDTO {
+        // 1. Filter out highly untrusted prices (net score <= -3)
+        let validPrices = p.prices || []
+        validPrices = validPrices.filter((price: any) => {
+            const verifications: Array<{ user_id: string; vote: string }> = price.price_verifications || []
+            const confirmCount = verifications.filter((v: any) => v.vote === 'confirm').length
+            const denyCount = verifications.filter((v: any) => v.vote === 'deny').length
+            return (denyCount - confirmCount) < 3
+        })
+
         // Find latest price from the joined prices array if available
         let lastPriceObj = null
-        if (p.prices && Array.isArray(p.prices) && p.prices.length > 0) {
+        if (validPrices.length > 0) {
             // Sort by created_at desc
-            p.prices.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-            lastPriceObj = p.prices[0]
+            validPrices.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            lastPriceObj = validPrices[0]
         }
 
         return {
@@ -367,13 +376,13 @@ class CatalogService {
             lastStore: lastPriceObj?.stores?.name,
             lastStoreId: lastPriceObj?.store_id,
             lastUpdate: lastPriceObj?.created_at || p.created_at,
-            priceRange: this.calculatePriceRange(p.prices),
-            averagePrice: this.calculateAveragePrice(p.prices),
-            history: p.prices?.map((price: any) => {
+            priceRange: this.calculatePriceRange(validPrices),
+            averagePrice: this.calculateAveragePrice(validPrices),
+            history: validPrices.map((price: any) => {
                 const verifications: Array<{ user_id: string; vote: string }> = price.price_verifications || []
                 const confirmCount = verifications.filter(v => v.vote === 'confirm').length
-                const denyCount    = verifications.filter(v => v.vote === 'deny').length
-                const userVote     = userVotes[price.id] as 'confirm' | 'deny' | undefined
+                const denyCount = verifications.filter(v => v.vote === 'deny').length
+                const userVote = userVotes[price.id] as 'confirm' | 'deny' | undefined
 
                 const ageHours = (Date.now() - new Date(price.created_at).getTime()) / 3_600_000
                 const recencyScore = Math.max(0, 720 - ageHours) / 720 * 100
@@ -591,6 +600,40 @@ class CatalogService {
             }
             throw error
         }
+    }
+
+    async getProductTranslation(productId: string, lang: string): Promise<{ name?: string, description?: string } | null> {
+        const { data, error } = await supabase
+            .from('product_translations')
+            .select('name, description')
+            .eq('product_id', productId)
+            .eq('lang', lang)
+            .single()
+
+        if (error) return null
+        return data as any
+    }
+
+    async getProductTranslations(productId: string): Promise<Array<{ lang: string, name: string, description?: string }>> {
+        const { data, error } = await supabase
+            .from('product_translations')
+            .select('lang, name, description')
+            .eq('product_id', productId)
+
+        if (error || !data) return []
+        return data as any
+    }
+
+    async upsertProductTranslation(input: { productId: string, lang: string, name: string, description?: string }) {
+        const { error } = await supabase
+            .from('product_translations')
+            .upsert({
+                product_id: input.productId,
+                lang: input.lang,
+                name: input.name,
+                description: input.description
+            }, { onConflict: 'product_id,lang' })
+        if (error) throw error
     }
 }
 
