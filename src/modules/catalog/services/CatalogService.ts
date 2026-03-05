@@ -6,6 +6,7 @@ export interface ProductDTO {
     name: string;
     category: string;
     unit: string;
+    barcode?: string; // New field for scanning
     priceRange?: { min: number; max: number };
     lastUpdate?: string; // ISO string
     lastStore?: string; // New field for recent feed
@@ -96,6 +97,29 @@ class CatalogService {
             items: data.map((p: any) => this.mapToDTO(p)),
             total: count || 0
         }
+    }
+
+    async getProductByBarcode(barcode: string): Promise<ProductDTO | null> {
+        const { data: p, error } = await supabase
+            .from('products')
+            .select(`
+                *,
+                prices (
+                    id,
+                    price,
+                    created_at,
+                    store_id,
+                    stores (name),
+                    quantity,
+                    quantity_unit,
+                    normalized_price
+                )
+            `)
+            .eq('barcode', barcode)
+            .single()
+
+        if (error || !p) return null
+        return this.mapToDTO(p)
     }
 
     async getRecentProducts(): Promise<ProductDTO[]> {
@@ -311,7 +335,7 @@ class CatalogService {
         return data.map(p => this.mapToDTO(p))
     }
 
-    async createProduct(data: { name: string, category: string, unit: string }): Promise<ProductDTO> {
+    async createProduct(data: { name: string, category: string, unit: string, barcode?: string }): Promise<ProductDTO> {
         // Check for duplicates (case-insensitive)
         const { data: existing } = await supabase
             .from('products')
@@ -329,6 +353,7 @@ class CatalogService {
                 name: data.name,
                 category: data.category,
                 unit: data.unit,
+                barcode: data.barcode || null,
                 created_by: (await supabase.auth.getUser()).data.user?.id
             })
             .select()
@@ -368,6 +393,7 @@ class CatalogService {
             name: p.name,
             category: p.category,
             unit: p.unit,
+            barcode: p.barcode,
             created_by: p.created_by,
             lastPrice: lastPriceObj?.price,
             normalizedPrice: lastPriceObj?.normalized_price,

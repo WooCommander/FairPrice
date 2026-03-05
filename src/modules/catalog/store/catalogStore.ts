@@ -158,7 +158,7 @@ export const catalogStore = {
     setCurrency(code: 'RUB' | 'USD' | 'EUR') {
         currentCurrency.value = code
         localStorage.setItem('fp_currency', code)
-        AuthService.setCurrencyPreference(code).catch(() => {})
+        AuthService.setCurrencyPreference(code).catch(() => { })
     },
 
     syncCurrencyFromUserMeta(meta: Record<string, any>) {
@@ -187,7 +187,7 @@ export const catalogStore = {
         searchResults.value = []
     },
 
-    async createProduct(data: { name: string, category: string, unit: string }): Promise<ProductModel> {
+    async createProduct(data: { name: string, category: string, unit: string, barcode?: string }): Promise<ProductModel> {
         isSearching.value = true
         try {
             const dto = await CatalogService.createProduct(data)

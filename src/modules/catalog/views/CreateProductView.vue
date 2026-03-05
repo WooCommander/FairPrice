@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import FpInput from '@/design-system/components/FpInput.vue'
@@ -13,7 +13,9 @@ import { CatalogService } from '@/modules/catalog/services/CatalogService'
 const { notify } = useNotify()
 
 const router = useRouter()
+const route = useRoute()
 const name = ref('')
+const barcode = ref(route.query.barcode as string || '')
 const category = ref('Бакалея')
 const unit = ref('шт')
 const isSubmitting = ref(false)
@@ -37,7 +39,8 @@ const handleCreate = async () => {
         const product = await catalogStore.createProduct({
             name: name.value,
             category: category.value as any,
-            unit: unit.value
+            unit: unit.value,
+            barcode: barcode.value || undefined
         })
         for (const lang of supportedLocales) {
             const trName = translationInputs.value[lang]
@@ -78,16 +81,16 @@ const createUnit = (val: string) => {
 
         <FpCard class="form-card">
             <div class="form-grid">
+                <div v-if="barcode" class="barcode-badge">
+                    <span class="barcode-icon">📷</span>
+                    <span class="barcode-text">Штрих-код привязан: <strong>{{ barcode }}</strong></span>
+                </div>
+
                 <FpInput v-model="name" label="Название товара" placeholder="Например: Сыр Российский" autofocus />
                 <div class="translation-block">
                     <div class="translation-title">Translations</div>
-                    <FpInput
-                        v-for="lang in supportedLocales"
-                        :key="lang"
-                        v-model="translationInputs[lang]"
-                        :label="`Name (${lang.toUpperCase()})`"
-                        placeholder=""
-                    />
+                    <FpInput v-for="lang in supportedLocales" :key="lang" v-model="translationInputs[lang]"
+                        :label="`Name (${lang.toUpperCase()})`" placeholder="" />
                 </div>
 
                 <FpMobilePicker v-model="category" label="Категория" :items="categoryItems" allow-create
@@ -135,6 +138,22 @@ const createUnit = (val: string) => {
 
 .actions {
     margin-top: var(--spacing-md);
+}
+
+.barcode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(var(--color-primary-rgb), 0.1);
+    color: var(--color-primary);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px dashed var(--color-primary);
+    font-size: 13px;
+
+    .barcode-icon {
+        font-size: 16px;
+    }
 }
 
 .translation-block {

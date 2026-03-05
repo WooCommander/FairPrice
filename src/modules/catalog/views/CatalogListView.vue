@@ -9,6 +9,7 @@ import FpCombobox from '@/design-system/components/FpCombobox.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import { FpSpinner } from '@/design-system'
+import BarcodeScanner from '@/components/BarcodeScanner.vue'
 import { CurrencyService } from '../services/CurrencyService'
 import { CatalogService } from '../services/CatalogService'
 
@@ -102,6 +103,19 @@ const clearStoreFilter = () => {
   router.replace({ query: { ...route.query, storeId: undefined } })
 }
 
+// ── Scanner ──
+const showScanner = ref(false)
+
+const handleScan = async (barcode: string) => {
+  showScanner.value = false
+  const product = await CatalogService.getProductByBarcode(barcode)
+  if (product) {
+    router.push(`/product/${product.id}`)
+  } else {
+    router.push({ path: '/create-product', query: { barcode } })
+  }
+}
+
 watch([searchQuery, selectedCategory, selectedStoreId], () => {
   handleSearch()
 })
@@ -191,9 +205,11 @@ watch(loadMoreTrigger, (el) => {
       </div>
 
       <div class="sticky-search-wrapper">
-        <div class="search-input-group">
-          <FpInput v-model="searchQuery" placeholder="Поиск товара..." @keydown.enter="handleSearch"
-            class="flex-grow" />
+        <div class="search-input-group" style="display: flex; gap: 8px;">
+          <FpInput v-model="searchQuery" placeholder="Поиск товара..." @keydown.enter="handleSearch" style="flex: 1;" />
+          <FpButton variant="outline" size="icon" @click="showScanner = true" title="Сканировать штрих-код">
+            <span style="font-size: 20px;">📷</span>
+          </FpButton>
         </div>
 
         <div class="active-filters" v-if="selectedStoreName">
@@ -253,6 +269,7 @@ watch(loadMoreTrigger, (el) => {
       </section>
     </div>
 
+    <BarcodeScanner v-if="showScanner" @scan="handleScan" @close="showScanner = false" />
   </div>
 </template>
 
