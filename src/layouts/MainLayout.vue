@@ -3,7 +3,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { computed, ref } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { authStore } from '@/modules/auth/store/authStore'
-import { catalogStore } from '@/modules/catalog/store/catalogStore'
+// import { catalogStore } from '@/modules/catalog/store/catalogStore' 
 import { changelog } from '@/data/changelog'
 import { setLocale, supportedLocales, i18n } from '@/i18n'
 import { useI18n } from 'vue-i18n'
@@ -85,8 +85,8 @@ const navigate = (path: string) => {
 	router.push(path)
 }
 
-const { currentCurrency } = catalogStore
-const currencies: Array<'RUB' | 'USD' | 'EUR'> = ['RUB', 'USD', 'EUR']
+// const { currentCurrency } = catalogStore
+// const currencies: Array<'RUB' | 'USD' | 'EUR'> = ['RUB', 'USD', 'EUR']
 
 const isMenuOpen = ref(false)
 
@@ -122,17 +122,16 @@ const handleLogout = async () => {
 				</div>
 
 				<div class="actions">
-									<div class="locale-selector">
-					<button v-for="loc in locales" :key="loc.code" class="loc-btn"
-						:class="{ active: currentLocale === loc.code }" @click="setLocale(loc.code as any)">
-						{{ loc.label }}
-					</button>
-				</div>
+					<div class="locale-selector">
+						<button v-for="loc in locales" :key="loc.code" class="loc-btn"
+							:class="{ active: currentLocale === loc.code }" @click="setLocale(loc.code as any)">
+							{{ loc.label }}
+						</button>
+					</div>
 					<!-- <button v-if="!user.value" class="login-btn" @click="router.push('/login')">
 						<span class="btn-text">Войти</span>
 					</button> -->
-					<div class="profile-chip" :class="{ guest: !userRef }" :title="profileTooltip"
-						@click="handleProfileClick">
+					<div class="profile-chip" :class="{ guest: !userRef }" :title="profileTooltip" @click="handleProfileClick">
 						<img v-if="avatarUrl" :src="avatarUrl" alt="avatar" referrerpolicy="no-referrer" />
 						<span v-else class="avatar-letter">{{ avatarLetter }}</span>
 					</div>
@@ -341,26 +340,26 @@ const handleLogout = async () => {
 		justify-content: space-between;
 	}
 
-.logo {
-	font-size: 20px;
-	font-weight: 700;
-	color: var(--color-text-primary);
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-
-	.version-pill {
-		font-size: 11px;
+	.logo {
+		font-size: 20px;
 		font-weight: 700;
-		color: var(--color-text-tertiary);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 999px;
-		padding: 2px 8px;
-		line-height: 1.2;
+		color: var(--color-text-primary);
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+
+		.version-pill {
+			font-size: 11px;
+			font-weight: 700;
+			color: var(--color-text-tertiary);
+			background: var(--color-surface);
+			border: 1px solid var(--color-border);
+			border-radius: 999px;
+			padding: 2px 8px;
+			line-height: 1.2;
+		}
 	}
-}
 }
 
 .logo-area {
@@ -818,4 +817,3 @@ const handleLogout = async () => {
 	}
 }
 </style>
-
