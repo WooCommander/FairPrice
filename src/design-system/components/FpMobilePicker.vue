@@ -134,7 +134,7 @@ watch(searchQuery, (q) => {
 <style scoped lang="scss">
 .fp-mobile-picker {
     width: 100%;
-    margin-bottom: var(--spacing-md);
+    //margin-bottom: var(--spacing-md);
 }
 
 .picker-trigger {

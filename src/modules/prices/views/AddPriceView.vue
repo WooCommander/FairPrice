@@ -284,13 +284,17 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
             :items="storeResults" allow-create @select="onStoreSelect" @create="onStoreCreate"
             @search="handleSearchStore" />
 
-          <div class="price-row">
-            <FpNumberInput v-model="price" label="Цена (₽)" :min="0" :step="0.01" class="price-input" />
+          <div class="split-row">
+            <div class="flex-field">
+              <FpNumberInput v-model="price" label="Цена (₽)" :min="0" :step="0.01" />
+            </div>
           </div>
 
-          <div class="quantity-row">
-            <FpNumberInput v-model="quantity" label="Вес/Объем" :min="0" :step="50" class="quantity-input" />
-            <div class="unit-select">
+          <div class="split-row align-bottom">
+            <div class="flex-field">
+              <FpNumberInput v-model="quantity" label="Вес/Объем" :min="0" :step="50" />
+            </div>
+            <div class="fixed-field">
               <FpMobilePicker v-model="unit" label="Ед." :items="unitItems" placeholder="г" title="Единица изм."
                 variant="bordered" allow-create @create="unit = $event" />
             </div>
@@ -394,20 +398,23 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
   gap: 16px;
 }
 
-.price-row,
-.quantity-row {
+.split-row {
   display: flex;
   gap: 12px;
-  align-items: flex-end;
+
+  &.align-bottom {
+    align-items: flex-end;
+  }
 }
 
-.price-input,
-.quantity-input {
+.flex-field {
   flex: 1;
+  min-width: 0;
+  /* Prevent flex overflow */
 }
 
-.unit-select {
-  width: 100px;
+.fixed-field {
+  flex: 0 0 100px;
 }
 
 .calc-info {

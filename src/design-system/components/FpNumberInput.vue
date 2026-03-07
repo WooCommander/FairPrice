@@ -56,46 +56,23 @@ const onBlur = (e: Event) => {
     <div class="fp-number-input" :class="{ 'is-disabled': disabled }">
         <span v-if="label" class="fp-number-label">{{ label }}</span>
         <div class="fp-number-stepper">
-            <button
-                class="stepper-btn"
-                type="button"
-                :disabled="!canDec"
-                @click="decrement"
-                aria-label="Уменьшить"
-            >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2.5" stroke-linecap="round">
+            <button class="stepper-btn" type="button" :disabled="!canDec" @click="decrement" aria-label="Уменьшить">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round">
                     <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
             </button>
 
             <span class="stepper-divider" />
 
-            <input
-                class="stepper-input"
-                type="number"
-                :value="modelValue"
-                :min="min"
-                :max="max"
-                :step="step"
-                :disabled="disabled"
-                :placeholder="placeholder"
-                inputmode="decimal"
-                @input="onInput"
-                @blur="onBlur"
-            />
+            <input class="stepper-input" type="number" :value="modelValue" :min="min" :max="max" :step="step"
+                :disabled="disabled" :placeholder="placeholder" inputmode="decimal" @input="onInput" @blur="onBlur" />
 
             <span class="stepper-divider" />
 
-            <button
-                class="stepper-btn"
-                type="button"
-                :disabled="!canInc"
-                @click="increment"
-                aria-label="Увеличить"
-            >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2.5" stroke-linecap="round">
+            <button class="stepper-btn" type="button" :disabled="!canInc" @click="increment" aria-label="Увеличить">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
@@ -132,7 +109,9 @@ const onBlur = (e: Event) => {
     background: var(--color-surface);
     overflow: hidden;
     transition: border-color 0.2s;
-    height: 48px;
+    height: 40px;
+    width: 100%;
+    /* Reduced to avoid looking too stretched on wide rows */
 
     &:focus-within {
         border-color: var(--color-primary);
@@ -141,7 +120,8 @@ const onBlur = (e: Event) => {
 
 .stepper-btn {
     flex-shrink: 0;
-    width: 48px;
+    width: 40px;
+    /* Reduced from 48px */
     height: 100%;
     display: flex;
     align-items: center;
@@ -195,6 +175,7 @@ const onBlur = (e: Event) => {
         -webkit-appearance: none;
         margin: 0;
     }
+
     -moz-appearance: textfield;
 }
 </style>
