@@ -221,15 +221,15 @@ const formatPrice = (p: number) => {
                 </div>
             </div>
         </section>
+
+        <FpConfirmationModal v-model:visible="showDeleteItemModal" title="Удалить товар?"
+            message="Этот товар будет удалён из списка покупок." confirm-text="Удалить" variant="danger"
+            @confirm="confirmRemoveItem" />
+
+        <FpConfirmationModal v-model:visible="showDeleteCheckedModal" title="Очистить купленное?"
+            message="Все отмеченные товары будут удалены из списка." confirm-text="Очистить" variant="danger"
+            @confirm="confirmDeleteChecked" />
     </div>
-
-    <FpConfirmationModal v-model:visible="showDeleteItemModal" title="Удалить товар?"
-        message="Этот товар будет удалён из списка покупок." confirm-text="Удалить" variant="danger"
-        @confirm="confirmRemoveItem" />
-
-    <FpConfirmationModal v-model:visible="showDeleteCheckedModal" title="Очистить купленное?"
-        message="Все отмеченные товары будут удалены из списка." confirm-text="Очистить" variant="danger"
-        @confirm="confirmDeleteChecked" />
 </template>
 
 <style scoped lang="scss">

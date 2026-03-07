@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { authStore } from '@/modules/auth/store/authStore'
 // import { catalogStore } from '@/modules/catalog/store/catalogStore' 
 import { changelog } from '@/data/changelog'
 import { setLocale, supportedLocales, i18n } from '@/i18n'
 import { useI18n } from 'vue-i18n'
+
+const refreshKey = ref(0)
+const forceRefresh = () => { refreshKey.value += 1 }
 
 const router = useRouter()
 const route = useRoute()
@@ -82,7 +85,11 @@ const navItems = computed(() => [
 const currentPath = computed(() => route.path)
 
 const navigate = (path: string) => {
-	router.push(path)
+	if (route.path === path && Object.keys(route.query).length === 0) {
+		forceRefresh() // Reset the view if already there
+	} else {
+		router.push(path)
+	}
 }
 
 // const { currentCurrency } = catalogStore
@@ -144,7 +151,7 @@ const handleLogout = async () => {
 			<div class="content-container">
 				<router-view v-slot="{ Component }">
 					<transition name="fade" mode="out-in">
-						<component :is="Component" />
+						<component :is="Component" :key="route.fullPath + '-' + refreshKey" />
 					</transition>
 				</router-view>
 			</div>
@@ -152,15 +159,15 @@ const handleLogout = async () => {
 
 		<!-- Bottom Navigation (Mobile) -->
 		<nav class="bottom-nav">
-			<a class="nav-item" :class="{ active: route.path === '/' }" @click.prevent="router.push('/')">
+			<a class="nav-item" :class="{ active: route.path === '/' }" @click.prevent="navigate('/')">
 				<span class="icon">🏠</span>
 				<span class="label">{{ t('nav.home') }}</span>
 			</a>
-			<a class="nav-item" :class="{ active: route.path === '/catalog' }" @click.prevent="router.push('/catalog')">
+			<a class="nav-item" :class="{ active: route.path === '/catalog' }" @click.prevent="navigate('/catalog')">
 				<span class="icon">📦</span>
 				<span class="label">{{ t('nav.catalog') }}</span>
 			</a>
-			<div class="nav-item action" @click="router.push('/add-price')">
+			<div class="nav-item action" @click="navigate('/add-price')">
 				<div class="plus-btn" :class="{ active: route.path === '/add-price' }">
 					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
 						stroke-linecap="round" stroke-linejoin="round">
@@ -171,11 +178,11 @@ const handleLogout = async () => {
 				<span class="label">{{ t('nav.addPrice') }}</span>
 			</div>
 			<a class="nav-item" :class="{ active: route.path === '/shopping-list' }"
-				@click.prevent="router.push('/shopping-list')">
+				@click.prevent="navigate('/shopping-list')">
 				<span class="icon">🛒</span>
 				<span class="label">{{ t('nav.shoppingList') }}</span>
 			</a>
-			<a class="nav-item" :class="{ active: route.path === '/favorites' }" @click.prevent="router.push('/favorites')">
+			<a class="nav-item" :class="{ active: route.path === '/favorites' }" @click.prevent="navigate('/favorites')">
 				<span class="icon">⭐</span>
 				<span class="label">{{ t('nav.favorites') }}</span>
 			</a>
