@@ -13,10 +13,11 @@ import { useNotify } from '@/composables/useNotify'
 import PriceChart from '@/components/PriceChart.vue'
 import CheapPlacesList from '@/modules/analytics/components/CheapPlacesList.vue'
 import { AnalyticsService } from '@/modules/analytics/services/AnalyticsService'
+import { VerificationService } from '@/modules/prices/services/VerificationService'
+import { ArrowLeft, Trash2 } from 'lucide-vue-next'
 import type { CheapPlace } from '@/modules/analytics/services/AnalyticsService'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
-import { VerificationService } from '@/modules/prices/services/VerificationService'
 import { useI18n } from 'vue-i18n'
 import { supportedLocales } from '@/i18n'
 
@@ -268,11 +269,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 			<div class="sticky-search-wrapper product-header">
 				<div class="header-inner">
 					<button class="nav-btn" @click="router.back()">
-						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-							stroke-linecap="round" stroke-linejoin="round">
-							<line x1="19" y1="12" x2="5" y2="12"></line>
-							<polyline points="12 19 5 12 12 5"></polyline>
-						</svg>
+						<ArrowLeft :size="24" :stroke-width="2.5" />
 					</button>
 					<h2 class="header-title">Детали товара</h2>
 					<div class="header-actions">
@@ -397,12 +394,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 
 							<button v-if="item.createdBy === currentUserId && item.id" class="delete-price-btn"
 								@click.stop="confirmDeletePrice(item.id)">
-								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-									stroke-linecap="round" stroke-linejoin="round">
-									<polyline points="3 6 5 6 21 6"></polyline>
-									<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-									</path>
-								</svg>
+								<Trash2 :size="14" />
 							</button>
 						</div>
 					</div>

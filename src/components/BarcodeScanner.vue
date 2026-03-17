@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { X } from 'lucide-vue-next'
 import { QrcodeStream } from 'vue-qrcode-reader'
 
 const emit = defineEmits<{
@@ -40,11 +41,7 @@ const onError = (err: Error) => {
       <div class="scanner-header">
         <h3 class="scanner-title">Отсканируйте штрих-код</h3>
         <button class="close-btn" @click="emit('close')">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          <X :size="24" />
         </button>
       </div>
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ChevronDown, Plus } from 'lucide-vue-next'
 
 export interface ComboboxItem {
     id: string | number
@@ -121,10 +122,7 @@ onUnmounted(() => {
             </label>
             <div v-if="loading" class="spinner"></div>
             <div v-else class="chevron" :class="{ 'is-open': isOpen }">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                </svg>
+                <ChevronDown :size="24" />
             </div>
         </div>
 
@@ -138,10 +136,7 @@ onUnmounted(() => {
 
             <div v-if="showCreateOption" class="dropdown-item create-option" @click="onCreate">
                 <span class="plus-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                    </svg>
+                    <Plus :size="20" />
                 </span>
                 <span class="create-text">
                     {{ createLabel }} <span class="highlight">"{{ modelValue }}"</span>

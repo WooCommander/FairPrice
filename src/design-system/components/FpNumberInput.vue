@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Minus, Plus } from 'lucide-vue-next'
 
 interface Props {
     modelValue: number | string
@@ -57,10 +58,7 @@ const onBlur = (e: Event) => {
         <span v-if="label" class="fp-number-label">{{ label }}</span>
         <div class="fp-number-stepper">
             <button class="stepper-btn" type="button" :disabled="!canDec" @click="decrement" aria-label="Уменьшить">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
+                <Minus :size="16" :stroke-width="2.5" />
             </button>
 
             <span class="stepper-divider" />
@@ -71,11 +69,7 @@ const onBlur = (e: Event) => {
             <span class="stepper-divider" />
 
             <button class="stepper-btn" type="button" :disabled="!canInc" @click="increment" aria-label="Увеличить">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
+                <Plus :size="16" :stroke-width="2.5" />
             </button>
         </div>
     </div>
@@ -110,7 +104,7 @@ const onBlur = (e: Event) => {
     overflow: hidden;
     transition: border-color 0.2s;
     height: 40px;
-    width: 100%;
+    // width: 100%;
     /* Reduced to avoid looking too stretched on wide rows */
 
     &:focus-within {

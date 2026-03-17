@@ -1,5 +1,4 @@
 import FpBackButton from './components/FpBackButton.vue'
-import FpBreadcrumbs from './components/FpBreadcrumbs.vue'
 import FpButton from './components/FpButton.vue'
 import FpCard from './components/FpCard.vue'
 import FpCombobox from './components/FpCombobox.vue'
@@ -7,13 +6,11 @@ import FpConfirmationModal from './components/FpConfirmationModal.vue'
 import FpInput from './components/FpInput.vue'
 import FpNotificationContainer from './components/FpNotificationContainer.vue'
 import FpNumberInput from './components/FpNumberInput.vue'
-import FpSearchInput from './components/FpSearchInput.vue'
 import FpSpinner from './components/FpSpinner.vue'
 import FpMobilePicker from './components/FpMobilePicker.vue'
 
 export {
     FpBackButton,
-    FpBreadcrumbs,
     FpButton,
     FpCard,
     FpCombobox,
@@ -21,7 +18,6 @@ export {
     FpInput,
     FpNotificationContainer,
     FpNumberInput,
-    FpSearchInput,
     FpSpinner,
     FpMobilePicker
 }

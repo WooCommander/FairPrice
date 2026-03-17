@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ArrowLeft, Trash2 } from 'lucide-vue-next'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 
@@ -104,23 +105,14 @@ const formatPrice = (val: number) => {
         <header class="ergo-header">
             <div class="header-inner">
                 <button class="nav-btn" @click="router.back()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
+                    <ArrowLeft :size="24" />
                 </button>
                 <div class="header-title">
                     Калькулятор выгоды
                 </div>
                 <div class="header-controls">
                     <button class="nav-btn" @click="clearAll" v-if="items.length > 0" title="Очистить всё">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                            </path>
-                        </svg>
+                        <Trash2 :size="20" />
                     </button>
                     <div v-else style="width: 40px;"></div>
                 </div>
@@ -226,11 +218,12 @@ const formatPrice = (val: number) => {
 
 .input-row {
     display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 8px;
+    margin-bottom: 16px;
 
     .field-group {
         flex: 1;
+        min-width: 0;
         display: flex;
         flex-direction: column;
         gap: 4px;
@@ -238,26 +231,35 @@ const formatPrice = (val: number) => {
         label {
             font-size: var(--text-caption);
             color: var(--color-text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
 }
 
 .amount-group {
     display: flex;
-    align-items: center;
-    gap: 4px;
+    align-items: flex-end;
+    gap: 6px;
+
+    :deep(.fp-number-input) {
+        flex: 1;
+        min-width: 0;
+    }
 
     .unit-toggle {
         background: var(--color-background);
         border: 1px solid var(--color-border);
         color: var(--color-text-primary);
-        padding: 0 8px;
-        height: 42px; // Match input height
+        padding: 0 4px;
+        height: 40px; // Match input height
         border-radius: var(--radius-sm);
         cursor: pointer;
         font-weight: 600;
-        font-size: 14px;
-        min-width: 40px;
+        font-size: 13px;
+        min-width: 36px;
+        flex-shrink: 0;
 
         &:active {
             background: var(--color-border);

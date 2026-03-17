@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { ChevronRight } from 'lucide-vue-next'
 import { priceStore } from '../store/priceStore'
 import { useRouter } from 'vue-router'
 import FpInput from '@/design-system/components/FpInput.vue'
@@ -72,10 +73,7 @@ const viewStore = (storeId: string) => {
                     </div>
                     <div class="tile-footer">
                         <span class="extra-info">Смотреть товары</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M9 5l7 7-7 7" />
-                        </svg>
+                        <ChevronRight :size="18" />
                     </div>
                 </div>
             </div>

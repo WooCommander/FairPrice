@@ -11,6 +11,7 @@ import {
   FpMobilePicker,
   FpNumberInput
 } from '@/design-system'
+import { ChevronLeft } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -188,9 +189,7 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
     <header class="ergo-header">
       <div class="header-inner">
         <button class="nav-btn" @click="step === 1 ? router.back() : step = 1">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
+          <ChevronLeft :size="24" :stroke-width="2.5" />
         </button>
         <h1 class="header-title">
           {{ step === 1 ? 'Добавить цену' : currentProduct?.name }}

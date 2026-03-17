@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { authStore } from '@/modules/auth/store/authStore'
-// import { catalogStore } from '@/modules/catalog/store/catalogStore' 
 import { changelog } from '@/data/changelog'
 import { setLocale, supportedLocales, i18n } from '@/i18n'
 import { useI18n } from 'vue-i18n'
-
+import { Home, Search, Star, User, Package, Store, Trophy, Menu, X, CheckSquare, Calculator, Palette, FileText, LogOut, Sun, Moon, Plus, ShoppingCart } from 'lucide-vue-next'
 const refreshKey = ref(0)
 const forceRefresh = () => { refreshKey.value += 1 }
 
@@ -48,37 +47,37 @@ const navItems = computed(() => [
 	{
 		label: t('nav.home'),
 		path: '/',
-		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>'
+		icon: Home
 	},
 	{
 		label: t('nav.search'),
 		path: '/search',
-		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'
+		icon: Search
 	},
 	{
 		label: t('nav.favorites'),
 		path: '/favorites',
-		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2"></polygon></svg>'
+		icon: Star
 	},
 	{
 		label: t('nav.profile'),
 		path: '/profile',
-		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
+		icon: User
 	},
 	{
 		label: t('nav.catalog'),
 		path: '/catalog',
-		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>'
+		icon: Package
 	},
 	{
 		label: t('nav.stores'),
 		path: '/stores',
-		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>'
+		icon: Store
 	},
 	{
 		label: t('nav.leaderboard'),
 		path: '/leaderboard',
-		icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>'
+		icon: Trophy
 	}
 ])
 
@@ -114,12 +113,7 @@ const handleLogout = async () => {
 			<div class="nav-container">
 				<div class="logo-area">
 					<button class="hamburger-btn" @click="isMenuOpen = true" v-if="!isMenuOpen">
-						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-							stroke-linecap="round" stroke-linejoin="round">
-							<line x1="3" y1="12" x2="21" y2="12"></line>
-							<line x1="3" y1="6" x2="21" y2="6"></line>
-							<line x1="3" y1="18" x2="21" y2="18"></line>
-						</svg>
+						<Menu :size="24" />
 					</button>
 
 					<div class="logo" @click="router.push('/')">
@@ -160,30 +154,26 @@ const handleLogout = async () => {
 		<!-- Bottom Navigation (Mobile) -->
 		<nav class="bottom-nav">
 			<a class="nav-item" :class="{ active: route.path === '/' }" @click.prevent="navigate('/')">
-				<span class="icon">🏠</span>
+				<Home class="icon" :size="20" />
 				<span class="label">{{ t('nav.home') }}</span>
 			</a>
 			<a class="nav-item" :class="{ active: route.path === '/catalog' }" @click.prevent="navigate('/catalog')">
-				<span class="icon">📦</span>
+				<Package class="icon" :size="20" />
 				<span class="label">{{ t('nav.catalog') }}</span>
 			</a>
 			<div class="nav-item action" @click="navigate('/add-price')">
 				<div class="plus-btn" :class="{ active: route.path === '/add-price' }">
-					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-						stroke-linecap="round" stroke-linejoin="round">
-						<line x1="12" y1="5" x2="12" y2="19"></line>
-						<line x1="5" y1="12" x2="19" y2="12"></line>
-					</svg>
+					<Plus :size="24" :stroke-width="3" />
 				</div>
 				<span class="label">{{ t('nav.addPrice') }}</span>
 			</div>
 			<a class="nav-item" :class="{ active: route.path === '/shopping-list' }"
 				@click.prevent="navigate('/shopping-list')">
-				<span class="icon">🛒</span>
+				<ShoppingCart class="icon" :size="20" />
 				<span class="label">{{ t('nav.shoppingList') }}</span>
 			</a>
 			<a class="nav-item" :class="{ active: route.path === '/favorites' }" @click.prevent="navigate('/favorites')">
-				<span class="icon">⭐</span>
+				<Star class="icon" :size="20" />
 				<span class="label">{{ t('nav.favorites') }}</span>
 			</a>
 		</nav>
@@ -217,11 +207,7 @@ const handleLogout = async () => {
 					</div>
 
 					<button class="close-btn" @click="isMenuOpen = false">
-						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-							stroke-linecap="round" stroke-linejoin="round">
-							<line x1="18" y1="6" x2="6" y2="18"></line>
-							<line x1="6" y1="6" x2="18" y2="18"></line>
-						</svg>
+						<X :size="24" />
 					</button>
 				</div>
 
@@ -230,7 +216,7 @@ const handleLogout = async () => {
 						<span class="nav-label">{{ t('nav.menu') }}</span>
 						<a v-for="item in navItems" :key="item.path" class="drawer-link"
 							:class="{ active: currentPath === item.path }" @click.prevent="navigate(item.path); isMenuOpen = false">
-							<span class="link-icon" v-html="item.icon"></span>
+							<span class="link-icon"><component :is="item.icon" :size="24" /></span>
 							{{ item.label }}
 						</a>
 					</div>
@@ -240,29 +226,14 @@ const handleLogout = async () => {
 						<a class="drawer-link" :class="{ active: currentPath === '/shopping-list' }"
 							@click.prevent="navigate('/shopping-list'); isMenuOpen = false">
 							<span class="link-icon">
-								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-									stroke-linecap="round" stroke-linejoin="round">
-									<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-									<line x1="3" y1="6" x2="21" y2="6"></line>
-									<path d="M16 10a4 4 0 0 1-8 0"></path>
-								</svg>
+								<CheckSquare :size="24" />
 							</span>
 							{{ t('nav.shoppingList') }}
 						</a>
 						<a class="drawer-link" :class="{ active: currentPath === '/quick-calc' }"
 							@click.prevent="navigate('/quick-calc'); isMenuOpen = false">
 							<span class="link-icon">
-								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-									stroke-linecap="round" stroke-linejoin="round">
-									<rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-									<line x1="8" y1="6" x2="16" y2="6"></line>
-									<line x1="16" y1="14" x2="16" y2="14"></line>
-									<line x1="8" y1="14" x2="8" y2="14"></line>
-									<line x1="12" y1="14" x2="12" y2="14"></line>
-									<line x1="16" y1="18" x2="16" y2="18"></line>
-									<line x1="8" y1="18" x2="8" y2="18"></line>
-									<line x1="12" y1="18" x2="12" y2="18"></line>
-								</svg>
+								<Calculator :size="24" />
 							</span>
 							{{ t('nav.quickCalc') }}
 						</a>
@@ -273,21 +244,14 @@ const handleLogout = async () => {
 						<a class="drawer-link" :class="{ active: currentPath === '/design-system' }"
 							@click.prevent="navigate('/design-system'); isMenuOpen = false">
 							<span class="link-icon">
-								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-									stroke-linecap="round" stroke-linejoin="round">
-									<path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88z"></path>
-									<path d="M2 12l10 10 10-10"></path>
-								</svg>
+								<Palette :size="24" />
 							</span>
 							{{ t('nav.designSystem') }}
 						</a>
 						<a class="drawer-link" :class="{ active: currentPath === '/changelog' }"
 							@click.prevent="navigate('/changelog'); isMenuOpen = false">
 							<span class="link-icon">
-								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-									stroke-linecap="round" stroke-linejoin="round">
-									<path d="M8 2h8a2 2 0 0 1 2 2v16l-6-3-6 3V4a2 2 0 0 1 2-2z"></path>
-								</svg>
+								<FileText :size="24" />
 							</span>
 							{{ t('nav.changelog') }}
 						</a>
@@ -296,17 +260,15 @@ const handleLogout = async () => {
 
 				<div class="drawer-footer">
 					<button class="theme-toggle-drawer" @click="toggleTheme">
-						<span class="icon">{{ isDark ? '🌞' : '🌙' }}</span>
+						<span class="icon">
+							<Sun v-if="isDark" :size="20" />
+							<Moon v-else :size="20" />
+						</span>
 						<span>{{ isDark ? t('theme.light') : t('theme.dark') }}</span>
 					</button>
 
 					<button v-if="authStore.user.value" class="logout-drawer" @click="handleLogout">
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-							stroke-linecap="round" stroke-linejoin="round">
-							<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-							<polyline points="16 17 21 12 16 7"></polyline>
-							<line x1="21" y1="12" x2="9" y2="12"></line>
-						</svg>
+						<LogOut :size="20" class="mr-2" />
 						{{ t('auth.logout') }}
 					</button>
 				</div>

@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import { catalogStore } from '../store/catalogStore'
 import { priceStore } from '@/modules/prices/store/priceStore'
 import { useRouter, useRoute } from 'vue-router'
+import { ArrowLeft } from 'lucide-vue-next'
 import { PRODUCT_CATEGORIES } from '../constants'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
@@ -160,11 +161,7 @@ watch(loadMoreTrigger, (el) => {
     <div v-if="addingPriceFor">
       <div class="ap-header">
         <button class="ap-back-btn" @click="cancelAddPrice">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12" />
-            <polyline points="12 19 5 12 12 5" />
-          </svg>
+          <ArrowLeft :size="20" :stroke-width="2.5" />
         </button>
         <div class="ap-header-info">
           <span class="ap-title">Добавить цену</span>

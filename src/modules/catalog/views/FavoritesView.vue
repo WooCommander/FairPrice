@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { Star } from 'lucide-vue-next'
 import { CatalogService, type ProductDTO } from '@/modules/catalog/services/CatalogService'
 import { catalogStore } from '../store/catalogStore'
 import { CurrencyService } from '../services/CurrencyService'
@@ -96,12 +97,7 @@ const toggleFavorite = async (productId: string) => {
                 <div class="tile-footer">
                     <div class="main-value">{{ item.lastPrice ? formatPrice(item.lastPrice) : '---' }}</div>
                     <button class="fav-btn active" @click.stop="toggleFavorite(item.id)" title="Убрать">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor"
-                            stroke-width="2">
-                            <polygon
-                                points="12 2 15.09 8.26 21.78 9.27 16.94 14.14 18.18 21.02 12 17.77 5.82 21.02 7.06 14.14 2.22 9.27 8.91 8.26 12 2">
-                            </polygon>
-                        </svg>
+                        <Star :size="20" fill="currentColor" />
                     </button>
                 </div>
             </div>

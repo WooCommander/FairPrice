@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { Edit2 } from 'lucide-vue-next'
 import { AuthService } from '@/modules/auth/services/AuthService'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
@@ -194,11 +195,7 @@ onMounted(async () => {
         <div v-if="!isEditingName" class="display-name-row">
           <h1>{{ displayName || user.email.split('@')[0] }}</h1>
         <button class="edit-name-btn" @click="startEditName" :title="t('profile.personal.edit')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
+            <Edit2 :size="16" />
           </button>
         </div>
         <div v-else class="display-name-edit">
@@ -246,11 +243,7 @@ onMounted(async () => {
       <div class="section-title-row">
         <h2>{{ t('profile.personal.title') }}</h2>
         <button v-if="!isEditingProfile" class="edit-profile-btn" @click="startEditProfile">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
+          <Edit2 :size="14" class="mr-2" />
           {{ t('profile.personal.edit') }}
         </button>
       </div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { ChevronDown, X } from 'lucide-vue-next'
 import FpInput from './FpInput.vue'
 
 interface Item {
@@ -86,9 +87,7 @@ watch(searchQuery, (q) => {
                 label }}</div>
             <div class="trigger-value">{{ modelValue || (label && !modelValue ? '' : placeholder) }}</div>
             <div class="chevron">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 9L12 15L18 9" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
+                <ChevronDown :size="20" />
             </div>
         </div>
 
@@ -97,11 +96,7 @@ watch(searchQuery, (q) => {
                 <div v-if="isOverlayOpen" class="picker-overlay">
                     <div class="picker-header">
                         <button class="close-btn" @click="closePicker">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
+                            <X :size="24" />
                         </button>
                         <h2 class="picker-title">{{ title }}</h2>
                         <div style="width: 24px"></div>

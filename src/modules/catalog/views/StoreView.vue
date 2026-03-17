@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ArrowLeft, Edit2, Plus } from 'lucide-vue-next'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpCard from '@/design-system/components/FpCard.vue'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
@@ -81,21 +82,13 @@ const saveEdit = async () => {
         <div class="page-title-row">
             <div class="title-group">
                 <button class="nav-btn" @click="router.back()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
+                    <ArrowLeft :size="24" />
                 </button>
 
                 <template v-if="!isEditing">
                     <h1 class="page-title">{{ storeName }}</h1>
                     <button class="icon-btn edit-icon" @click="startEdit" title="Редактировать название">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2-2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
+                        <Edit2 :size="18" />
                     </button>
                 </template>
                 <div v-else class="edit-row">
@@ -108,11 +101,7 @@ const saveEdit = async () => {
             </div>
 
             <button class="nav-btn add-btn" @click="goToAddPrice" title="Добавить цену">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
+                <Plus :size="24" />
             </button>
         </div>
 
