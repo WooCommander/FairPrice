@@ -195,7 +195,7 @@ watch(loadMoreTrigger, (el) => {
     <div v-else>
       <div class="page-title-row">
         <h1 class="page-title">Каталог товаров</h1>
-        <FpButton size="sm" @click="router.push('/create-product')">Добавить</FpButton>
+        <FpButton size="sm" @click="router.push({ path: '/create-product', query: selectedCategory ? { category: selectedCategory } : {} })">Добавить</FpButton>
       </div>
 
       <div class="sticky-search-wrapper">

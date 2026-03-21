@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
-import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import FpCard from '@/design-system/components/FpCard.vue'
 import { useNotify } from '@/composables/useNotify'
 import { supportedLocales } from '@/i18n'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
@@ -16,7 +16,7 @@ const router = useRouter()
 const route = useRoute()
 const name = ref('')
 const barcode = ref(route.query.barcode as string || '')
-const category = ref('Бакалея')
+const category = ref((route.query.category as string) || 'Бакалея')
 const unit = ref('шт')
 const isSubmitting = ref(false)
 const translationInputs = ref<Record<string, string>>({})
@@ -25,11 +25,16 @@ for (const lang of supportedLocales) {
     translationInputs.value[lang] = ''
 }
 
-const categories = PRODUCT_CATEGORIES.map(c => ({ id: c, name: c }))
+const extraCategories = ref<string[]>([])
+const categoryItems = computed(() => {
+    const all = [...catalogStore.categories.value, ...extraCategories.value]
+    const unique = [...new Set(all)]
+    return unique.map(c => ({ id: c, name: c }))
+})
 const units = ['шт', 'кг', 'л', 'уп'].map(u => ({ id: u, name: u }))
-
-const categoryItems = ref(categories)
 const unitItems = ref(units)
+
+onMounted(() => catalogStore.loadCategories())
 
 const handleCreate = async () => {
     if (!name.value) return
@@ -62,8 +67,8 @@ const handleCreate = async () => {
 }
 
 const createCategory = (val: string) => {
-    categoryItems.value.push({ id: val, name: val } as any)
-    category.value = val as any
+    extraCategories.value.push(val)
+    category.value = val
 }
 
 const createUnit = (val: string) => {
