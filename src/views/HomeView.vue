@@ -4,8 +4,7 @@ import { useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { shoppingListStore } from '@/modules/shopping-list/state/shoppingListStore'
 import { AuthService } from '@/modules/auth/services/AuthService'
-import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
-import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
+import { usePriceFormat } from '@/composables/usePriceFormat'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 
@@ -20,8 +19,10 @@ const {
     totalProductCount,
     totalCategoryCount,
     totalUserCount,
-    currentCurrency
+    categories
 } = catalogStore
+
+const { formatPrice } = usePriceFormat()
 const { uncheckedItems } = shoppingListStore
 
 const shoppingItemsLeft = computed(() => uncheckedItems.value.length)
@@ -56,11 +57,6 @@ const categoryIcons: Record<string, string> = {
 //     await catalogStore.toggleFavorite(productId)
 // }
 
-const formatPrice = computed(() => (val: number) => {
-    const currency = currentCurrency.value
-    return CurrencyService.format(CurrencyService.convert(val, 'RUB', currency), currency)
-})
-
 onMounted(async () => {
     isLoading.value = true
     try {
@@ -69,6 +65,7 @@ onMounted(async () => {
             AuthService.getUserActivity(5),
             catalogStore.loadFavorites(),
             catalogStore.loadDashboardStats(),
+            catalogStore.loadCategories(),
             shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
         ])
         userStats.value = stats
@@ -182,7 +179,7 @@ onMounted(async () => {
                     <h2 class="section-title">Быстрый поиск</h2>
                 </div>
                 <div class="quick-cat-grid">
-                    <div v-for="cat in PRODUCT_CATEGORIES" :key="cat" class="cat-tile"
+                    <div v-for="cat in categories" :key="cat" class="cat-tile"
                         @click="router.push({ path: '/catalog', query: { category: cat } })">
                         <span class="cat-icon">{{ categoryIcons[cat] || '📦' }}</span>
                         <span class="cat-label">{{ cat }}</span>

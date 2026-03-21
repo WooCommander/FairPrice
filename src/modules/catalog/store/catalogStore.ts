@@ -3,6 +3,7 @@ import { CatalogService } from '../services/CatalogService'
 import { adaptProduct, type ProductModel } from '../adapters/CatalogAdapter'
 import { AuthService } from '@/modules/auth/services/AuthService'
 import { CurrencyService } from '../services/CurrencyService'
+import { PRODUCT_CATEGORIES } from '../constants'
 
 const searchResults = ref<ProductModel[]>([])
 const recentUpdates = ref<ProductModel[]>([])
@@ -13,6 +14,7 @@ const totalProductCount = ref(0)
 const totalCategoryCount = ref(0)
 const totalUserCount = ref(0)
 const currentCurrency = ref<'RUB' | 'USD' | 'EUR'>(localStorage.getItem('fp_currency') as any || 'RUB')
+const categories = ref<string[]>([...PRODUCT_CATEGORIES])
 
 // Pagination State
 const currentPage = ref(1)
@@ -57,6 +59,7 @@ export const catalogStore = {
     totalCategoryCount: readonly(totalCategoryCount),
     totalUserCount: readonly(totalUserCount),
     currentCurrency: readonly(currentCurrency),
+    categories: readonly(categories),
     addToHistory,
     removeFromHistory,
     clearHistory,
@@ -141,6 +144,15 @@ export const catalogStore = {
             hasMore.value = searchResults.value.length < total
         } finally {
             isSearching.value = false
+        }
+    },
+
+    async loadCategories() {
+        try {
+            const cats = await CatalogService.getCategories()
+            if (cats.length > 0) categories.value = cats
+        } catch (e) {
+            console.error('Failed to load categories', e)
         }
     },
 

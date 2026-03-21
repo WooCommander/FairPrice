@@ -4,14 +4,13 @@ import { catalogStore } from '../store/catalogStore'
 import { priceStore } from '@/modules/prices/store/priceStore'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft } from 'lucide-vue-next'
-import { PRODUCT_CATEGORIES } from '../constants'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import { FpSpinner } from '@/design-system'
 import BarcodeScanner from '@/components/BarcodeScanner.vue'
-import { CurrencyService } from '../services/CurrencyService'
+import { usePriceFormat } from '@/composables/usePriceFormat'
 import { CatalogService } from '../services/CatalogService'
 
 const router = useRouter()
@@ -21,11 +20,8 @@ const selectedCategory = ref<string | null>(route.query.category as string || nu
 const selectedStoreId = ref<string | null>(route.query.storeId as string || null)
 const selectedStoreName = ref<string | null>(null)
 
-const { currentCurrency } = catalogStore
-const formatPrice = computed(() => (price: number) => {
-  const currency = currentCurrency.value
-  return CurrencyService.format(CurrencyService.convert(price, 'RUB', currency), currency)
-})
+const { formatPrice } = usePriceFormat()
+const { categories } = catalogStore
 
 const products = computed(() => catalogStore.searchResults.value)
 const isLoading = computed(() => catalogStore.isLoading.value)
@@ -129,6 +125,7 @@ onMounted(async () => {
     const store = await CatalogService.getStoreDetails(selectedStoreId.value)
     selectedStoreName.value = store?.name || null
   }
+  catalogStore.loadCategories()
   handleSearch()
 
   observer = new IntersectionObserver((entries) => {
@@ -218,7 +215,7 @@ watch(loadMoreTrigger, (el) => {
         </div>
 
         <div class="category-filters">
-          <button v-for="cat in PRODUCT_CATEGORIES" :key="cat" class="category-tag"
+          <button v-for="cat in categories" :key="cat" class="category-tag"
             :class="{ active: selectedCategory === cat }" @click="toggleCategory(cat)">
             {{ cat }}
           </button>

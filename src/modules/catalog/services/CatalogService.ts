@@ -174,17 +174,18 @@ class CatalogService {
             .filter((p): p is ProductDTO => !!p)
     }
 
-    async getPopularSearchTerms(): Promise<string[]> {
-        const { data } = await supabase
+    async getCategories(): Promise<string[]> {
+        const { data, error } = await supabase
             .from('products')
             .select('category')
-            .limit(50)
 
-        if (!data) return []
+        if (error || !data) return []
+        return [...new Set(data.map((p: any) => p.category).filter(Boolean))].sort()
+    }
 
-        // Extract unique categories
-        const categories = [...new Set(data.map((p: any) => p.category).filter(Boolean))]
-        return categories.slice(0, 5)
+    async getPopularSearchTerms(): Promise<string[]> {
+        const cats = await this.getCategories()
+        return cats.slice(0, 5)
     }
 
     async getStoreDetails(id: string): Promise<{ id: string, name: string } | undefined> {

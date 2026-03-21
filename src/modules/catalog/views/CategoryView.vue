@@ -2,8 +2,8 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
+import { usePriceFormat } from '@/composables/usePriceFormat'
 import FpButton from '@/design-system/components/FpButton.vue'
-import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import { FpSpinner } from '@/design-system'
 
 const route = useRoute()
@@ -11,11 +11,8 @@ const router = useRouter()
 const categoryName = ref('')
 const isLoading = ref(true)
 
-const { searchResults, currentCurrency } = catalogStore
-const formatPrice = computed(() => (price: number) => {
-    const currency = currentCurrency.value
-    return CurrencyService.format(CurrencyService.convert(price, 'RUB', currency), currency)
-})
+const { searchResults } = catalogStore
+const { formatPrice } = usePriceFormat()
 
 const groupedProducts = computed(() => {
     const groups: Record<string, any[]> = {}
@@ -56,7 +53,7 @@ watch(() => route.params.id, loadData)
 
 const goToAddProduct = () => {
     router.push({
-        path: '/add-price',
+        path: '/create-product',
         query: { category: categoryName.value }
     })
 }
