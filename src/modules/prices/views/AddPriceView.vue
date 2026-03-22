@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { priceStore } from '../store/priceStore'
+import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import {
   FpButton,
   FpCard,
@@ -35,6 +36,20 @@ const isSuccess = ref(false)
 // Create product state
 const newProductName = ref('')
 const newProductCategory = ref('')
+const createMatchResults = ref<{ id: string, name: string, category: string }[]>([])
+let createSearchTimer: ReturnType<typeof setTimeout> | undefined
+
+watch(newProductName, (val) => {
+  clearTimeout(createSearchTimer)
+  if (val.trim().length < 2) {
+    createMatchResults.value = []
+    return
+  }
+  createSearchTimer = setTimeout(async () => {
+    const { items } = await CatalogService.searchProducts(val, {}, 1, 5)
+    createMatchResults.value = items.map(p => ({ id: p.id, name: p.name, category: p.category }))
+  }, 300)
+})
 
 const unitItems = ['г', 'кг', 'мл', 'л', 'шт', 'уп'].map(u => ({ id: u, name: u }))
 const categoryItems = computed(() => catalogStore.categories.value.map(c => ({ id: c, name: c })))
@@ -87,7 +102,20 @@ const selectProduct = (p: { id: string, name: string }) => {
 const startCreation = () => {
   newProductName.value = searchQuery.value
   newProductCategory.value = selectedCategory.value || ''
+  createMatchResults.value = []
   isCreating.value = true
+}
+
+const cancelCreation = () => {
+  isCreating.value = false
+  createMatchResults.value = []
+  clearTimeout(createSearchTimer)
+}
+
+const selectExisting = (p: { id: string, name: string, category: string }) => {
+  selectProduct({ id: p.id, name: p.name })
+  isCreating.value = false
+  createMatchResults.value = []
 }
 
 const createProduct = async () => {
@@ -195,7 +223,7 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
           {{ step === 1 ? 'Добавить цену' : currentProduct?.name }}
         </h1>
         <div class="header-actions">
-          <button v-if="step === 2" class="action-btn-text" :disabled="!storeName || !price || !quantity"
+          <button v-if="step === 2" class="action-btn-done" :disabled="!storeName || !price || !quantity"
             @click="submit">
             Готово
           </button>
@@ -262,8 +290,18 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
             <FpMobilePicker v-model="newProductCategory" label="Категория" :items="categoryItems"
               title="Выбор категории" allow-create @create="newProductCategory = $event" />
           </div>
+
+          <div v-if="createMatchResults.length > 0" class="create-matches">
+            <div class="create-matches-label">Уже есть в базе:</div>
+            <div v-for="match in createMatchResults" :key="match.id" class="create-match-item"
+              @click="selectExisting(match)">
+              <div class="match-name">{{ match.name }}</div>
+              <div class="match-category">{{ match.category }}</div>
+            </div>
+          </div>
+
           <div class="actions-row">
-            <FpButton variant="outline" @click="isCreating = false">Отмена</FpButton>
+            <FpButton variant="outline" @click="cancelCreation">Отмена</FpButton>
             <FpButton :disabled="!newProductName" @click="createProduct">Создать</FpButton>
           </div>
         </div>
@@ -283,20 +321,18 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
             :items="storeResults" allow-create @select="onStoreSelect" @create="onStoreCreate"
             @search="handleSearchStore" />
 
-          <div class="split-row">
+          <div class="split-row align-bottom">
             <div class="flex-field">
               <FpNumberInput v-model="price" label="Цена (₽)" :min="0" :step="0.01" />
             </div>
-          </div>
-
-          <div class="split-row align-bottom">
             <div class="flex-field">
               <FpNumberInput v-model="quantity" label="Вес/Объем" :min="0" :step="50" />
             </div>
-            <div class="fixed-field">
-              <FpMobilePicker v-model="unit" label="Ед." :items="unitItems" placeholder="г" title="Единица изм."
-                variant="bordered" allow-create @create="unit = $event" />
-            </div>
+          </div>
+
+          <div class="fixed-field">
+            <FpMobilePicker v-model="unit" label="Ед." :items="unitItems" placeholder="г" title="Единица изм."
+              variant="bordered" allow-create @create="unit = $event" />
           </div>
 
           <div class="calc-info" v-if="calculatedUnitPrice">
@@ -365,6 +401,23 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
 
   &:disabled {
     opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.action-btn-done {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 20px;
+  padding: 7px 18px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:disabled {
+    opacity: 0.4;
     cursor: not-allowed;
   }
 }
@@ -440,6 +493,48 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
 
   h3 {
     margin-bottom: 16px;
+  }
+}
+
+.create-matches {
+  margin-top: 12px;
+  border: 1px solid var(--color-warning, #f59e0b);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.create-matches-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-warning, #f59e0b);
+  padding: 8px 12px 4px;
+}
+
+.create-match-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-top: 1px solid var(--color-border);
+  transition: background 0.15s;
+
+  &:active {
+    background: var(--color-surface-hover);
+  }
+
+  .match-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .match-category {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
   }
 }
 
