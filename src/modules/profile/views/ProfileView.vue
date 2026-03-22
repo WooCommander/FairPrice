@@ -67,9 +67,40 @@ const isLoading = ref(true)
 const stats = ref<UserStats | null>(null)
 const activityFeed = ref<any[]>([])
 const user = ref({ email: '', id: '', role: '' })
-const pendingProducts = ref<Array<{ id: string, name: string, category: string, created_at: string, created_by: string }>>([])
+const pendingProducts = ref<Array<{ id: string, name: string, category: string, created_at: string, created_by: string, prices: Array<{ price: number, stores: { name: string } | null }> }>>([])
+const getMinPrice = (prices: Array<{ price: number, stores: { name: string } | null }>) => {
+  if (!prices?.length) return null
+  return prices.reduce((min, p) => p.price < min.price ? p : min, prices[0])
+}
 const pendingError = ref('')
+const moderatingId = ref<string | null>(null)
 const { notify } = useNotify()
+
+const approveProduct = async (id: string) => {
+  moderatingId.value = id
+  try {
+    await CatalogService.approveProduct(id)
+    pendingProducts.value = pendingProducts.value.filter(p => p.id !== id)
+    notify('Товар одобрен', 'success')
+  } catch (e: any) {
+    notify(e?.message || 'Ошибка', 'error')
+  } finally {
+    moderatingId.value = null
+  }
+}
+
+const rejectProduct = async (id: string) => {
+  moderatingId.value = id
+  try {
+    await CatalogService.rejectProduct(id)
+    pendingProducts.value = pendingProducts.value.filter(p => p.id !== id)
+    notify('Товар отклонён', 'success')
+  } catch (e: any) {
+    notify(e?.message || 'Ошибка', 'error')
+  } finally {
+    moderatingId.value = null
+  }
+}
 
 // Display name
 const displayName = ref('')
@@ -363,10 +394,21 @@ onMounted(async () => {
             <div class="pending-name">{{ p.name }}</div>
             <div class="pending-meta">
               <span class="badge muted">{{ t('profile.labels.category') }}: {{ p.category || '—' }}</span>
+              <span v-if="getMinPrice(p.prices)" class="badge price">
+                {{ formatPrice(getMinPrice(p.prices)!.price) }}
+                <template v-if="getMinPrice(p.prices)!.stores?.name"> · {{ getMinPrice(p.prices)!.stores!.name }}</template>
+              </span>
+              <span v-else class="badge muted">Без цены</span>
               <span class="badge warning">{{ t('profile.moderation.pending') }}</span>
             </div>
           </div>
-          <div class="pending-date">{{ new Date(p.created_at).toLocaleDateString('ru-RU') }}</div>
+          <div class="pending-right">
+            <div class="pending-date">{{ new Date(p.created_at).toLocaleDateString('ru-RU') }}</div>
+            <div class="moderation-actions">
+              <button class="mod-btn approve" :disabled="moderatingId === p.id" @click="approveProduct(p.id)">✓</button>
+              <button class="mod-btn reject" :disabled="moderatingId === p.id" @click="rejectProduct(p.id)">✕</button>
+            </div>
+          </div>
         </FpCard>
       </div>
     </section>
@@ -834,9 +876,47 @@ onMounted(async () => {
   flex-wrap: wrap;
 }
 
+.pending-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .pending-date {
   color: var(--color-text-secondary);
   font-size: var(--text-caption);
+}
+
+.moderation-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.mod-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  &.approve {
+    background: rgba(var(--color-success-rgb, 34, 197, 94), 0.15);
+    color: var(--color-success, #22c55e);
+    &:active:not(:disabled) { opacity: 0.75; }
+  }
+
+  &.reject {
+    background: rgba(var(--color-error-rgb, 255, 87, 87), 0.12);
+    color: var(--color-error);
+    &:active:not(:disabled) { opacity: 0.75; }
+  }
 }
 
 .badge.warning {
@@ -847,6 +927,12 @@ onMounted(async () => {
 .badge.muted {
   background: var(--color-background);
   color: var(--color-text-secondary);
+}
+
+.badge.price {
+  background: rgba(var(--color-primary-rgb), 0.08);
+  color: var(--color-primary);
+  font-weight: 700;
 }
 
 .display-name-row {

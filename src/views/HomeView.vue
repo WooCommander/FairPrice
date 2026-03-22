@@ -19,7 +19,6 @@ const {
     totalProductCount,
     totalCategoryCount,
     totalUserCount,
-    categories
 } = catalogStore
 
 const { formatPrice } = usePriceFormat()
@@ -41,18 +40,6 @@ const userStats = ref<any>(null)
 const userActivity = ref<any[]>([])
 const isLoading = ref(true)
 
-const categoryIcons: Record<string, string> = {
-    'Овощи': '🥦',
-    'Фрукты': '🍎',
-    'Мясо': '🥩',
-    'Молочные продукты': '🥛',
-    'Бакалея': '🍝',
-    'Напитки': '🥤',
-    'Хлеб': '🍞',
-    'Бытовая химия': '🧼',
-    'Разное': '📦'
-}
-
 // const toggleFavorite = async (productId: string) => {
 //     await catalogStore.toggleFavorite(productId)
 // }
@@ -65,8 +52,7 @@ onMounted(async () => {
             AuthService.getUserActivity(5),
             catalogStore.loadFavorites(),
             catalogStore.loadDashboardStats(),
-            catalogStore.loadCategories(),
-            shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
+shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
         ])
         userStats.value = stats
         userActivity.value = activity
@@ -173,25 +159,7 @@ onMounted(async () => {
                 </button>
             </section>
 
-            <!-- Quick Categories Grid -->
-            <section class="categories-explorer">
-                <div class="section-header">
-                    <h2 class="section-title">Быстрый поиск</h2>
-                </div>
-                <div class="quick-cat-grid">
-                    <div v-for="cat in categories" :key="cat" class="cat-tile"
-                        @click="router.push({ path: '/catalog', query: { category: cat } })">
-                        <span class="cat-icon">{{ categoryIcons[cat] || '📦' }}</span>
-                        <span class="cat-label">{{ cat }}</span>
-                    </div>
-                    <div class="cat-tile more" @click="router.push('/catalog')">
-                        <span class="cat-icon">🔍</span>
-                        <span class="cat-label">Весь каталог</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- My Activity Feed -->
+<!-- My Activity Feed -->
             <section class="activity-section">
                 <div class="section-header">
                     <h2 class="section-title">Моя активность 🕒</h2>
@@ -418,61 +386,6 @@ onMounted(async () => {
         border: 1px solid var(--color-border);
         flex: 1;
         text-align: center;
-    }
-}
-
-// Categories Explorer
-.section-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 0 0 16px;
-    color: var(--color-text-primary);
-}
-
-.quick-cat-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-
-    .cat-tile {
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-radius: 16px;
-        padding: 16px 8px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        cursor: pointer;
-        transition: all 0.2s;
-        text-align: center;
-
-        .cat-icon {
-            font-size: 24px;
-        }
-
-        .cat-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--color-text-secondary);
-            line-height: 1.2;
-        }
-
-        &:active {
-            transform: scale(0.95);
-            background: var(--color-surface-hover);
-        }
-
-        &.more {
-            background: rgba(var(--color-primary-rgb), 0.02);
-            border-style: dashed;
-            border-color: var(--color-primary);
-
-            .cat-label {
-                color: var(--color-primary);
-            }
-        }
     }
 }
 

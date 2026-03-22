@@ -606,14 +606,14 @@ class CatalogService {
         }
     }
 
-    async getPendingProductsForModeration(): Promise<Array<{ id: string, name: string, category: string, created_at: string, created_by: string }>> {
+    async getPendingProductsForModeration(): Promise<Array<{ id: string, name: string, category: string, created_at: string, created_by: string, prices: Array<{ price: number, stores: { name: string } | null }> }>> {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return []
 
         try {
             const { data, error } = await supabase
                 .from('products')
-                .select('id,name,category,created_at,created_by')
+                .select('id,name,category,created_at,created_by,prices(price,stores(name))')
                 .eq('is_moderated', false)
                 .neq('created_by', user.id)
                 .order('created_at', { ascending: false })
@@ -627,6 +627,22 @@ class CatalogService {
             }
             throw error
         }
+    }
+
+    async approveProduct(productId: string): Promise<void> {
+        const { error } = await supabase
+            .from('products')
+            .update({ is_moderated: true })
+            .eq('id', productId)
+        if (error) throw error
+    }
+
+    async rejectProduct(productId: string): Promise<void> {
+        const { error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', productId)
+        if (error) throw error
     }
 
     async getProductTranslation(productId: string, lang: string): Promise<{ name?: string, description?: string } | null> {
