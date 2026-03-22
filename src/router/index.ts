@@ -31,8 +31,7 @@ const routes = [
     },
     {
         path: '/search',
-        name: 'Search',
-        component: () => import('@/modules/catalog/views/SearchView.vue')
+        redirect: '/catalog'
     },
     {
         path: '/product/:id',

@@ -3,11 +3,10 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { priceStore } from '../store/priceStore'
-import { PRODUCT_CATEGORIES } from '@/modules/catalog/constants'
 import {
   FpButton,
   FpCard,
-  FpCombobox,
+  FpInput,
   FpMobilePicker,
   FpNumberInput
 } from '@/design-system'
@@ -38,7 +37,7 @@ const newProductName = ref('')
 const newProductCategory = ref('')
 
 const unitItems = ['г', 'кг', 'мл', 'л', 'шт', 'уп'].map(u => ({ id: u, name: u }))
-const categoryItems = PRODUCT_CATEGORIES.map(c => ({ id: c, name: c }))
+const categoryItems = computed(() => catalogStore.categories.value.map(c => ({ id: c, name: c })))
 
 // Subscriptions
 const products = computed(() => catalogStore.searchResults.value)
@@ -158,6 +157,7 @@ const submit = async () => {
 }
 
 onMounted(() => {
+  catalogStore.loadCategories()
   handleSearchStore('') // Pre-fetch stores
   const id = route.params.id as string
   if (id) {
@@ -212,7 +212,7 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
         </div>
 
         <div class="category-filters" v-if="!isCreating">
-          <button v-for="cat in PRODUCT_CATEGORIES" :key="cat" class="category-tag"
+          <button v-for="cat in catalogStore.categories.value" :key="cat" class="category-tag"
             :class="{ active: selectedCategory === cat }" @click="toggleCategory(cat)">
             {{ cat }}
           </button>
@@ -259,8 +259,8 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
           <h3>Новый товар</h3>
           <div class="form-grid">
             <FpInput v-model="newProductName" label="Название" @keydown.enter="createProduct" />
-            <FpCombobox v-model="newProductCategory" label="Категория" :items="categoryItems"
-              placeholder="Выберите категорию" allow-create @create="newProductCategory = $event" />
+            <FpMobilePicker v-model="newProductCategory" label="Категория" :items="categoryItems"
+              title="Выбор категории" allow-create @create="newProductCategory = $event" />
           </div>
           <div class="actions-row">
             <FpButton variant="outline" @click="isCreating = false">Отмена</FpButton>

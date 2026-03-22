@@ -6,7 +6,7 @@ import { authStore } from '@/modules/auth/store/authStore'
 import { changelog } from '@/data/changelog'
 import { setLocale, supportedLocales, i18n } from '@/i18n'
 import { useI18n } from 'vue-i18n'
-import { Home, Search, Star, User, Package, Store, Trophy, Menu, X, CheckSquare, Calculator, Palette, FileText, LogOut, Sun, Moon, Plus, ShoppingCart } from 'lucide-vue-next'
+import { Home, Star, User, Package, Store, Trophy, Menu, X, CheckSquare, Calculator, Palette, FileText, LogOut, Sun, Moon, Plus, ShoppingCart } from 'lucide-vue-next'
 const refreshKey = ref(0)
 const forceRefresh = () => { refreshKey.value += 1 }
 
@@ -48,11 +48,6 @@ const navItems = computed(() => [
 		label: t('nav.home'),
 		path: '/',
 		icon: Home
-	},
-	{
-		label: t('nav.search'),
-		path: '/search',
-		icon: Search
 	},
 	{
 		label: t('nav.favorites'),
