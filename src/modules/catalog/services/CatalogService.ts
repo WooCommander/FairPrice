@@ -619,7 +619,7 @@ class CatalogService {
                 .order('created_at', { ascending: false })
 
             if (error) throw error
-            return data || []
+            return (data || []) as any
         } catch (error: any) {
             const msg = String(error?.message || '')
             if (msg.includes('is_moderated')) {
