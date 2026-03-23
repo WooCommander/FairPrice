@@ -630,11 +630,13 @@ class CatalogService {
     }
 
     async approveProduct(productId: string): Promise<void> {
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('products')
             .update({ is_moderated: true })
             .eq('id', productId)
+            .select('id')
         if (error) throw error
+        if (!data || data.length === 0) throw new Error('Нет прав для одобрения этого товара')
     }
 
     async rejectProduct(productId: string): Promise<void> {
