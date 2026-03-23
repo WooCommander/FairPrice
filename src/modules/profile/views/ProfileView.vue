@@ -140,9 +140,9 @@ const isEditingProfile = ref(false)
 const isSavingProfile = ref(false)
 
 const genderOptions = computed(() => ([
-  { value: 'male',   label: t('profile.gender.male') },
+  { value: 'male', label: t('profile.gender.male') },
   { value: 'female', label: t('profile.gender.female') },
-  { value: 'other',  label: t('profile.gender.other') }
+  { value: 'other', label: t('profile.gender.other') }
 ]))
 
 function genderLabel(g: string | null) {
@@ -164,8 +164,8 @@ const savePersonalProfile = async () => {
   try {
     await AuthService.saveProfile({
       first_name: profileEdit.value.first_name.trim() || null,
-      last_name:  profileEdit.value.last_name.trim()  || null,
-      gender:     profileEdit.value.gender || null,
+      last_name: profileEdit.value.last_name.trim() || null,
+      gender: profileEdit.value.gender || null,
       birth_date: profileEdit.value.birth_date || null,
     })
     profile.value = { ...profileEdit.value }
@@ -194,8 +194,8 @@ onMounted(async () => {
     displayName.value = profileData.display_name || ''
     profile.value = {
       first_name: profileData.first_name || '',
-      last_name:  profileData.last_name  || '',
-      gender:     profileData.gender     || '',
+      last_name: profileData.last_name || '',
+      gender: profileData.gender || '',
       birth_date: profileData.birth_date || '',
     }
     if (rawStats) {
@@ -225,13 +225,13 @@ onMounted(async () => {
         <!-- Display name -->
         <div v-if="!isEditingName" class="display-name-row">
           <h1>{{ displayName || user.email.split('@')[0] }}</h1>
-        <button class="edit-name-btn" @click="startEditName" :title="t('profile.personal.edit')">
+          <button class="edit-name-btn" @click="startEditName" :title="t('profile.personal.edit')">
             <Edit2 :size="16" />
           </button>
         </div>
         <div v-else class="display-name-edit">
-          <input v-model="displayNameEdit" class="name-input" :placeholder="t('profile.personal.placeholderName')" maxlength="32"
-            @keydown.enter="saveDisplayName" @keydown.escape="cancelEditName" />
+          <input v-model="displayNameEdit" class="name-input" :placeholder="t('profile.personal.placeholderName')"
+            maxlength="32" @keydown.enter="saveDisplayName" @keydown.escape="cancelEditName" />
           <button class="name-save-btn" @click="saveDisplayName" :disabled="isSavingName">✓</button>
           <button class="name-cancel-btn" @click="cancelEditName">✕</button>
         </div>
@@ -301,17 +301,19 @@ onMounted(async () => {
       <FpCard v-else class="info-card edit-mode">
         <div class="edit-field">
           <label class="field-label">{{ t('profile.personal.name') }}</label>
-          <input v-model="profileEdit.first_name" class="field-input" :placeholder="t('profile.personal.placeholderName')" maxlength="64" />
+          <input v-model="profileEdit.first_name" class="field-input"
+            :placeholder="t('profile.personal.placeholderName')" maxlength="64" />
         </div>
         <div class="edit-field">
           <label class="field-label">{{ t('profile.personal.lastName') }}</label>
-          <input v-model="profileEdit.last_name" class="field-input" :placeholder="t('profile.personal.placeholderLastName')" maxlength="64" />
+          <input v-model="profileEdit.last_name" class="field-input"
+            :placeholder="t('profile.personal.placeholderLastName')" maxlength="64" />
         </div>
         <div class="edit-field">
           <label class="field-label">{{ t('profile.personal.gender') }}</label>
           <div class="gender-options">
-            <button v-for="g in genderOptions" :key="g.value"
-              class="gender-btn" :class="{ active: profileEdit.gender === g.value }"
+            <button v-for="g in genderOptions" :key="g.value" class="gender-btn"
+              :class="{ active: profileEdit.gender === g.value }"
               @click="profileEdit.gender = profileEdit.gender === g.value ? '' : g.value">
               {{ g.label }}
             </button>
@@ -323,7 +325,8 @@ onMounted(async () => {
         </div>
         <div class="edit-actions">
           <button class="cancel-btn" @click="cancelEditProfile">{{ t('profile.personal.cancel') }}</button>
-          <button class="save-btn" @click="savePersonalProfile" :disabled="isSavingProfile">{{ t('profile.personal.save') }}</button>
+          <button class="save-btn" @click="savePersonalProfile" :disabled="isSavingProfile">{{
+            t('profile.personal.save') }}</button>
         </div>
       </FpCard>
     </section>
@@ -396,7 +399,8 @@ onMounted(async () => {
               <span class="badge muted">{{ t('profile.labels.category') }}: {{ p.category || '—' }}</span>
               <span v-if="getMinPrice(p.prices)" class="badge price">
                 {{ formatPrice(getMinPrice(p.prices)!.price) }}
-                <template v-if="getMinPrice(p.prices)!.stores?.name"> · {{ getMinPrice(p.prices)!.stores!.name }}</template>
+                <template v-if="getMinPrice(p.prices)!.stores?.name"> · {{ getMinPrice(p.prices)!.stores!.name
+                  }}</template>
               </span>
               <span v-else class="badge muted">Без цены</span>
               <span class="badge warning">{{ t('profile.moderation.pending') }}</span>
@@ -419,12 +423,13 @@ onMounted(async () => {
 .profile-view {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xl);
+  gap: var(--spacing-sm);
   padding: 0 var(--spacing-sm);
   width: 100%;
 }
 
 .profile-header {
+  margin-top: .5rem;
   display: flex;
   align-items: center;
   gap: var(--spacing-lg);
@@ -904,18 +909,27 @@ onMounted(async () => {
   cursor: pointer;
   transition: opacity 0.15s;
 
-  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 
   &.approve {
     background: rgba(var(--color-success-rgb, 34, 197, 94), 0.15);
     color: var(--color-success, #22c55e);
-    &:active:not(:disabled) { opacity: 0.75; }
+
+    &:active:not(:disabled) {
+      opacity: 0.75;
+    }
   }
 
   &.reject {
     background: rgba(var(--color-error-rgb, 255, 87, 87), 0.12);
     color: var(--color-error);
-    &:active:not(:disabled) { opacity: 0.75; }
+
+    &:active:not(:disabled) {
+      opacity: 0.75;
+    }
   }
 }
 
@@ -940,7 +954,9 @@ onMounted(async () => {
   align-items: center;
   gap: 8px;
 
-  h1 { margin: 0; }
+  h1 {
+    margin: 0;
+  }
 }
 
 .edit-name-btn {
@@ -953,7 +969,9 @@ onMounted(async () => {
   display: flex;
   align-items: center;
 
-  &:hover { color: var(--color-primary); }
+  &:hover {
+    color: var(--color-primary);
+  }
 }
 
 .display-name-edit {
@@ -984,8 +1002,15 @@ onMounted(async () => {
   cursor: pointer;
   color: var(--color-text-secondary);
 
-  &:hover { border-color: var(--color-primary); color: var(--color-primary); }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .personal-info-section {
@@ -1021,7 +1046,10 @@ onMounted(async () => {
   cursor: pointer;
   transition: all 0.15s;
 
-  &:hover { border-color: var(--color-primary); color: var(--color-primary); }
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
 }
 
 .info-card {
@@ -1037,7 +1065,9 @@ onMounted(async () => {
   padding: 10px 0;
   border-bottom: 1px solid var(--color-border);
 
-  &:last-child { border-bottom: none; }
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .info-label {
@@ -1130,7 +1160,9 @@ onMounted(async () => {
   cursor: pointer;
   transition: all 0.15s;
 
-  &:hover { border-color: var(--color-text-secondary); }
+  &:hover {
+    border-color: var(--color-text-secondary);
+  }
 }
 
 .save-btn {
@@ -1145,7 +1177,13 @@ onMounted(async () => {
   cursor: pointer;
   transition: opacity 0.15s;
 
-  &:disabled { opacity: 0.6; cursor: not-allowed; }
-  &:active:not(:disabled) { opacity: 0.85; }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:active:not(:disabled) {
+    opacity: 0.85;
+  }
 }
 </style>
