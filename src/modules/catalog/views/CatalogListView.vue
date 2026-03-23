@@ -443,7 +443,7 @@ watch(loadMoreTrigger, (el) => {
 // ── Product list section ──
 .list-section {
   @media (max-width: 480px) {
-    max-height: calc(100vh - 23rem);
+    max-height: calc(100vh - 18rem);
     overflow-y: auto;
   }
 }
