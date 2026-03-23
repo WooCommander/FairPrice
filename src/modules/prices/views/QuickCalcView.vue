@@ -126,7 +126,8 @@ const formatPrice = (val: number) => {
                 </div>
                 <div class="field-group">
                     <div class="amount-group" @keydown.enter="calculate">
-                        <FpNumberInput v-model="amount" :label="`Вес (${unit})`" :min="0" :step="unit === 'g' ? 50 : 0.1" />
+                        <FpNumberInput v-model="amount" :label="`Вес (${unit})`" :min="0"
+                            :step="unit === 'g' ? 50 : 0.1" />
                         <button class="unit-toggle" @click="unit = unit === 'g' ? 'kg' : 'g'">
                             {{ unit }}
                         </button>
@@ -163,7 +164,7 @@ const formatPrice = (val: number) => {
 <style scoped lang="scss">
 .quick-calc-view {
     padding: 0 var(--spacing-sm);
-    min-height: 100vh;
+    min-height: calc(100vh - 10rem);
 }
 
 .ergo-header {
@@ -213,7 +214,7 @@ const formatPrice = (val: number) => {
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
 }
 
 .input-row {
@@ -275,6 +276,8 @@ const formatPrice = (val: number) => {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    max-height: calc(100vh - 25.5rem);
+    overflow-y: auto;
 }
 
 .result-card {

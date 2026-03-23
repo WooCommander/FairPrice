@@ -167,9 +167,9 @@ const handleLogout = async () => {
 				<ShoppingCart class="icon" :size="20" />
 				<span class="label">{{ t('nav.shoppingList') }}</span>
 			</a>
-			<a class="nav-item" :class="{ active: route.path === '/favorites' }" @click.prevent="navigate('/favorites')">
-				<Star class="icon" :size="20" />
-				<span class="label">{{ t('nav.favorites') }}</span>
+			<a class="nav-item" :class="{ active: route.path === '/quick-calc' }" @click.prevent="navigate('/quick-calc')">
+				<Calculator class="icon" :size="20" />
+				<span class="label">{{ t('nav.quickCalc') }}</span>
 			</a>
 		</nav>
 
