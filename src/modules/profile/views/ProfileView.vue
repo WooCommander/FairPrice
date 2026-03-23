@@ -238,7 +238,7 @@ onMounted(async () => {
         <p class="email">{{ user.email }}</p>
         <div class="badges">
           <span class="badge" v-if="stats">⭐ {{ stats.reputation }} {{ t('profile.stats.reputation') }}</span>
-          <span class="badge id-badge" title="User ID">🆔 {{ user.id.slice(0, 8) }}...</span>
+          <span class="badge id-badge" title="User ID">🆔 {{ user.id.slice(0, 28) }}...</span>
         </div>
       </div>
     </section>
@@ -400,7 +400,7 @@ onMounted(async () => {
               <span v-if="getMinPrice(p.prices)" class="badge price">
                 {{ formatPrice(getMinPrice(p.prices)!.price) }}
                 <template v-if="getMinPrice(p.prices)!.stores?.name"> · {{ getMinPrice(p.prices)!.stores!.name
-                  }}</template>
+                }}</template>
               </span>
               <span v-else class="badge muted">Без цены</span>
               <span class="badge warning">{{ t('profile.moderation.pending') }}</span>
@@ -434,7 +434,7 @@ onMounted(async () => {
   align-items: center;
   gap: var(--spacing-lg);
   background: var(--color-surface);
-  padding: var(--spacing-xl);
+  padding: var(--spacing-md);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-1);
@@ -471,6 +471,7 @@ onMounted(async () => {
 
   .user-info {
     z-index: 1;
+    width: 100%;
 
     h1 {
       margin: 0;
@@ -487,8 +488,9 @@ onMounted(async () => {
   }
 
   .badges {
-    display: flex;
+    // display: flex;
     gap: var(--spacing-sm);
+    width: 100%;
 
     .badge {
       background: var(--color-background);
