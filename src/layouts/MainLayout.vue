@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { authStore } from '@/modules/auth/store/authStore'
+import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { changelog } from '@/data/changelog'
 import { setLocale, supportedLocales, i18n } from '@/i18n'
 import { useI18n } from 'vue-i18n'
@@ -27,6 +28,16 @@ const avatarUrl = computed(() => {
 })
 const avatarLetter = computed(() => userRef.value?.email?.charAt(0).toUpperCase() || '?')
 const profileTooltip = computed(() => userRef.value?.email || t('auth.guest'))
+const pendingModerationCount = ref(0)
+const loadPendingCount = async () => {
+	if (!userRef.value) return
+	try {
+		const items = await CatalogService.getPendingProductsForModeration()
+		pendingModerationCount.value = items.length
+	} catch { pendingModerationCount.value = 0 }
+}
+onMounted(loadPendingCount)
+watch(userRef, loadPendingCount)
 
 const handleProfileClick = async () => {
 	if (userRef.value) {
@@ -130,6 +141,7 @@ const handleLogout = async () => {
 					<div class="profile-chip" :class="{ guest: !userRef }" :title="profileTooltip" @click="handleProfileClick">
 						<img v-if="avatarUrl" :src="avatarUrl" alt="avatar" referrerpolicy="no-referrer" />
 						<span v-else class="avatar-letter">{{ avatarLetter }}</span>
+						<span v-if="pendingModerationCount > 0" class="moderation-badge">{{ pendingModerationCount > 99 ? '99+' : pendingModerationCount }}</span>
 					</div>
 				</div>
 			</div>
@@ -405,11 +417,31 @@ const handleLogout = async () => {
 	transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s;
 	box-shadow: 0 6px 14px rgba(var(--color-primary-rgb), 0.24);
 
+	position: relative;
+
 	img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		border-radius: 50%;
+	}
+
+	.moderation-badge {
+		position: absolute;
+		top: -4px;
+		right: -4px;
+		min-width: 16px;
+		height: 16px;
+		padding: 0 4px;
+		border-radius: 8px;
+		background: var(--color-error, #ef4444);
+		color: #fff;
+		font-size: 10px;
+		font-weight: 700;
+		line-height: 16px;
+		text-align: center;
+		border: 2px solid var(--color-background);
+		pointer-events: none;
 	}
 
 	&:hover {

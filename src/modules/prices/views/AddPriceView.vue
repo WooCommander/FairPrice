@@ -11,7 +11,7 @@ import {
   FpMobilePicker,
   FpNumberInput
 } from '@/design-system'
-import { ChevronLeft } from 'lucide-vue-next'
+
 
 const route = useRoute()
 const router = useRouter()

@@ -113,9 +113,12 @@ const handleScan = async (barcode: string) => {
   }
 }
 
-watch([searchQuery, selectedCategory, selectedStoreId], () => {
-  handleSearch()
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, () => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(handleSearch, 1000)
 })
+watch([selectedCategory, selectedStoreId], handleSearch)
 
 const loadMoreTrigger = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
