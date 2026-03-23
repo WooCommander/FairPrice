@@ -95,7 +95,7 @@ const goToProduct = (id: string) => {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
-    max-height: calc(100vh - 20rem);
+    max-height: calc(100vh - 19.5rem);
     overflow-y: auto;
 
 }
