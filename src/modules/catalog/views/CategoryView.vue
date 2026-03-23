@@ -115,7 +115,7 @@ const goToAddProduct = () => {
 
 <style scoped lang="scss">
 .category-view {
-    padding: 0 0.5rem;
+    padding: 0 var(--spacing-sm);
 }
 
 .store-group {

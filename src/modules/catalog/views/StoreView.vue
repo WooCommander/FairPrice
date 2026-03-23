@@ -132,7 +132,7 @@ const saveEdit = async () => {
 
 <style scoped lang="scss">
 .store-view {
-    padding: 0 0.5rem;
+    padding: 0 var(--spacing-sm);
 }
 
 .ergo-header {
@@ -142,7 +142,7 @@ const saveEdit = async () => {
     z-index: 10;
     border-bottom: 1px solid var(--color-border);
     // Negative margin to overflow valid padding
-    margin: 0 -0.5rem var(--spacing-md) -0.5rem;
+    margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-md) calc(-1 * var(--spacing-sm));
     padding: 12px 16px;
 }
 

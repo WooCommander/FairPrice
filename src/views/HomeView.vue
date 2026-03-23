@@ -197,7 +197,7 @@ shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
 <style scoped lang="scss">
 // Hero Section Refined
 .dashboard-hero {
-    padding: 32px 20px 24px;
+    padding: 32px var(--spacing-sm) 24px;
     background: linear-gradient(180deg, rgba(var(--color-primary-rgb), 0.12) 0%, transparent 100%);
     display: flex;
     flex-direction: column;
@@ -307,7 +307,7 @@ shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
     display: flex;
     flex-direction: column;
     gap: 32px;
-    padding: 0 20px 40px;
+    padding: 0 var(--spacing-sm) 40px;
 }
 
 // Stats Grid

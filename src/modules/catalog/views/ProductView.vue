@@ -548,7 +548,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 	padding: 16px;
 
 	@media (max-width: 600px) {
-		padding: 0.5rem; // User requested exactly this
+		padding: 0.5rem var(--spacing-sm);
 	}
 
 	display: flex;

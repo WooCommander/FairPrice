@@ -72,7 +72,7 @@ const goToProduct = (id: string) => {
 
 <style scoped lang="scss">
 .activity-view {
-    padding: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-sm);
     width: 100%;
 }
 

@@ -193,13 +193,13 @@ watch(loadMoreTrigger, (el) => {
 
     <!-- ── CATALOG ── -->
     <div v-else>
-      <div class="page-title-row">
-        <h1 class="page-title">Каталог товаров</h1>
-        <FpButton size="sm" @click="router.push({ path: '/create-product', query: selectedCategory ? { category: selectedCategory } : {} })">Добавить</FpButton>
-      </div>
+      <div class="catalog-header">
+        <div class="page-title-row">
+          <h1 class="page-title">Каталог товаров</h1>
+          <FpButton size="sm" @click="router.push({ path: '/create-product', query: selectedCategory ? { category: selectedCategory } : {} })">Добавить</FpButton>
+        </div>
 
-      <div class="sticky-search-wrapper">
-        <div class="search-input-group" style="display: flex; gap: 8px;">
+        <div class="search-input-group">
           <FpInput v-model="searchQuery" placeholder="Поиск товара..." @keydown.enter="handleSearch" style="flex: 1;" />
           <FpButton variant="outline" size="icon" @click="showScanner = true" title="Сканировать штрих-код">
             <span style="font-size: 20px;">📷</span>
@@ -269,7 +269,37 @@ watch(loadMoreTrigger, (el) => {
 
 <style scoped lang="scss">
 .catalog-list-view {
-  padding: 0 0.5rem;
+  padding: 0 var(--spacing-sm);
+}
+
+.catalog-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-background);
+  margin: 0 calc(-1 * var(--spacing-sm));
+  padding: 0 var(--spacing-sm) var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-sm);
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0 var(--spacing-sm);
+
+  .page-title {
+    margin: 0;
+    font-size: var(--text-h3);
+    font-weight: 700;
+  }
+}
+
+.search-input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 // ── Tile overrides ──

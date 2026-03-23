@@ -83,7 +83,7 @@ const viewStore = (storeId: string) => {
 
 <style scoped lang="scss">
 .stores-list-view {
-    padding: 0 0.5rem;
+    padding: 0 var(--spacing-sm);
 }
 
 .empty {

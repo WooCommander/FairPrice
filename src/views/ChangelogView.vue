@@ -58,7 +58,7 @@ const releases = changelog
 
 <style scoped lang="scss">
 .changelog-view {
-  padding: var(--spacing-lg) var(--spacing-md);
+  padding: var(--spacing-lg) var(--spacing-sm);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);

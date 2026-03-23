@@ -59,7 +59,7 @@ const handleCreate = async () => {
 
 <style scoped lang="scss">
 .create-view {
-    padding: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-sm);
 }
 
 .section-header {

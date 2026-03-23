@@ -420,7 +420,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
-  padding: 0 0.5rem; // Add horizontal padding for mobile
+  padding: 0 var(--spacing-sm);
   width: 100%;
 }
 

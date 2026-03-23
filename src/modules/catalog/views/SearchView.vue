@@ -154,7 +154,7 @@ const goToProduct = (id: string) => {
 }
 
 .results-list {
-    padding: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-sm);
     flex: 1;
     overflow-y: auto; // Internal scroll
     padding-bottom: 80px; // Extra space for mobile nav/fab

@@ -114,7 +114,7 @@ const toggleFavorite = async (productId: string) => {
 
 <style scoped lang="scss">
 .favorites-view {
-    padding: 0 0.5rem;
+    padding: 0 var(--spacing-sm);
     width: 100%;
 }
 

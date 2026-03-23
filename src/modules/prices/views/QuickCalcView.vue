@@ -162,7 +162,7 @@ const formatPrice = (val: number) => {
 
 <style scoped lang="scss">
 .quick-calc-view {
-    padding: 0 0.5rem;
+    padding: 0 var(--spacing-sm);
     min-height: 100vh;
 }
 
@@ -172,7 +172,7 @@ const formatPrice = (val: number) => {
     top: 0;
     z-index: 10;
     border-bottom: 1px solid var(--color-border);
-    margin: 0 -0.5rem var(--spacing-md) -0.5rem;
+    margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-md) calc(-1 * var(--spacing-sm));
     padding: 12px 16px;
 }
 
