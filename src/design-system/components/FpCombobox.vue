@@ -213,7 +213,8 @@ onUnmounted(() => {
 }
 
 .dropdown-item {
-    padding: 12px 16px;
+    padding: 12px;
+    ;
     cursor: pointer;
     font-size: var(--text-body-1);
     color: var(--color-text-primary);

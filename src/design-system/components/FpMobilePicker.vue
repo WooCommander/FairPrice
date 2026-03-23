@@ -200,7 +200,8 @@ watch(searchQuery, (q) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 12px;
+    ;
     border-bottom: 1px solid var(--color-border);
     background: var(--color-surface);
 }

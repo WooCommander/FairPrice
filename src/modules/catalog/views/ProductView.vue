@@ -296,7 +296,8 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 				</div>
 
 				<div class="price-hero">
-					<span class="main-price">{{ currentProduct.lastPrice ? formatPrice(currentProduct.lastPrice) : 'Нет цены' }}</span>
+					<span class="main-price">{{ currentProduct.lastPrice ? formatPrice(currentProduct.lastPrice) : 'Нет цены'
+						}}</span>
 					<span class="unit-label" v-if="currentProduct.unit">за {{ currentProduct.unit }}</span>
 				</div>
 
@@ -304,7 +305,8 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 					<span class="analysis-pill" :class="currentProduct.priceStatus">
 						{{ priceStatusLabel }}
 					</span>
-					<span class="avg-ref" v-if="currentProduct.averagePrice">Средняя: ~{{ formatPrice(currentProduct.averagePrice) }}</span>
+					<span class="avg-ref" v-if="currentProduct.averagePrice">Средняя: ~{{ formatPrice(currentProduct.averagePrice)
+						}}</span>
 				</div>
 
 				<!-- Cheapest Store Insight -->
@@ -332,11 +334,8 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 					<div class="period-tabs">
 						<button
 							v-for="p in [{ key: '7d', label: '7д' }, { key: '30d', label: '30д' }, { key: '90d', label: '90д' }, { key: 'all', label: 'Всё' }]"
-							:key="p.key"
-							class="period-tab"
-							:class="{ active: selectedPeriod === p.key }"
-							@click="selectedPeriod = p.key as any"
-						>{{ p.label }}</button>
+							:key="p.key" class="period-tab" :class="{ active: selectedPeriod === p.key }"
+							@click="selectedPeriod = p.key as any">{{ p.label }}</button>
 					</div>
 				</div>
 				<div v-if="chartData.length > 1">
@@ -356,7 +355,8 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 				<FpButton variant="outline" size="sm" @click="addToShoppingList">
 					📝 В список
 				</FpButton>
-				<FpButton variant="outline" size="sm" @click="router.push({ path: '/catalog', query: { category: currentProduct.category } })">
+				<FpButton variant="outline" size="sm"
+					@click="router.push({ path: '/catalog', query: { category: currentProduct.category } })">
 					📂 В категорию
 				</FpButton>
 			</div>
@@ -374,20 +374,12 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 							<div class="h-date">{{ item.dateRelative }}</div>
 
 							<div v-if="item.createdBy !== currentUserId" class="vote-row">
-								<button
-									class="vote-btn confirm"
-									:class="{ active: item.userVote === 'confirm' }"
-									:disabled="votingInProgress.has(item.id!)"
-									@click.stop="handleVote(item.id, 'confirm')"
-								>
+								<button class="vote-btn confirm" :class="{ active: item.userVote === 'confirm' }"
+									:disabled="votingInProgress.has(item.id!)" @click.stop="handleVote(item.id, 'confirm')">
 									👍<span v-if="item.confirmCount > 0"> {{ item.confirmCount }}</span>
 								</button>
-								<button
-									class="vote-btn deny"
-									:class="{ active: item.userVote === 'deny' }"
-									:disabled="votingInProgress.has(item.id!)"
-									@click.stop="handleVote(item.id, 'deny')"
-								>
+								<button class="vote-btn deny" :class="{ active: item.userVote === 'deny' }"
+									:disabled="votingInProgress.has(item.id!)" @click.stop="handleVote(item.id, 'deny')">
 									👎<span v-if="item.denyCount > 0"> {{ item.denyCount }}</span>
 								</button>
 							</div>
@@ -411,13 +403,8 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 						<FpInput v-model="productForm.category" label="Категория" placeholder="Категория" />
 						<div class="translation-block">
 							<div class="translation-title">Translations</div>
-							<FpInput
-								v-for="lang in supportedLocales"
-								:key="lang"
-								v-model="translationEdits[lang]"
-								:label="`Name (${lang.toUpperCase()})`"
-								placeholder=""
-							/>
+							<FpInput v-for="lang in supportedLocales" :key="lang" v-model="translationEdits[lang]"
+								:label="`Name (${lang.toUpperCase()})`" placeholder="" />
 						</div>
 					</div>
 
@@ -683,7 +670,8 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 	background: linear-gradient(135deg, rgba(var(--color-success-rgb), 0.1), transparent);
 	border: 1px dashed var(--color-success);
 	border-radius: 12px;
-	padding: 12px 16px;
+	padding: 12px;
+	;
 	margin: 16px 0;
 	width: 100%;
 	cursor: pointer;

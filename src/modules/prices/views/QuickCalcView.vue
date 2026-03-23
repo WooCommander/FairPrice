@@ -1,14 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { ArrowLeft, Trash2 } from 'lucide-vue-next'
+import { Trash2 } from 'lucide-vue-next'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 
-const router = useRouter()
-
-// Standardize header pattern
-// Using standard ergo-header
 
 interface CalcItem {
     id: string
@@ -103,19 +98,11 @@ const formatPrice = (val: number) => {
 <template>
     <div class="quick-calc-view">
         <header class="ergo-header">
-            <div class="header-inner">
-                <button class="nav-btn" @click="router.back()">
-                    <ArrowLeft :size="24" />
+            <div class="page-title-row">
+                <h1 class="header-title">Калькулятор выгоды</h1>
+                <button v-if="items.length > 0" class="nav-btn" @click="clearAll" title="Очистить всё">
+                    <Trash2 :size="20" />
                 </button>
-                <div class="header-title">
-                    Калькулятор выгоды
-                </div>
-                <div class="header-controls">
-                    <button class="nav-btn" @click="clearAll" v-if="items.length > 0" title="Очистить всё">
-                        <Trash2 :size="20" />
-                    </button>
-                    <div v-else style="width: 40px;"></div>
-                </div>
             </div>
         </header>
 
@@ -168,27 +155,26 @@ const formatPrice = (val: number) => {
 }
 
 .ergo-header {
-    background: var(--color-surface);
+    // background: var(--color-surface);
     position: sticky;
     top: 0;
     z-index: 10;
-    border-bottom: 1px solid var(--color-border);
-    margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-md) calc(-1 * var(--spacing-sm));
-    padding: 12px 16px;
+    // border-bottom: 1px solid var(--color-border);
+    // margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-md) calc(-1 * var(--spacing-sm));
+    padding-bottom: 12px;
 }
 
-.header-inner {
+.page-title-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
 }
 
 .header-title {
-    font-size: 1.125rem;
-    font-weight: 600;
+    margin: 0;
+    font-size: var(--text-h5);
+    font-weight: 700;
     color: var(--color-text-primary);
-    text-align: center;
 }
 
 .nav-btn {

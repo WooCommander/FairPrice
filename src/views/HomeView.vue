@@ -52,7 +52,7 @@ onMounted(async () => {
             AuthService.getUserActivity(5),
             catalogStore.loadFavorites(),
             catalogStore.loadDashboardStats(),
-shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
+            shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
         ])
         userStats.value = stats
         userActivity.value = activity
@@ -159,7 +159,7 @@ shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
                 </button>
             </section>
 
-<!-- My Activity Feed -->
+            <!-- My Activity Feed -->
             <section class="activity-section">
                 <div class="section-header">
                     <h2 class="section-title">Моя активность 🕒</h2>
@@ -187,7 +187,8 @@ shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
                             <span class="act-time">{{ act.time }}</span>
                         </div>
                     </div>
-                    <FpButton variant="text" size="sm" class="full-history-btn" @click="router.push('/activity')">Вся история</FpButton>
+                    <FpButton variant="text" size="sm" class="full-history-btn" @click="router.push('/activity')">Вся
+                        история</FpButton>
                 </div>
             </section>
         </div>
@@ -197,7 +198,7 @@ shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve()
 <style scoped lang="scss">
 // Hero Section Refined
 .dashboard-hero {
-    padding: 32px var(--spacing-sm) 24px;
+    padding: var(--spacing-sm);
     background: linear-gradient(180deg, rgba(var(--color-primary-rgb), 0.12) 0%, transparent 100%);
     display: flex;
     flex-direction: column;

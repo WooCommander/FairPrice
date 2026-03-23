@@ -237,14 +237,28 @@ const formatPrice = (p: number) => {
     padding: 0 var(--spacing-sm);
 }
 
+.page-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    // padding: var(--spacing-sm) 0;
+
+    .page-title {
+        margin: 0;
+        font-size: var(--text-h5);
+        font-weight: 700;
+    }
+}
+
 .ergo-header {
     background: var(--color-surface);
     position: sticky;
     top: 0;
     z-index: 100;
     border-bottom: 1px solid var(--color-border);
-    margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-md) calc(-1 * var(--spacing-sm));
-    padding: 12px 16px;
+    // margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-md) calc(-1 * var(--spacing-sm));
+    padding: 12px;
+
 }
 
 .header-inner {

@@ -196,7 +196,9 @@ watch(loadMoreTrigger, (el) => {
       <div class="catalog-header">
         <div class="page-title-row">
           <h1 class="page-title">Каталог товаров</h1>
-          <FpButton size="sm" @click="router.push({ path: '/create-product', query: selectedCategory ? { category: selectedCategory } : {} })">Добавить</FpButton>
+          <FpButton size="sm"
+            @click="router.push({ path: '/create-product', query: selectedCategory ? { category: selectedCategory } : {} })">
+            Добавить</FpButton>
         </div>
 
         <div class="search-input-group">
@@ -280,18 +282,18 @@ watch(loadMoreTrigger, (el) => {
   margin: 0 calc(-1 * var(--spacing-sm));
   padding: 0 var(--spacing-sm) var(--spacing-sm);
   border-bottom: 1px solid var(--color-border);
-  margin-bottom: var(--spacing-sm);
+  // margin-bottom: var(--spacing-sm);
 }
 
 .page-title-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-sm) 0 var(--spacing-sm);
+  // padding: var(--spacing-sm) 0 var(--spacing-sm);
 
   .page-title {
     margin: 0;
-    font-size: var(--text-h3);
+    font-size: var(--text-h5);
     font-weight: 700;
   }
 }

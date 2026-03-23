@@ -77,10 +77,9 @@ const goToProduct = (id: string) => {
 }
 
 .section-header {
-    margin-bottom: var(--spacing-xl);
 
     h1 {
-        font-size: var(--text-h4);
+        font-size: var(--text-h5);
         font-weight: 700;
         margin-bottom: 4px;
     }

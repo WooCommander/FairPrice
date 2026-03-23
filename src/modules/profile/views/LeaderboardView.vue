@@ -6,8 +6,8 @@ import { FpSpinner } from '@/design-system'
 
 const categories: { key: LeaderboardCategory; label: string; unit: string; icon: string }[] = [
     { key: 'reputation', label: 'Репутация', unit: 'очков', icon: '🏆' },
-    { key: 'products',   label: 'Товары',    unit: 'товаров', icon: '📦' },
-    { key: 'prices',     label: 'Цены',      unit: 'цен',     icon: '💰' },
+    { key: 'products', label: 'Товары', unit: 'товаров', icon: '📦' },
+    { key: 'prices', label: 'Цены', unit: 'цен', icon: '💰' },
 ]
 
 const LEVEL_COLORS: Record<number, string> = {
@@ -93,7 +93,7 @@ onMounted(load)
                 <!-- Score -->
                 <div class="entry-score">
                     <span class="score-value">{{ entry.score.toLocaleString('ru-RU') }}</span>
-                    <span class="score-unit">{{ categories.find(c => c.key === activeCategory)?.unit }}</span>
+                    <span class="score-unit">{{categories.find(c => c.key === activeCategory)?.unit}}</span>
                 </div>
             </FpCard>
         </div>
@@ -134,7 +134,9 @@ onMounted(load)
         color: var(--color-primary);
     }
 
-    .tab-icon { font-size: 16px; }
+    .tab-icon {
+        font-size: 16px;
+    }
 }
 
 .loading-state,
@@ -155,7 +157,8 @@ onMounted(load)
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 16px;
+    padding: 12px;
+    ;
 
     &.is-me {
         border: 1.5px solid var(--color-primary);
@@ -168,7 +171,10 @@ onMounted(load)
     text-align: center;
     flex-shrink: 0;
 
-    .medal { font-size: 24px; }
+    .medal {
+        font-size: 24px;
+    }
+
     .rank-num {
         font-size: 14px;
         font-weight: 600;
@@ -193,7 +199,9 @@ onMounted(load)
     font-weight: 600;
     color: var(--color-text-primary);
 
-    &.me-label { color: var(--color-primary); }
+    &.me-label {
+        color: var(--color-primary);
+    }
 }
 
 .level-badge {

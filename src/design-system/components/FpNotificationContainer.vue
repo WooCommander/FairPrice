@@ -14,13 +14,8 @@ const iconMap: Record<string, string> = {
 <template>
     <Teleport to="body">
         <TransitionGroup tag="div" name="fp-notif" class="fp-notif-container">
-            <div
-                v-for="n in notifications"
-                :key="n.id"
-                class="fp-notif"
-                :class="`fp-notif--${n.type}`"
-                @click="dismiss(n.id)"
-            >
+            <div v-for="n in notifications" :key="n.id" class="fp-notif" :class="`fp-notif--${n.type}`"
+                @click="dismiss(n.id)">
                 <span class="fp-notif__icon">{{ iconMap[n.type] }}</span>
                 <span class="fp-notif__msg">{{ n.message }}</span>
             </div>
@@ -46,7 +41,8 @@ const iconMap: Record<string, string> = {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 16px;
+    padding: 12px;
+    ;
     border-radius: 14px;
     font-size: 14px;
     font-weight: 500;

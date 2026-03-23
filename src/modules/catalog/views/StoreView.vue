@@ -143,7 +143,8 @@ const saveEdit = async () => {
     border-bottom: 1px solid var(--color-border);
     // Negative margin to overflow valid padding
     margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-md) calc(-1 * var(--spacing-sm));
-    padding: 12px 16px;
+    padding: 12px;
+    ;
 }
 
 .header-inner {

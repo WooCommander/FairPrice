@@ -216,9 +216,9 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
   <div class="add-price-view">
     <header class="ergo-header">
       <div class="header-inner">
-        <button class="nav-btn" @click="step === 1 ? router.back() : step = 1">
+        <!-- <button class="nav-btn" @click="step === 1 ? router.back() : step = 1">
           <ChevronLeft :size="24" :stroke-width="2.5" />
-        </button>
+        </button> -->
         <h1 class="header-title">
           {{ step === 1 ? 'Добавить цену' : currentProduct?.name }}
         </h1>
@@ -355,27 +355,28 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
 }
 
 .ergo-header {
-  background: var(--color-surface);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  border-bottom: 1px solid var(--color-border);
-  margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-md) calc(-1 * var(--spacing-sm));
-  padding: 12px 16px;
+  // background: var(--color-surface);
+  // position: sticky;
+  // top: 0;
+  // z-index: 10;
+  // border-bottom: 1px solid var(--color-border);
+  // margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-md) calc(-1 * var(--spacing-sm));
+  padding: 12px;
+  ;
 }
 
 .header-inner {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  // align-items: center;
+  // justify-content: space-between;
 }
 
 .header-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--text-h5);
+  font-weight: 700;
   flex: 1;
-  text-align: center;
-  margin: 0 8px;
+  // text-align: center;
+  // margin: 0 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -87,7 +87,8 @@ const goToAddProduct = () => {
                                 <span class="subtitle">{{ product.unit }}</span>
                             </div>
                             <div class="tile-footer">
-                                <span class="main-value">{{ product.lastPrice ? formatPrice(product.lastPrice) : 'Нет цены' }}</span>
+                                <span class="main-value">{{ product.lastPrice ? formatPrice(product.lastPrice) : 'Нет
+                                    цены' }}</span>
                                 <span class="extra-info">{{ product.lastUpdateRelative }}</span>
                             </div>
                         </div>
@@ -119,7 +120,7 @@ const goToAddProduct = () => {
 }
 
 .store-group {
-    margin-bottom: var(--spacing-lg);
+    // margin-bottom: var(--spacing-lg);
 }
 
 .store-header {
