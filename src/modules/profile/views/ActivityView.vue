@@ -95,6 +95,9 @@ const goToProduct = (id: string) => {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+    max-height: calc(100vh - 20rem);
+    overflow-y: auto;
+
 }
 
 .activity-item {

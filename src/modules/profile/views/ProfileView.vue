@@ -238,7 +238,7 @@ onMounted(async () => {
         <p class="email">{{ user.email }}</p>
         <div class="badges">
           <span class="badge" v-if="stats">⭐ {{ stats.reputation }} {{ t('profile.stats.reputation') }}</span>
-          <span class="badge id-badge" title="User ID">🆔 {{ user.id.slice(0, 28) }}...</span>
+          <span class="badge id-badge" title="User ID">🆔 {{ user.id.slice(0, 26) }}...</span>
         </div>
       </div>
     </section>
