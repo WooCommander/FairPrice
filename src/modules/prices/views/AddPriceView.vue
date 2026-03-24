@@ -361,7 +361,7 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
   // z-index: 10;
   // border-bottom: 1px solid var(--color-border);
   // margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-md) calc(-1 * var(--spacing-sm));
-  padding: 12px;
+  padding: 12px 12px 0 12px;
   ;
 }
 
