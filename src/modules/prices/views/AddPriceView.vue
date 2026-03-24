@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { priceStore } from '../store/priceStore'
@@ -9,7 +9,8 @@ import {
   FpCard,
   FpInput,
   FpMobilePicker,
-  FpNumberInput
+  FpNumberInput,
+  FpSpinner
 } from '@/design-system'
 
 
@@ -21,7 +22,10 @@ const step = ref(1) // 1: Select Product, 2: Enter Details
 const searchQuery = ref('')
 const selectedCategory = ref<string | null>(route.query.category as string || null)
 const isCreating = ref(false)
-const { isLoading, hasMore } = catalogStore
+const { isLoading } = catalogStore
+
+const loadMoreTrigger = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
 
 // Form data
 const currentProduct = ref<{ id: string, name: string, category: string, unit?: string } | null>(null)
@@ -202,14 +206,36 @@ onMounted(() => {
   } else {
     loadProducts()
   }
+
+  observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && catalogStore.hasMore.value && !isLoading.value) {
+      catalogStore.loadMore()
+    }
+  }, { rootMargin: '200px' })
+
+  if (loadMoreTrigger.value) {
+    observer.observe(loadMoreTrigger.value)
+  }
+})
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+})
+
+watch(loadMoreTrigger, (el) => {
+  if (observer) {
+    observer.disconnect()
+    if (el) observer.observe(el)
+  }
 })
 
 // Watch for filter changes
-watch([searchQuery, selectedCategory], ([q, cat]) => {
-  catalogStore.searchProducts(q, {
-    category: cat || undefined
-  })
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, () => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(loadProducts, 1000)
 })
+watch(selectedCategory, loadProducts)
 </script>
 
 <template>
@@ -247,42 +273,41 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
         </div>
       </div>
 
-      <div v-if="isLoading" class="standard-grid">
-        <div v-for="i in 8" :key="i" class="fp-tile skeleton">
-          <div class="tile-info">
-            <div class="skeleton-line sm"></div>
-            <div class="skeleton-line lg"></div>
-          </div>
-        </div>
-      </div>
-
-      <div v-else-if="!isLoading && !isCreating" class="standard-grid">
-        <!-- Create New Tile -->
-        <div class="fp-tile create-tile" @click="startCreation">
-          <div class="tile-info">
-            <span class="subtitle">Новый</span>
-            <h3 class="title">+ Добавить товар</h3>
+      <div class="products-section">
+        <div v-if="isLoading && products.length === 0" class="standard-grid">
+          <div v-for="i in 8" :key="i" class="fp-tile skeleton">
+            <div class="tile-info">
+              <div class="skeleton-line sm"></div>
+              <div class="skeleton-line lg"></div>
+            </div>
           </div>
         </div>
 
-        <!-- Product Tiles -->
-        <div v-for="item in filteredGridProducts" :key="item.id" class="fp-tile"
-          @click="selectProduct({ id: item.id, name: item.name })">
-          <div class="tile-info">
-            <span class="subtitle">{{ item.category }}</span>
-            <h3 class="title">{{ item.name }}</h3>
+        <div v-else-if="!isCreating" class="standard-grid">
+          <!-- Create New Tile -->
+          <div class="fp-tile create-tile" @click="startCreation">
+            <div class="tile-info">
+              <span class="subtitle">Новый</span>
+              <h3 class="title">+ Добавить товар</h3>
+            </div>
+          </div>
+
+          <!-- Product Tiles -->
+          <div v-for="item in filteredGridProducts" :key="item.id" class="fp-tile"
+            @click="selectProduct({ id: item.id, name: item.name })">
+            <div class="tile-info">
+              <span class="subtitle">{{ item.category }}</span>
+              <h3 class="title">{{ item.name }}</h3>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Load More Container -->
-      <div v-if="hasMore && !isCreating" class="load-more-container">
-        <FpButton variant="outline" size="full" :loading="isLoading" @click="catalogStore.loadMore">
-          Загрузить еще
-        </FpButton>
-      </div>
+        <div v-if="catalogStore.hasMore.value && !isCreating" class="load-more">
+          <div ref="loadMoreTrigger" class="load-more-trigger"></div>
+          <FpSpinner v-if="isLoading" />
+        </div>
 
-      <FpCard class="m-4" v-if="isCreating">
+        <FpCard class="m-4" v-if="isCreating">
         <div class="creation-form">
           <h3>Новый товар</h3>
           <div class="form-grid">
@@ -306,6 +331,7 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
           </div>
         </div>
       </FpCard>
+      </div>
     </section>
 
     <!-- Step 2: Enter Details -->
@@ -564,8 +590,21 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
   }
 }
 
-.load-more-container {
-  padding: 16px;
-  margin-bottom: 40px;
+.products-section {
+  @media (max-width: 480px) {
+    max-height: calc(100vh - 23rem);
+    overflow-y: auto;
+  }
+}
+
+.load-more {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 3rem;
+}
+
+.load-more-trigger {
+  height: 1px;
 }
 </style>
