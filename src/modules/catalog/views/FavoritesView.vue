@@ -8,7 +8,6 @@ import { CurrencyService } from '../services/CurrencyService'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpInput from '@/design-system/components/FpInput.vue'
 import { FpSpinner } from '@/design-system'
-import { PRODUCT_CATEGORIES } from '../constants'
 
 const router = useRouter()
 const { currentCurrency } = catalogStore
@@ -21,6 +20,10 @@ const favorites = ref<ProductDTO[]>([])
 const isLoading = ref(true)
 const searchQuery = ref('')
 const selectedCategory = ref<string | null>(null)
+
+const availableCategories = computed(() =>
+    [...new Set(favorites.value.map(p => p.category).filter(Boolean))]
+)
 
 const filteredFavorites = computed(() => {
     let items = favorites.value
@@ -76,7 +79,7 @@ const toggleFavorite = async (productId: string) => {
             </div>
 
             <div class="category-filters">
-                <button v-for="cat in PRODUCT_CATEGORIES" :key="cat" class="category-tag"
+                <button v-for="cat in availableCategories" :key="cat" class="category-tag"
                     :class="{ active: selectedCategory === cat }" @click="toggleCategory(cat)">
                     {{ cat }}
                 </button>

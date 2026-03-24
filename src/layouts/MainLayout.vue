@@ -244,6 +244,13 @@ const handleLogout = async () => {
 							</span>
 							{{ t('nav.quickCalc') }}
 						</a>
+						<a class="drawer-link" :class="{ active: currentPath === '/favorites' }"
+							@click.prevent="navigate('/favorites'); isMenuOpen = false">
+							<span class="link-icon">
+								<Star :size="24" />
+							</span>
+							{{ t('nav.favorites') }}
+						</a>
 					</div>
 
 					<div class="nav-group">
