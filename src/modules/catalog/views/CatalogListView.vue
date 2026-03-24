@@ -284,7 +284,7 @@ watch(loadMoreTrigger, (el) => {
   background: var(--color-background);
   margin: 0 calc(-1 * var(--spacing-sm));
   padding: 0 var(--spacing-sm) var(--spacing-sm);
-  border-bottom: 1px solid var(--color-border);
+  // border-bottom: 1px solid var(--color-border);
   // margin-bottom: var(--spacing-sm);
 }
 

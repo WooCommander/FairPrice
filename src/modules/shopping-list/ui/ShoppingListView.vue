@@ -255,7 +255,7 @@ const formatPrice = (p: number) => {
     position: sticky;
     top: 0;
     z-index: 100;
-    border-bottom: 1px solid var(--color-border);
+    // border-bottom: 1px solid var(--color-border);
     // margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-md) calc(-1 * var(--spacing-sm));
     padding: 12px;
 

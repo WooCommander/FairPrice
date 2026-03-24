@@ -428,7 +428,7 @@ watch([searchQuery, selectedCategory], ([q, cat]) => {
   justify-content: space-between;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--color-border);
+  // border-bottom: 1px solid var(--color-border);
 
   .category {
     color: var(--color-text-secondary);
