@@ -1,19 +1,30 @@
 import { ref, computed, readonly } from 'vue'
 import { shoppingListService } from '../services/ShoppingListService'
 import { type ShoppingListModel, shoppingListDtoToModel } from '../shoppingListAdapter'
+import { getCache, setCache } from '@/shared/lib/cache'
+
+const CACHE_KEY = 'shopping_list'
 
 const items = ref<ShoppingListModel[]>([])
 const isLoading = ref(false)
+
+function saveCache() {
+    setCache(CACHE_KEY, items.value)
+}
 
 export const shoppingListStore = {
     items: readonly(items),
     isLoading: readonly(isLoading),
 
     async loadItems() {
+        const cached = getCache<ShoppingListModel[]>(CACHE_KEY)
+        if (cached) items.value = cached
+
         isLoading.value = true
         try {
             const dtos = await shoppingListService.getItems()
             items.value = dtos.map(shoppingListDtoToModel)
+            saveCache()
         } catch (e) {
             console.error('Failed to load shopping list', e)
         } finally {
@@ -26,6 +37,7 @@ export const shoppingListStore = {
             const newItemDto = await shoppingListService.addItem(text, productId, details)
             if (newItemDto) {
                 items.value.push(shoppingListDtoToModel(newItemDto))
+                saveCache()
             }
         } catch (e) {
             console.error('Failed to add item', e)
@@ -42,12 +54,14 @@ export const shoppingListStore = {
             if (details) {
                 Object.assign(item, details)
             }
+            saveCache()
 
             try {
                 await shoppingListService.toggleItem(id, isChecked, details)
             } catch (e) {
                 // Revert on failure
                 item.isChecked = oldChecked
+                saveCache()
                 console.error('Failed to toggle item', e)
             }
         }
@@ -58,11 +72,13 @@ export const shoppingListStore = {
         if (item) {
             const original = { ...item }
             Object.assign(item, updates)
+            saveCache()
 
             try {
                 await shoppingListService.updateItem(id, updates as any)
             } catch (e) {
                 Object.assign(item, original)
+                saveCache()
                 console.error('Failed to update item', e)
             }
         }
@@ -74,11 +90,13 @@ export const shoppingListStore = {
 
         const removed = items.value[index]
         items.value.splice(index, 1)
+        saveCache()
 
         try {
             await shoppingListService.removeItem(id)
         } catch (e) {
             items.value.splice(index, 0, removed)
+            saveCache()
             console.error('Failed to remove item', e)
         }
     },
@@ -86,11 +104,13 @@ export const shoppingListStore = {
     async deleteChecked() {
         const original = [...items.value]
         items.value = items.value.filter(i => !i.isChecked)
+        saveCache()
 
         try {
             await shoppingListService.deleteChecked()
         } catch (e) {
             items.value = original
+            saveCache()
             console.error('Failed to clear checked items', e)
         }
     },

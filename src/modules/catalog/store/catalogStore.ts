@@ -4,6 +4,7 @@ import { adaptProduct, type ProductModel } from '../adapters/CatalogAdapter'
 import { AuthService } from '@/modules/auth/services/AuthService'
 import { CurrencyService } from '../services/CurrencyService'
 import { PRODUCT_CATEGORIES } from '../constants'
+import { getCache, setCache } from '@/shared/lib/cache'
 
 const searchResults = ref<ProductModel[]>([])
 const recentUpdates = ref<ProductModel[]>([])
@@ -69,8 +70,12 @@ export const catalogStore = {
     },
 
     async loadFavorites() {
+        const cached = getCache<string[]>('favorite_ids')
+        if (cached) favoriteProductIds.value = new Set(cached)
+
         const ids = await CatalogService.getFavorites()
         favoriteProductIds.value = new Set(ids)
+        setCache('favorite_ids', ids)
     },
 
     async toggleFavorite(productId: string) {
@@ -86,6 +91,7 @@ export const catalogStore = {
             const newSet = new Set(favoriteProductIds.value)
             if (isFav) newSet.add(productId); else newSet.delete(productId)
             favoriteProductIds.value = newSet
+            setCache('favorite_ids', Array.from(newSet))
         } catch (e) {
             console.error('Failed to toggle favorite', e)
         }
@@ -94,9 +100,13 @@ export const catalogStore = {
 
     async loadRecentProducts() {
         isSearching.value = true
+        const cached = getCache<ProductModel[]>('recent_products')
+        if (cached) recentUpdates.value = cached
+
         try {
             const results = await CatalogService.getRecentProducts()
             recentUpdates.value = results.map(adaptProduct)
+            setCache('recent_products', recentUpdates.value)
         } finally {
             isSearching.value = false
         }
