@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { DeviceService } from '@/app/services/DeviceService'
 
 const isDark = ref(false)
 
@@ -15,6 +16,7 @@ export function useTheme() {
             document.body.classList.remove('dark-theme')
         }
         localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+        DeviceService.updateStatusBarStyle(isDark.value)
     }
 
     const initTheme = () => {

@@ -4,6 +4,7 @@ import { useTheme } from '@/composables/useTheme'
 import MainLayout from '@/layouts/MainLayout.vue'
 import FpNotificationContainer from '@/design-system/components/FpNotificationContainer.vue'
 import { checkForUpdate, installUpdate, type UpdateInfo } from '@/modules/updates/UpdateService'
+import { DeviceService } from '@/app/services/DeviceService'
 
 const { initTheme } = useTheme()
 
@@ -11,6 +12,7 @@ const update = ref<UpdateInfo | null>(null)
 
 onMounted(async () => {
   initTheme()
+  DeviceService.initStatusBar()
   const result = await checkForUpdate()
   if (result.hasUpdate) update.value = result
 })

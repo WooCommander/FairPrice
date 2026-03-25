@@ -8,6 +8,7 @@ import { changelog } from '@/data/changelog'
 import { setLocale, supportedLocales, i18n } from '@/i18n'
 import { useI18n } from 'vue-i18n'
 import { Home, Star, User, Package, Store, Trophy, Menu, X, CheckSquare, Calculator, Palette, FileText, LogOut, Sun, Moon, Plus, ShoppingCart } from 'lucide-vue-next'
+import { FpHaptics } from '@/shared/lib/haptics'
 const refreshKey = ref(0)
 const forceRefresh = () => { refreshKey.value += 1 }
 
@@ -40,6 +41,7 @@ onMounted(loadPendingCount)
 watch(userRef, loadPendingCount)
 
 const handleProfileClick = async () => {
+	FpHaptics.light()
 	if (userRef.value) {
 		router.push('/profile')
 		return
@@ -90,6 +92,7 @@ const navItems = computed(() => [
 const currentPath = computed(() => route.path)
 
 const navigate = (path: string) => {
+	FpHaptics.light()
 	if (route.path === path && Object.keys(route.query).length === 0) {
 		forceRefresh() // Reset the view if already there
 	} else {

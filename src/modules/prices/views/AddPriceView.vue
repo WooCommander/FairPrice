@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { priceStore } from '../store/priceStore'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
+import { FpHaptics } from '@/shared/lib/haptics'
 import {
   FpButton,
   FpCard,
@@ -175,6 +176,7 @@ const submit = async () => {
       quantity: quantity.value || 1,
       quantityUnit: unit.value
     })
+    FpHaptics.success()
     isSuccess.value = true
     setTimeout(() => {
       if (currentProduct.value) {

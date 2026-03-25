@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { FpHaptics } from '@/shared/lib/haptics'
 
 export type NotifyType = 'success' | 'info' | 'error' | 'warning'
 
@@ -15,6 +16,12 @@ export function useNotify() {
     const notify = (message: string, type: NotifyType = 'info', duration = 3000) => {
         const id = String(++_id)
         notifications.value.push({ id, type, message })
+
+        if (type === 'success') FpHaptics.success()
+        else if (type === 'error') FpHaptics.error()
+        else if (type === 'warning') FpHaptics.warning()
+        else FpHaptics.light()
+
         if (duration > 0) {
             setTimeout(() => dismiss(id), duration)
         }

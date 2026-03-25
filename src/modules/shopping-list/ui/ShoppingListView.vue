@@ -9,7 +9,7 @@ import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import FpConfirmationModal from '@/design-system/components/FpConfirmationModal.vue'
 import { FpSkeleton } from '@/design-system'
-
+import { FpHaptics } from '@/shared/lib/haptics'
 
 const newItemText = ref('')
 const selectedProduct = ref<any>(null)
@@ -59,6 +59,8 @@ const addItem = async () => {
         selectedProduct.value = null
         newItemPrice.value = 0
         newItemQuantity.value = 1
+        
+        FpHaptics.medium()
     } catch (e: any) {
         console.error('Failed to add item:', e)
     }
@@ -70,8 +72,10 @@ const toggleItem = (item: any) => {
         editingItemId.value = item.id
         editPrice.value = item.price ?? 0
         editQuantity.value = item.quantity ?? 1
+        FpHaptics.light()
     } else {
         shoppingListStore.toggleItem(item.id, false)
+        FpHaptics.light()
     }
 }
 
@@ -82,6 +86,7 @@ const confirmPurchase = async () => {
             quantity: editQuantity.value || 1
         })
         editingItemId.value = null
+        FpHaptics.success()
     }
 }
 
@@ -97,6 +102,7 @@ const confirmRemoveItem = () => {
     if (itemToDeleteId.value) {
         shoppingListStore.removeItem(itemToDeleteId.value)
         itemToDeleteId.value = null
+        FpHaptics.heavy()
     }
 }
 
@@ -108,6 +114,7 @@ const deleteChecked = () => {
 
 const confirmDeleteChecked = () => {
     shoppingListStore.deleteChecked()
+    FpHaptics.heavy()
 }
 
 const formatPrice = (p: number) => {
