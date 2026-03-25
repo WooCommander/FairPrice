@@ -247,8 +247,8 @@ watch(loadMoreTrigger, (el) => {
           </FpButton>
         </div>
 
-        <div v-else class="standard-grid">
-          <div v-for="product in products" :key="product.id" class="fp-tile"
+        <TransitionGroup name="list" tag="div" v-else class="standard-grid">
+          <div v-for="product in products" :key="product.id" class="fp-tile fp-interactive"
             @click="router.push(`/product/${product.id}`)">
             <div class="tile-info">
               <span class="subtitle">{{ product.category }}</span>
@@ -259,7 +259,7 @@ watch(loadMoreTrigger, (el) => {
               <FpButton size="icon" variant="secondary" @click.stop="openAddPrice(product)">+</FpButton>
             </div>
           </div>
-        </div>
+        </TransitionGroup>
 
         <div v-if="catalogStore.hasMore.value" class="load-more">
           <div ref="loadMoreTrigger" class="load-more-trigger"></div>

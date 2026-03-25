@@ -252,3 +252,32 @@ h4 {
         background-position: -200% 0;
     }
 }
+
+// --- Micro-interactions & Transitions ---
+
+.list-enter-active,
+.list-leave-active,
+.list-move {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.list-enter-from,
+.list-leave-to {
+    opacity: 0 !important;
+    transform: translateY(20px) scale(0.98) !important;
+}
+
+.list-leave-active {
+    position: absolute !important;
+    z-index: 0;
+}
+
+.fp-interactive {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    
+    &:active {
+        transform: scale(0.96);
+        opacity: 0.85;
+    }
+}

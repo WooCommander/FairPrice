@@ -95,8 +95,8 @@ const toggleFavorite = async (productId: string) => {
             </div>
         </div>
 
-        <div v-else-if="filteredFavorites.length > 0" class="standard-grid">
-            <div v-for="item in filteredFavorites" :key="item.id" class="fp-tile" @click="goToProduct(item.id)">
+        <TransitionGroup name="list" tag="div" v-else-if="filteredFavorites.length > 0" class="standard-grid">
+            <div v-for="item in filteredFavorites" :key="item.id" class="fp-tile fp-interactive" @click="goToProduct(item.id)">
                 <div class="tile-info">
                     <span class="subtitle">{{ item.category }}</span>
                     <h3 class="title">{{ item.name }}</h3>
@@ -109,7 +109,7 @@ const toggleFavorite = async (productId: string) => {
                     </button>
                 </div>
             </div>
-        </div>
+        </TransitionGroup>
 
         <div v-else class="empty-state">
             <span class="empty-icon">⭐</span>

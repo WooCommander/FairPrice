@@ -56,8 +56,8 @@ const goToProduct = (id: string) => {
             </FpCard>
         </div>
 
-        <div v-else-if="activityData.length > 0" class="activity-list">
-            <FpCard v-for="act in activityData" :key="act.id" class="activity-item" padding="sm"
+        <TransitionGroup name="list" tag="div" v-else-if="activityData.length > 0" class="activity-list">
+            <FpCard v-for="act in activityData" :key="act.id" class="activity-item fp-interactive" padding="sm"
                 @click="goToProduct(act.productId)">
                 <div class="act-icon">{{ act.icon }}</div>
                 <div class="act-content">
@@ -69,7 +69,7 @@ const goToProduct = (id: string) => {
                     <span class="act-details">{{ formatPrice(act.price) }}</span>
                 </div>
             </FpCard>
-        </div>
+        </TransitionGroup>
 
         <div v-else class="empty-state">
             <span class="empty-icon">📝</span>

@@ -179,9 +179,9 @@ const formatPrice = (p: number) => {
 
             <div v-else class="list-container">
                 <!-- Unchecked Items -->
-                <div class="items-group">
+                <TransitionGroup name="list" tag="div" class="items-group">
                     <div v-for="item in uncheckedItems" :key="item.id" class="item-wrapper">
-                        <div class="list-item" :class="{ editing: editingItemId === item.id }">
+                        <div class="list-item fp-interactive" :class="{ editing: editingItemId === item.id }">
                             <label class="checkbox-label">
                                 <input type="checkbox" :checked="item.isChecked" @change="toggleItem(item)" />
                                 <span class="custom-checkbox"></span>
@@ -200,7 +200,7 @@ const formatPrice = (p: number) => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </TransitionGroup>
 
                 <!-- Checked Items -->
                 <div v-if="checkedItems.length > 0" class="checked-group">
@@ -208,11 +208,12 @@ const formatPrice = (p: number) => {
                         <h3>Куплено ({{ checkedItems.length }})</h3>
                         <button class="clear-btn" @click="deleteChecked()">Очистить</button>
                     </div>
-                    <div v-for="item in checkedItems" :key="item.id" class="list-item checked">
-                        <label class="checkbox-label">
-                            <input type="checkbox" :checked="item.isChecked" @change="toggleItem(item)" />
-                            <span class="custom-checkbox"></span>
-                            <div class="item-info">
+                    <TransitionGroup name="list" tag="div" class="checked-items-container" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div v-for="item in checkedItems" :key="item.id" class="list-item checked fp-interactive">
+                            <label class="checkbox-label">
+                                <input type="checkbox" :checked="item.isChecked" @change="toggleItem(item)" />
+                                <span class="custom-checkbox"></span>
+                                <div class="item-info">
                                 <span class="item-text">{{ item.text }}</span>
                                 <span class="item-subtext" v-if="item.price">
                                     {{ item.quantity }} x {{ formatPrice(item.price as number) }} = {{
@@ -221,7 +222,8 @@ const formatPrice = (p: number) => {
                             </div>
                         </label>
                         <button class="delete-btn" @click="removeItem(item.id)">×</button>
-                    </div>
+                        </div>
+                    </TransitionGroup>
                 </div>
             </div>
         </section>
