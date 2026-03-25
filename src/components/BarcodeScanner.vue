@@ -75,7 +75,7 @@ const onError = (err: Error) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: color-mix(in srgb, var(--color-text-primary) 85%, transparent);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -92,7 +92,7 @@ const onError = (err: Error) => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-2);
 }
 
 .scanner-header {
@@ -129,7 +129,7 @@ const onError = (err: Error) => {
   position: relative;
   aspect-ratio: 1;
   width: 100%;
-  background: #000;
+  background: color-mix(in srgb, var(--color-text-primary) 95%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;

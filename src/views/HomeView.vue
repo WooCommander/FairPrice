@@ -199,7 +199,7 @@ onMounted(async () => {
 // Hero Section Refined
 .dashboard-hero {
     padding: var(--spacing-sm);
-    background: linear-gradient(180deg, rgba(var(--color-primary-rgb), 0.12) 0%, transparent 100%);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 12%, transparent) 0%, transparent 100%);
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -252,12 +252,12 @@ onMounted(async () => {
 
 .level-badge {
     background: var(--color-primary);
-    color: white;
+    color: var(--color-on-primary);
     font-size: 12px;
     font-weight: 800;
     padding: 4px 10px;
     border-radius: 20px;
-    box-shadow: 0 4px 8px rgba(var(--color-primary-rgb), 0.3);
+    box-shadow: 0 4px 8px color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .profile-main {
@@ -332,8 +332,8 @@ onMounted(async () => {
         }
 
         &.contribution {
-            background: rgba(var(--color-primary-rgb), 0.03);
-            border-color: rgba(var(--color-primary-rgb), 0.1);
+            background: color-mix(in srgb, var(--color-primary) 3%, transparent);
+            border-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
         }
     }
 
@@ -475,13 +475,13 @@ onMounted(async () => {
             width: 48px;
             height: 48px;
             background: var(--color-primary);
-            color: white;
+            color: var(--color-on-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+            box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
             transition: all 0.2s;
         }
 

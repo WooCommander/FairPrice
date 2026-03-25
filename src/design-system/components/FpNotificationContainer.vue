@@ -48,29 +48,29 @@ const iconMap: Record<string, string> = {
     font-weight: 500;
     width: 100%;
     max-width: 400px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--color-text-primary) 18%, transparent);
     pointer-events: auto;
     cursor: pointer;
     line-height: 1.4;
 
     &--success {
         background: var(--color-success);
-        color: #fff;
+        color: var(--color-on-primary);
     }
 
     &--error {
         background: var(--color-error);
-        color: #fff;
+        color: var(--color-on-primary);
     }
 
     &--info {
         background: var(--color-primary);
-        color: #fff;
+        color: var(--color-on-primary);
     }
 
     &--warning {
-        background: var(--color-warning, #f59e0b);
-        color: #fff;
+        background: var(--color-warning);
+        color: var(--color-on-primary);
     }
 }
 
@@ -79,7 +79,7 @@ const iconMap: Record<string, string> = {
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.25);
+    background: color-mix(in srgb, var(--color-on-primary) 25%, transparent);
     display: flex;
     align-items: center;
     justify-content: center;

@@ -52,7 +52,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-2);
   z-index: 9000;
 }
 
@@ -100,7 +100,7 @@ onMounted(async () => {
   border: none;
   border-radius: 10px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;

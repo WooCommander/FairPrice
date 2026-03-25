@@ -31,9 +31,9 @@ const styles = computed(() => {
     background-color: var(--color-surface-hover);
     background-image: linear-gradient(
         90deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.05) 50%,
-        rgba(255, 255, 255, 0) 100%
+        transparent 0%,
+        color-mix(in srgb, var(--color-surface) 5%, transparent) 50%,
+        transparent 100%
     );
     background-size: 200% 100%;
     animation: fp-shimmer 1.5s infinite linear;
@@ -64,9 +64,9 @@ const styles = computed(() => {
         background-color: var(--color-border);
         background-image: linear-gradient(
             90deg,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.4) 50%,
-            rgba(255, 255, 255, 0) 100%
+            transparent 0%,
+            color-mix(in srgb, var(--color-surface) 40%, transparent) 50%,
+            transparent 100%
         );
     }
 }

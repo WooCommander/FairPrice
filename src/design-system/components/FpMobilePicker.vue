@@ -147,7 +147,7 @@ watch(searchQuery, (q) => {
     transition: all 0.2s;
 
     &:active {
-        background-color: rgba(var(--color-primary-rgb), 0.04);
+        background-color: color-mix(in srgb, var(--color-primary) 4%, transparent);
         border-bottom-color: var(--color-primary);
     }
 }
@@ -245,7 +245,7 @@ watch(searchQuery, (q) => {
     &.create-btn {
         color: var(--color-primary);
         font-weight: 600;
-        background-color: rgba(var(--color-primary-rgb), 0.02);
+        background-color: color-mix(in srgb, var(--color-primary) 2%, transparent);
 
         .plus {
             font-size: 1.5rem;

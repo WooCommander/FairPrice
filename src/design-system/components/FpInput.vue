@@ -106,7 +106,7 @@ const onBlur = () => {
 // States
 .is-focused .input-container {
   border-bottom-color: var(--color-primary);
-  background-color: rgba(98, 0, 238, 0.04);
+  background-color: color-mix(in srgb, var(--color-primary) 4%, transparent);
 }
 
 .has-error .input-container {

@@ -506,7 +506,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 	}
 
 	&.danger:active {
-		background: rgba(var(--color-error-rgb), 0.1);
+		background: color-mix(in srgb, var(--color-error) 10%, transparent);
 	}
 }
 
@@ -531,13 +531,13 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 }
 
 .icon-starred {
-	color: var(--color-warning, #FFD700);
+	color: var(--color-warning);
 }
 
 .danger-icon {
 	&:active {
 		color: var(--color-error);
-		background: rgba(var(--color-error-rgb), 0.1);
+		background: color-mix(in srgb, var(--color-error) 10%, transparent);
 	}
 }
 
@@ -666,19 +666,19 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 	font-weight: 600;
 
 	&.good {
-		background: rgba(var(--color-success-rgb), 0.1);
+		background: color-mix(in srgb, var(--color-success) 10%, transparent);
 		color: var(--color-success);
 	}
 
 	&.bad {
-		background: rgba(var(--color-error-rgb), 0.1);
+		background: color-mix(in srgb, var(--color-error) 10%, transparent);
 		color: var(--color-error);
 	}
 }
 
 .badge-bad {
 	color: var(--color-error);
-	background: rgba(var(--color-error-rgb), 0.1);
+	background: color-mix(in srgb, var(--color-error) 10%, transparent);
 	padding: 4px 10px;
 	border-radius: 16px;
 	font-size: 1rem;
@@ -686,7 +686,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 }
 
 .cheapest-insight {
-	background: linear-gradient(135deg, rgba(var(--color-success-rgb), 0.1), transparent);
+	background: linear-gradient(135deg, color-mix(in srgb, var(--color-success) 10%, transparent), transparent);
 	border: 1px dashed var(--color-success);
 	border-radius: 12px;
 	padding: 12px;
@@ -762,7 +762,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 	border-radius: 20px;
 	padding: 16px;
 	border: 1px solid var(--color-border);
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+	box-shadow: var(--shadow-sm);
 }
 
 .chart-header {
@@ -798,7 +798,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 	&.active {
 		background: var(--color-primary);
 		border-color: var(--color-primary);
-		color: #fff;
+		color: var(--color-on-primary);
 	}
 }
 
@@ -816,7 +816,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 	border-radius: 20px;
 	padding: 16px;
 	border: 1px solid var(--color-border);
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+	box-shadow: var(--shadow-sm);
 
 	.chart-title {
 		margin-bottom: 12px;
@@ -892,7 +892,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 
 	&:hover {
 		color: var(--color-error);
-		background: rgba(var(--color-error-rgb), 0.1);
+		background: color-mix(in srgb, var(--color-error) 10%, transparent);
 	}
 }
 
@@ -928,13 +928,13 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 	}
 
 	&.confirm.active {
-		background: rgba(var(--color-success-rgb), 0.15);
+		background: color-mix(in srgb, var(--color-success) 15%, transparent);
 		border-color: var(--color-success);
 		color: var(--color-success);
 	}
 
 	&.deny.active {
-		background: rgba(var(--color-error-rgb), 0.12);
+		background: color-mix(in srgb, var(--color-error) 12%, transparent);
 		border-color: var(--color-error);
 		color: var(--color-error);
 	}
@@ -951,7 +951,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: rgba(0, 0, 0, 0.6); // Dimmed background
+	background: color-mix(in srgb, var(--color-text-primary) 60%, transparent); // Dimmed background
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -966,7 +966,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 	padding: 24px;
 	width: 100%;
 	max-width: 340px;
-	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+	box-shadow: var(--shadow-2);
 	animation: modal-pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 

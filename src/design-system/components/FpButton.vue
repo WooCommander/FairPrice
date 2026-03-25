@@ -134,11 +134,11 @@ const classes = computed(() => [
     box-shadow: none;
 
     &:hover:not(:disabled) {
-      background-color: rgba(var(--color-primary-rgb), 0.07);
+      background-color: color-mix(in srgb, var(--color-primary) 7%, transparent);
     }
 
     &:active:not(:disabled) {
-      background-color: rgba(var(--color-primary-rgb), 0.14);
+      background-color: color-mix(in srgb, var(--color-primary) 14%, transparent);
     }
   }
 
@@ -159,7 +159,7 @@ const classes = computed(() => [
 
   &--danger {
     background-color: var(--color-error);
-    color: #fff;
+    color: var(--color-on-primary);
 
     &:hover:not(:disabled) {
       filter: brightness(1.1);

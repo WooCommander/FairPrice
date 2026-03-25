@@ -131,7 +131,7 @@ const toggleFavorite = async (productId: string) => {
     border: none;
     padding: 4px;
     cursor: pointer;
-    color: #FFD700; // Gold
+    color: var(--color-warning); // Gold
     transition: all 0.2s;
     display: flex;
     align-items: center;

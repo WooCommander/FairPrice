@@ -11,11 +11,11 @@ const categories: { key: LeaderboardCategory; label: string; unit: string; icon:
 ]
 
 const LEVEL_COLORS: Record<number, string> = {
-    1: '#9e9e9e',
-    2: '#4caf50',
-    3: '#2196f3',
-    4: '#9c27b0',
-    5: '#ff9800',
+    1: 'var(--color-level-1)',
+    2: 'var(--color-level-2)',
+    3: 'var(--color-level-3)',
+    4: 'var(--color-level-4)',
+    5: 'var(--color-level-5)',
 }
 
 const activeCategory = ref<LeaderboardCategory>('reputation')
@@ -140,7 +140,7 @@ onMounted(load)
 
     &.active {
         border-color: var(--color-primary);
-        background: rgba(var(--color-primary-rgb), 0.08);
+        background: color-mix(in srgb, var(--color-primary) 8%, transparent);
         color: var(--color-primary);
     }
 
@@ -172,7 +172,7 @@ onMounted(load)
 
     &.is-me {
         border: 1.5px solid var(--color-primary);
-        background: rgba(var(--color-primary-rgb), 0.04);
+        background: color-mix(in srgb, var(--color-primary) 4%, transparent);
     }
 }
 

@@ -349,7 +349,7 @@ const formatPrice = (p: number) => {
 
 .summary-card {
     background: linear-gradient(135deg, var(--color-primary), var(--color-primary-variant));
-    color: white;
+    color: var(--color-on-primary);
     padding: var(--spacing-md);
 
     .summary-main {
@@ -376,10 +376,10 @@ const formatPrice = (p: number) => {
 
         &.estimate {
             padding-top: 8px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: 1px solid color-mix(in srgb, var(--color-on-primary) 20%, transparent);
 
             .value {
-                color: rgba(255, 255, 255, 0.9);
+                color: color-mix(in srgb, var(--color-on-primary) 90%, transparent);
             }
         }
     }
@@ -418,7 +418,7 @@ const formatPrice = (p: number) => {
 
     &.editing {
         border-color: var(--color-primary);
-        box-shadow: 0 0 0 2px rgba(108, 93, 211, 0.1);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 10%, transparent);
     }
 
     &.checked {

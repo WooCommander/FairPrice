@@ -33,19 +33,24 @@ const sortedData = computed(() =>
     [...props.data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 )
 
-const chartData = computed(() => ({
-    labels: sortedData.value.map(d => d.date),
-    datasets: [
-        {
-            label: 'Price (UZS)',
-            backgroundColor: '#6200ee',
-            borderColor: '#6200ee',
-            data: sortedData.value.map(d => d.price),
-            tension: 0.3,
-            fill: false
-        }
-    ]
-}))
+const chartData = computed(() => {
+    const docStyle = getComputedStyle(document.documentElement)
+    const secondaryColor = docStyle.getPropertyValue('--color-chart-secondary').trim() || '#6200ee'
+    
+    return {
+        labels: sortedData.value.map(d => d.date),
+        datasets: [
+            {
+                label: 'Price (UZS)',
+                backgroundColor: secondaryColor,
+                borderColor: secondaryColor,
+                data: sortedData.value.map(d => d.price),
+                tension: 0.3,
+                fill: false
+            }
+        ]
+    }
+})
 
 const chartOptions: any = {
     responsive: true,

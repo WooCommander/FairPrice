@@ -137,7 +137,7 @@ const releases = changelog
 }
 
 .pill {
-  background: rgba(var(--color-primary-rgb, 108, 93, 211), 0.1);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
   color: var(--color-primary);
   padding: 6px 10px;
   border-radius: 999px;

@@ -62,7 +62,7 @@ const confirm = () => {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: color-mix(in srgb, var(--color-text-primary) 60%, transparent);
     display: flex;
     justify-content: center;
     align-items: center;

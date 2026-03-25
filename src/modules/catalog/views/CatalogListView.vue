@@ -395,7 +395,7 @@ watch(loadMoreTrigger, (el) => {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(var(--color-success-rgb), 0.15);
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
   border: 2px solid var(--color-success);
   display: flex;
   align-items: center;
@@ -415,7 +415,7 @@ watch(loadMoreTrigger, (el) => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(var(--color-primary-rgb), 0.1);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
   border: 1px solid var(--color-primary);
   border-radius: 20px;
   padding: 4px 10px 4px 8px;

@@ -112,8 +112,8 @@ const handleSubmit = async () => {
     min-height: 80vh;
     /* Centered vertically in layout */
     padding: var(--spacing-md);
-    background: radial-gradient(circle at 20% 20%, rgba(108, 93, 211, 0.08), transparent 32%),
-        radial-gradient(circle at 80% 10%, rgba(0, 210, 160, 0.06), transparent 28%),
+    background: radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 32%),
+        radial-gradient(circle at 80% 10%, color-mix(in srgb, var(--color-secondary) 6%, transparent), transparent 28%),
         var(--color-background);
 }
 
@@ -157,8 +157,8 @@ const handleSubmit = async () => {
 }
 
 .error-alert {
-    background: #fee2e2;
-    color: #991b1b;
+    background: color-mix(in srgb, var(--color-error) 15%, transparent);
+    color: var(--color-error);
     padding: 12px;
     border-radius: var(--radius-sm);
     font-size: var(--text-caption);
@@ -166,8 +166,8 @@ const handleSubmit = async () => {
 }
 
 .success-alert {
-    background: #dcfce7;
-    color: #166534;
+    background: color-mix(in srgb, var(--color-success) 15%, transparent);
+    color: var(--color-success);
     padding: 12px;
     border-radius: var(--radius-sm);
     font-size: var(--text-caption);

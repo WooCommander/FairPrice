@@ -434,7 +434,7 @@ watch(selectedCategory, loadProducts)
 
 .action-btn-done {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   font-weight: 700;
   border: none;
   border-radius: 20px;
@@ -497,7 +497,7 @@ watch(selectedCategory, loadProducts)
 }
 
 .calc-info {
-  background: rgba(var(--color-primary-rgb), 0.1);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
   padding: 12px;
   border-radius: 8px;
   display: flex;
@@ -508,7 +508,7 @@ watch(selectedCategory, loadProducts)
 
 .create-tile {
   border: 2px dashed var(--color-primary);
-  background: rgba(var(--color-primary-rgb), 0.05);
+  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
 
   .title {
     color: var(--color-primary);
@@ -525,10 +525,10 @@ watch(selectedCategory, loadProducts)
 
 .create-matches {
   margin-top: 12px;
-  border: 1px solid var(--color-warning, #f59e0b);
+  border: 1px solid var(--color-warning);
   border-radius: 10px;
   overflow: hidden;
-  background: rgba(245, 158, 11, 0.05);
+  background: color-mix(in srgb, var(--color-warning) 5%, transparent);
 }
 
 .create-matches-label {
@@ -536,7 +536,7 @@ watch(selectedCategory, loadProducts)
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-warning, #f59e0b);
+  color: var(--color-warning);
   padding: 8px 12px 4px;
 }
 

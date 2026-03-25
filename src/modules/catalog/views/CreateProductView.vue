@@ -149,7 +149,7 @@ const createUnit = (val: string) => {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(var(--color-primary-rgb), 0.1);
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
     color: var(--color-primary);
     padding: 8px 12px;
     border-radius: 8px;

@@ -417,12 +417,12 @@ const handleLogout = async () => {
 	height: 36px;
 	border-radius: 50%;
 	background: var(--color-primary);
-	color: #fff;
+	color: var(--color-on-primary);
 	font-weight: 700;
 	font-size: 15px;
 	cursor: pointer;
 	transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s;
-	box-shadow: 0 6px 14px rgba(var(--color-primary-rgb), 0.24);
+	box-shadow: 0 6px 14px color-mix(in srgb, var(--color-primary) 24%, transparent);
 
 	position: relative;
 
@@ -441,8 +441,8 @@ const handleLogout = async () => {
 		height: 16px;
 		padding: 0 4px;
 		border-radius: 8px;
-		background: var(--color-error, #ef4444);
-		color: #fff;
+		background: var(--color-error);
+		color: var(--color-on-primary);
 		font-size: 10px;
 		font-weight: 700;
 		line-height: 16px;
@@ -453,7 +453,7 @@ const handleLogout = async () => {
 
 	&:hover {
 		transform: translateY(-1px);
-		box-shadow: 0 8px 18px rgba(var(--color-primary-rgb), 0.28);
+		box-shadow: 0 8px 18px color-mix(in srgb, var(--color-primary) 28%, transparent);
 	}
 
 	&:active {
@@ -492,7 +492,7 @@ const handleLogout = async () => {
 	left: 0;
 	width: 100vw;
 	height: 100vh;
-	background: rgba(0, 0, 0, 0.5);
+	background: color-mix(in srgb, var(--color-text-primary) 60%, transparent);
 	z-index: 2000;
 	backdrop-filter: blur(4px);
 }
@@ -636,7 +636,7 @@ const handleLogout = async () => {
 
 	&.active {
 		border-left-color: var(--color-primary);
-		background: rgba(var(--color-primary-rgb), 0.05);
+		background: color-mix(in srgb, var(--color-primary) 5%, transparent);
 	}
 }
 
@@ -672,7 +672,7 @@ const handleLogout = async () => {
 
 .logout-drawer:hover {
 	color: var(--color-error);
-	background: rgba(var(--color-error-rgb), 0.05);
+	background: color-mix(in srgb, var(--color-error) 5%, transparent);
 }
 
 // Right slide transition
@@ -762,7 +762,7 @@ const handleLogout = async () => {
 		}
 
 		&.active {
-			color: #fff;
+			color: var(--color-on-primary);
 
 			&::before {
 				content: '';
@@ -775,19 +775,19 @@ const handleLogout = async () => {
 				background: linear-gradient(150deg, var(--color-primary), var(--color-primary-variant));
 				border-radius: 18px;
 				z-index: -1;
-				box-shadow: 0 10px 22px rgba(var(--color-primary-rgb), 0.35);
+				box-shadow: 0 10px 22px color-mix(in srgb, var(--color-primary) 35%, transparent);
 				pointer-events: none;
 			}
 
 			.icon {
 				transform: translateY(-2px);
-				filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+				filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--color-text-primary) 40%, transparent));
 			}
 
 			.label {
 				font-weight: 800;
 				letter-spacing: 0.05em;
-				color: #fff;
+				color: var(--color-on-primary);
 			}
 		}
 
@@ -799,17 +799,17 @@ const handleLogout = async () => {
 				width: 48px;
 				height: 48px;
 				background: var(--color-primary);
-				color: white;
+				color: var(--color-on-primary);
 				border-radius: 50%;
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+				box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
 				margin-bottom: 2px;
 				transition: all 0.2s;
 
 				&.active {
-					box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.2);
+					box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 20%, transparent);
 				}
 			}
 

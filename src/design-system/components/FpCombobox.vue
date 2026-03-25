@@ -165,7 +165,7 @@ onUnmounted(() => {
 
     &.is-focused {
         border-bottom-color: var(--color-primary);
-        background-color: rgba(var(--color-primary-rgb), 0.04);
+        background-color: color-mix(in srgb, var(--color-primary) 4%, transparent);
     }
 }
 
@@ -209,7 +209,7 @@ onUnmounted(() => {
     max-height: 250px;
     overflow-y: auto;
     z-index: 100;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-sm);
 }
 
 .dropdown-item {
@@ -236,7 +236,7 @@ onUnmounted(() => {
     padding: 14px 16px;
 
     &:hover {
-        background-color: rgba(var(--color-primary-rgb), 0.04);
+        background-color: color-mix(in srgb, var(--color-primary) 4%, transparent);
     }
 
     .plus-icon {
@@ -245,7 +245,7 @@ onUnmounted(() => {
         justify-content: center;
         width: 24px;
         height: 24px;
-        background: rgba(var(--color-primary-rgb), 0.1);
+        background: color-mix(in srgb, var(--color-primary) 10%, transparent);
         border-radius: 50%;
         color: var(--color-primary);
     }

@@ -449,7 +449,7 @@ onMounted(async () => {
     right: -5%;
     width: 300px;
     height: 300px;
-    background: linear-gradient(45deg, rgba(108, 93, 211, 0.05), rgba(0, 210, 160, 0.05));
+    background: linear-gradient(45deg, color-mix(in srgb, var(--color-primary) 5%, transparent), color-mix(in srgb, var(--color-secondary) 5%, transparent));
     border-radius: 50%;
     z-index: 0;
   }
@@ -524,7 +524,7 @@ onMounted(async () => {
     gap: 4px;
     text-align: center;
     background: var(--color-surface);
-    border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
     transition: all 0.2s;
     min-height: 100px;
     border-radius: 14px;
@@ -620,7 +620,7 @@ onMounted(async () => {
   align-items: center;
   gap: 4px;
   padding: 14px 10px;
-  background: linear-gradient(180deg, var(--color-surface), rgba(var(--color-primary-rgb), 0.02));
+  background: linear-gradient(180deg, var(--color-surface), color-mix(in srgb, var(--color-primary) 2%, transparent));
   border: 1.5px solid var(--color-border);
   border-radius: 14px;
   cursor: pointer;
@@ -629,9 +629,9 @@ onMounted(async () => {
 
   &.active {
     border-color: var(--color-primary);
-    background: radial-gradient(circle at 30% 20%, rgba(var(--color-primary-rgb), 0.12), rgba(var(--color-primary-rgb), 0.04) 55%, transparent 80%),
-      linear-gradient(180deg, var(--color-surface), rgba(var(--color-primary-rgb), 0.06));
-    box-shadow: 0 10px 20px rgba(var(--color-primary-rgb), 0.18);
+    background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--color-primary) 12%, transparent), color-mix(in srgb, var(--color-primary) 4%, transparent) 55%, transparent 80%),
+      linear-gradient(180deg, var(--color-surface), color-mix(in srgb, var(--color-primary) 6%, transparent));
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--color-primary) 18%, transparent);
     transform: translateY(-2px);
   }
 
@@ -917,8 +917,8 @@ onMounted(async () => {
   }
 
   &.approve {
-    background: rgba(var(--color-success-rgb, 34, 197, 94), 0.15);
-    color: var(--color-success, #22c55e);
+    background: color-mix(in srgb, var(--color-success) 15%, transparent);
+    color: var(--color-success);
 
     &:active:not(:disabled) {
       opacity: 0.75;
@@ -926,7 +926,7 @@ onMounted(async () => {
   }
 
   &.reject {
-    background: rgba(var(--color-error-rgb, 255, 87, 87), 0.12);
+    background: color-mix(in srgb, var(--color-error) 12%, transparent);
     color: var(--color-error);
 
     &:active:not(:disabled) {
@@ -936,7 +936,7 @@ onMounted(async () => {
 }
 
 .badge.warning {
-  background: rgba(var(--color-error-rgb, 255, 87, 87), 0.12);
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
   color: var(--color-error);
 }
 
@@ -946,7 +946,7 @@ onMounted(async () => {
 }
 
 .badge.price {
-  background: rgba(var(--color-primary-rgb), 0.08);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
   color: var(--color-primary);
   font-weight: 700;
 }
@@ -1138,7 +1138,7 @@ onMounted(async () => {
 
   &.active {
     border-color: var(--color-primary);
-    background: rgba(var(--color-primary-rgb), 0.08);
+    background: color-mix(in srgb, var(--color-primary) 8%, transparent);
     color: var(--color-primary);
     font-weight: 700;
   }
@@ -1173,7 +1173,7 @@ onMounted(async () => {
   border: none;
   border-radius: 12px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;

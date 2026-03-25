@@ -281,7 +281,7 @@ const goToProduct = (id: string) => {
         transition: all 0.2s;
 
         &:hover {
-            background: rgba(var(--color-primary-rgb), 0.1);
+            background: color-mix(in srgb, var(--color-primary) 10%, transparent);
         }
     }
 }
@@ -344,7 +344,7 @@ const goToProduct = (id: string) => {
 
     &:hover {
         border-color: var(--color-primary);
-        background: rgba(var(--color-primary-rgb), 0.05);
+        background: color-mix(in srgb, var(--color-primary) 5%, transparent);
     }
 }
 </style>

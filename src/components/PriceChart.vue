@@ -52,9 +52,10 @@ const chartData = computed(() => {
 
     const dataPoints = sortedData.value.map(d => d.price)
 
-    // primary color approximation, ideally we would read CSS variable
-    const primaryColor = '#18a058'
-    const primaryColorLight = 'rgba(24, 160, 88, 0.1)'
+    const docStyle = getComputedStyle(document.documentElement)
+    const primaryColor = docStyle.getPropertyValue('--color-chart-primary').trim() || '#18a058'
+    const primaryColorLight = primaryColor + '1A' // 10% opacity hex
+    const surfaceColor = docStyle.getPropertyValue('--color-surface').trim() || '#ffffff'
 
     const datasets: any[] = [
         {
@@ -63,7 +64,7 @@ const chartData = computed(() => {
             borderColor: primaryColor,
             backgroundColor: primaryColorLight,
             borderWidth: 2.5,
-            pointBackgroundColor: '#ffffff',
+            pointBackgroundColor: surfaceColor,
             pointBorderColor: primaryColor,
             pointBorderWidth: 2,
             pointRadius: 4,
@@ -97,6 +98,12 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
     const minPrice = Math.min(...sortedData.value.map(d => d.price))
     const maxPrice = Math.max(...sortedData.value.map(d => d.price))
 
+    const docStyle = getComputedStyle(document.documentElement)
+    const textColorPrimary = docStyle.getPropertyValue('--color-text-primary').trim() || '#1B1D21'
+    const textColorSecondary = docStyle.getPropertyValue('--color-text-secondary').trim() || '#888888'
+    const tooltipBg = docStyle.getPropertyValue('--color-surface-translucent').trim() || 'rgba(20, 20, 20, 0.9)'
+    const gridColor = docStyle.getPropertyValue('--color-border').trim() + '40' // 25% opacity
+
     return {
         responsive: true,
         maintainAspectRatio: false,
@@ -108,7 +115,9 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
                 display: false
             },
             tooltip: {
-                backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                backgroundColor: tooltipBg,
+                titleColor: textColorSecondary,
+                bodyColor: textColorPrimary,
                 titleFont: { size: 12, family: 'Inter, sans-serif' },
                 bodyFont: { size: 14, weight: 'bold', family: 'Inter, sans-serif' },
                 padding: 12,
@@ -129,16 +138,16 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
                 ticks: {
                     maxTicksLimit: 6,
                     font: { size: 11, family: 'Inter, sans-serif' },
-                    color: '#888'
+                    color: textColorSecondary
                 }
             },
             y: {
                 grid: {
-                    color: 'rgba(150, 150, 150, 0.1)'
+                    color: gridColor
                 },
                 ticks: {
                     font: { size: 11, family: 'Inter, sans-serif' },
-                    color: '#888',
+                    color: textColorSecondary,
                     callback: function (value: any) {
                         return `${value} ₽`
                     }
@@ -183,7 +192,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
     justify-content: center;
     color: var(--color-text-disabled);
     font-size: 13px;
-    background: rgba(150, 150, 150, 0.05);
+    background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
     border-radius: 12px;
 }
 </style>

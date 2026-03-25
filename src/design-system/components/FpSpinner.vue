@@ -49,9 +49,9 @@ withDefaults(defineProps<Props>(), {
     }
 
     &.color-white {
-        border-top-color: #fff;
-        border-right-color: #fff;
-        border-bottom-color: #fff;
+        border-top-color: var(--color-on-primary);
+        border-right-color: var(--color-on-primary);
+        border-bottom-color: var(--color-on-primary);
     }
 }
 
