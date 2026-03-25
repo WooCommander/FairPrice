@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { LeaderboardService, type LeaderboardCategory, type LeaderboardEntry } from '../services/LeaderboardService'
 import FpCard from '@/design-system/components/FpCard.vue'
-import { FpSpinner } from '@/design-system'
+import { FpSkeleton } from '@/design-system'
 
 const categories: { key: LeaderboardCategory; label: string; unit: string; icon: string }[] = [
     { key: 'reputation', label: 'Репутация', unit: 'очков', icon: '🏆' },
@@ -56,8 +56,18 @@ onMounted(load)
             </button>
         </div>
 
-        <div v-if="isLoading" class="loading-state">
-            <FpSpinner />
+        <div v-if="isLoading" class="entries-list" style="margin-top: 24px;">
+            <FpCard v-for="i in 5" :key="i" class="entry-card" style="display: flex; gap: 12px; align-items: center;">
+                <FpSkeleton width="36px" height="24px" />
+                <div style="flex: 1;">
+                    <FpSkeleton width="40%" height="16px" style="margin-bottom: 4px;" />
+                    <FpSkeleton width="20%" height="12px" />
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                    <FpSkeleton width="50px" height="18px" style="margin-bottom: 4px;" />
+                    <FpSkeleton width="30px" height="12px" />
+                </div>
+            </FpCard>
         </div>
 
         <div v-else-if="error" class="empty-state">{{ error }}</div>

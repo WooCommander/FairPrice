@@ -8,7 +8,7 @@ import FpButton from '@/design-system/components/FpButton.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
-import { FpSpinner } from '@/design-system'
+import { FpSkeleton } from '@/design-system'
 import BarcodeScanner from '@/components/BarcodeScanner.vue'
 import { usePriceFormat } from '@/composables/usePriceFormat'
 import { CatalogService } from '../services/CatalogService'
@@ -229,10 +229,10 @@ watch(loadMoreTrigger, (el) => {
 
       <section class="list-section">
         <div v-if="isLoading && products.length === 0" class="standard-grid">
-          <div v-for="i in 6" :key="i" class="fp-tile skeleton">
-            <div class="tile-info">
-              <div class="skeleton-line sm"></div>
-              <div class="skeleton-line lg"></div>
+          <div v-for="i in 6" :key="i" class="fp-tile">
+            <div class="tile-info" style="width: 100%;">
+              <FpSkeleton width="30%" height="12px" />
+              <FpSkeleton width="70%" height="16px" style="margin-top: 4px;" />
             </div>
           </div>
         </div>
@@ -263,7 +263,14 @@ watch(loadMoreTrigger, (el) => {
 
         <div v-if="catalogStore.hasMore.value" class="load-more">
           <div ref="loadMoreTrigger" class="load-more-trigger"></div>
-          <FpSpinner v-if="isLoading" />
+          <div v-if="isLoading" class="standard-grid">
+             <div v-for="i in 2" :key="'more-'+i" class="fp-tile">
+                <div class="tile-info" style="width: 100%;">
+                  <FpSkeleton width="30%" height="12px" />
+                  <FpSkeleton width="70%" height="16px" style="margin-top: 4px;" />
+                </div>
+             </div>
+          </div>
         </div>
       </section>
     </div>

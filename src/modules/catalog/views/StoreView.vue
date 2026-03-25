@@ -6,8 +6,7 @@ import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import FpCard from '@/design-system/components/FpCard.vue'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import FpButton from '@/design-system/components/FpButton.vue'
-
-import { FpSpinner } from '@/design-system'
+import { FpSkeleton } from '@/design-system'
 
 const route = useRoute()
 const router = useRouter()
@@ -105,8 +104,17 @@ const saveEdit = async () => {
             </button>
         </div>
 
-        <div v-if="isLoading" class="loading">
-            <FpSpinner />
+        <div v-if="isLoading" class="products-grid">
+            <FpCard v-for="i in 5" :key="i" class="product-card" style="display: flex; justify-content: space-between;">
+                <div class="product-info" style="flex: 1;">
+                    <FpSkeleton width="60%" height="20px" style="margin-bottom: 6px;" />
+                    <FpSkeleton width="40%" height="14px" />
+                </div>
+                <div class="price-info" style="display: flex; flex-direction: column; align-items: flex-end;">
+                    <FpSkeleton width="80px" height="20px" style="margin-bottom: 6px;" />
+                    <FpSkeleton width="50px" height="12px" />
+                </div>
+            </FpCard>
         </div>
 
         <div v-else-if="searchResults.length === 0" class="empty-state">

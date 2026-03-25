@@ -8,6 +8,7 @@ import FpNotificationContainer from './components/FpNotificationContainer.vue'
 import FpNumberInput from './components/FpNumberInput.vue'
 import FpSpinner from './components/FpSpinner.vue'
 import FpMobilePicker from './components/FpMobilePicker.vue'
+import FpSkeleton from './components/FpSkeleton.vue'
 
 export {
     FpBackButton,
@@ -19,5 +20,6 @@ export {
     FpNotificationContainer,
     FpNumberInput,
     FpSpinner,
-    FpMobilePicker
+    FpMobilePicker,
+    FpSkeleton
 }

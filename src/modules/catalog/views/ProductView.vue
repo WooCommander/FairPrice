@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpConfirmationModal from '@/design-system/components/FpConfirmationModal.vue'
-import { FpSpinner } from '@/design-system'
+import { FpSkeleton } from '@/design-system'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { shoppingListStore } from '@/modules/shopping-list/state/shoppingListStore'
 import { authStore } from '@/modules/auth/store/authStore'
@@ -420,8 +420,27 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 			</div>
 		</div>
 
-		<div v-else class="loading-state">
-			<FpSpinner />
+		<div v-else class="loading-state" style="display: flex; flex-direction: column; gap: 16px; padding-top: 16px;">
+			<!-- Header skeleton -->
+			<div style="display: flex; gap: 12px; align-items: center;">
+				<FpSkeleton width="36px" height="36px" borderRadius="50%" />
+				<FpSkeleton width="60%" height="28px" />
+			</div>
+			<!-- Value card skeleton -->
+			<div style="background: var(--color-surface); padding: 16px; border-radius: var(--radius-lg); border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 12px;">
+				<FpSkeleton width="30%" height="14px" />
+				<FpSkeleton width="80%" height="24px" />
+				<div style="display: flex; align-items: baseline; gap: 8px; margin-top: 8px;">
+					<FpSkeleton width="100px" height="36px" />
+					<FpSkeleton width="60px" height="16px" />
+				</div>
+				<FpSkeleton width="100%" height="44px" style="margin-top: 16px;" />
+			</div>
+			<!-- Chart card skeleton -->
+			<div style="background: var(--color-surface); padding: 16px; border-radius: var(--radius-lg); border: 1px solid var(--color-border); height: 200px;">
+				<FpSkeleton width="40%" height="20px" style="margin-bottom: 24px;" />
+				<FpSkeleton width="100%" height="120px" />
+			</div>
 		</div>
 
 		<FpConfirmationModal :visible="showDeleteModal" title="Удаление товара" message="Удалить товар навсегда?"

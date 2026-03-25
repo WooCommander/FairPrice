@@ -8,7 +8,7 @@ import FpCard from '@/design-system/components/FpCard.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import FpConfirmationModal from '@/design-system/components/FpConfirmationModal.vue'
-import { FpSpinner } from '@/design-system'
+import { FpSkeleton } from '@/design-system'
 
 
 const newItemText = ref('')
@@ -165,8 +165,12 @@ const formatPrice = (p: number) => {
         </section>
 
         <section class="list-section">
-            <div v-if="isLoading" class="loading">
-                <FpSpinner />
+            <div v-if="isLoading" class="loading-skeletons" style="display: flex; flex-direction: column; gap: 8px;">
+                <div v-for="i in 4" :key="i" style="display: flex; align-items: center; padding: 12px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); gap: 12px;">
+                    <FpSkeleton type="circle" width="24px" height="24px" borderRadius="6px" />
+                    <FpSkeleton width="60%" height="20px" />
+                    <FpSkeleton width="24px" height="24px" style="margin-left: auto;" />
+                </div>
             </div>
 
             <div v-else-if="uncheckedItems.length === 0 && checkedItems.length === 0" class="empty-state">

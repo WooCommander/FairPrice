@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { AuthService } from '@/modules/auth/services/AuthService'
 import FpCard from '@/design-system/components/FpCard.vue'
-import { FpSpinner } from '@/design-system'
+import { FpSkeleton } from '@/design-system'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 
@@ -42,8 +42,18 @@ const goToProduct = (id: string) => {
             <p v-if="activityData.length > 0">Вы внесли {{ activityData.length }} цен</p>
         </header>
 
-        <div v-if="isLoading" class="loading-state">
-            <FpSpinner />
+        <div v-if="isLoading" class="activity-list">
+            <FpCard v-for="i in 5" :key="i" class="activity-item" style="display: flex; gap: 16px; align-items: flex-start;">
+                <FpSkeleton type="circle" width="48px" height="48px" />
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <FpSkeleton width="30%" height="16px" />
+                        <FpSkeleton width="20%" height="12px" />
+                    </div>
+                    <FpSkeleton width="60%" height="18px" />
+                    <FpSkeleton width="25%" height="14px" />
+                </div>
+            </FpCard>
         </div>
 
         <div v-else-if="activityData.length > 0" class="activity-list">

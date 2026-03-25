@@ -7,7 +7,7 @@ import { catalogStore } from '../store/catalogStore'
 import { CurrencyService } from '../services/CurrencyService'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpInput from '@/design-system/components/FpInput.vue'
-import { FpSpinner } from '@/design-system'
+import { FpSkeleton } from '@/design-system'
 
 const router = useRouter()
 const { currentCurrency } = catalogStore
@@ -86,8 +86,13 @@ const toggleFavorite = async (productId: string) => {
             </div>
         </div>
 
-        <div v-if="isLoading" class="loading-state">
-            <FpSpinner />
+        <div v-if="isLoading" class="standard-grid">
+            <div v-for="i in 6" :key="i" class="fp-tile">
+                <div class="tile-info" style="width: 100%;">
+                    <FpSkeleton width="30%" height="12px" />
+                    <FpSkeleton width="70%" height="16px" style="margin-top: 4px;" />
+                </div>
+            </div>
         </div>
 
         <div v-else-if="filteredFavorites.length > 0" class="standard-grid">
