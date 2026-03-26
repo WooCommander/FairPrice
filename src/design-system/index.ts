@@ -9,7 +9,8 @@ import FpNumberInput from './components/FpNumberInput.vue'
 import FpSpinner from './components/FpSpinner.vue'
 import FpMobilePicker from './components/FpMobilePicker.vue'
 import FpSkeleton from './components/FpSkeleton.vue'
-
+import FpSwipeable from './components/FpSwipeable.vue'
+import FpPullToRefresh from './components/FpPullToRefresh.vue'
 export {
     FpBackButton,
     FpButton,
@@ -21,5 +22,7 @@ export {
     FpNumberInput,
     FpSpinner,
     FpMobilePicker,
-    FpSkeleton
+    FpSkeleton,
+    FpSwipeable,
+    FpPullToRefresh
 }

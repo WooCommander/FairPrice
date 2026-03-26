@@ -11,6 +11,8 @@ import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { useNotify } from '@/composables/useNotify'
 import { useI18n } from 'vue-i18n'
+import { FpHaptics } from '@/shared/lib/haptics'
+import confetti from 'canvas-confetti'
 
 type CurrencyCode = 'RUB' | 'USD' | 'EUR'
 
@@ -200,6 +202,18 @@ onMounted(async () => {
     }
     if (rawStats) {
       stats.value = rawStats
+      
+      const lastSeenLevel = Number(localStorage.getItem('fp_last_seen_level')) || 0
+      if (lastSeenLevel > 0 && stats.value.level > lastSeenLevel) {
+        FpHaptics.heavy()
+        confetti({
+          particleCount: 150,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#6C5DD3', '#FFB800', '#FF754C']
+        })
+      }
+      localStorage.setItem('fp_last_seen_level', String(stats.value.level))
     }
     activityFeed.value = await AuthService.getUserActivity()
     try {

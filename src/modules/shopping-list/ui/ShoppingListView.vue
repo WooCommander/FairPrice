@@ -188,14 +188,22 @@ const formatPrice = (p: number) => {
                 <!-- Unchecked Items -->
                 <TransitionGroup name="list" tag="div" class="items-group">
                     <div v-for="item in uncheckedItems" :key="item.id" class="item-wrapper">
-                        <div class="list-item fp-interactive" :class="{ editing: editingItemId === item.id }">
-                            <label class="checkbox-label">
-                                <input type="checkbox" :checked="item.isChecked" @change="toggleItem(item)" />
-                                <span class="custom-checkbox"></span>
-                                <span class="item-text">{{ item.text }}</span>
-                            </label>
-                            <button class="delete-btn" @click="removeItem(item.id)">×</button>
-                        </div>
+                        <FpSwipeable @swipe-right="toggleItem(item)" @swipe-left="removeItem(item.id)">
+                            <template #left-action>
+                                <span>Купить</span>
+                            </template>
+                            <template #right-action>
+                                <span>Удалить</span>
+                            </template>
+                            <div class="list-item fp-interactive" :class="{ editing: editingItemId === item.id }">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" :checked="item.isChecked" @change="toggleItem(item)" />
+                                    <span class="custom-checkbox"></span>
+                                    <span class="item-text">{{ item.text }}</span>
+                                </label>
+                                <button class="delete-btn" @click="removeItem(item.id)">×</button>
+                            </div>
+                        </FpSwipeable>
 
                         <!-- Quick Price/Qty Edit when checking -->
                         <div v-if="editingItemId === item.id" class="edit-overlay">
@@ -216,19 +224,29 @@ const formatPrice = (p: number) => {
                         <button class="clear-btn" @click="deleteChecked()">Очистить</button>
                     </div>
                     <TransitionGroup name="list" tag="div" class="checked-items-container" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div v-for="item in checkedItems" :key="item.id" class="list-item checked fp-interactive">
-                            <label class="checkbox-label">
-                                <input type="checkbox" :checked="item.isChecked" @change="toggleItem(item)" />
-                                <span class="custom-checkbox"></span>
-                                <div class="item-info">
-                                <span class="item-text">{{ item.text }}</span>
-                                <span class="item-subtext" v-if="item.price">
-                                    {{ item.quantity }} x {{ formatPrice(item.price as number) }} = {{
-                                        formatPrice((item.price as number) * (item.quantity as number || 1)) }}
-                                </span>
-                            </div>
-                        </label>
-                        <button class="delete-btn" @click="removeItem(item.id)">×</button>
+                        <div v-for="item in checkedItems" :key="item.id">
+                            <FpSwipeable @swipe-right="toggleItem(item)" @swipe-left="removeItem(item.id)">
+                                <template #left-action>
+                                    <span>Вернуть</span>
+                                </template>
+                                <template #right-action>
+                                    <span>Удалить</span>
+                                </template>
+                                <div class="list-item checked fp-interactive">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" :checked="item.isChecked" @change="toggleItem(item)" />
+                                        <span class="custom-checkbox"></span>
+                                        <div class="item-info">
+                                        <span class="item-text">{{ item.text }}</span>
+                                        <span class="item-subtext" v-if="item.price">
+                                            {{ item.quantity }} x {{ formatPrice(item.price as number) }} = {{
+                                                formatPrice((item.price as number) * (item.quantity as number || 1)) }}
+                                        </span>
+                                    </div>
+                                </label>
+                                <button class="delete-btn" @click="removeItem(item.id)">×</button>
+                                </div>
+                            </FpSwipeable>
                         </div>
                     </TransitionGroup>
                 </div>

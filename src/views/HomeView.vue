@@ -7,6 +7,7 @@ import { AuthService } from '@/modules/auth/services/AuthService'
 import { usePriceFormat } from '@/composables/usePriceFormat'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import { FpPullToRefresh } from '@/design-system'
 
 const router = useRouter()
 
@@ -44,7 +45,7 @@ const isLoading = ref(true)
 //     await catalogStore.toggleFavorite(productId)
 // }
 
-onMounted(async () => {
+const loadData = async () => {
     isLoading.value = true
     try {
         const [stats, activity] = await Promise.all([
@@ -61,11 +62,19 @@ onMounted(async () => {
     } finally {
         isLoading.value = false
     }
-})
+}
+
+const handleRefresh = async (done: () => void) => {
+    await loadData()
+    done()
+}
+
+onMounted(loadData)
 </script>
 
 <template>
     <div class="home-dashboard">
+        <FpPullToRefresh @refresh="handleRefresh">
         <!-- Dashboard Hero: Personalized Profile -->
         <header class="dashboard-hero">
             <div class="hero-top">
@@ -192,6 +201,7 @@ onMounted(async () => {
                 </div>
             </section>
         </div>
+        </FpPullToRefresh>
     </div>
 </template>
 

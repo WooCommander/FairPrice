@@ -8,7 +8,7 @@ import FpButton from '@/design-system/components/FpButton.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
-import { FpSkeleton } from '@/design-system'
+import { FpSkeleton, FpPullToRefresh } from '@/design-system'
 import BarcodeScanner from '@/components/BarcodeScanner.vue'
 import { usePriceFormat } from '@/composables/usePriceFormat'
 import { CatalogService } from '../services/CatalogService'
@@ -83,11 +83,21 @@ const submitPrice = async () => {
 }
 
 // ── Search & filters ──
-const handleSearch = () => {
-  catalogStore.searchProducts(searchQuery.value, {
+const handleSearch = async () => {
+  await catalogStore.searchProducts(searchQuery.value, {
     category: selectedCategory.value || undefined,
     storeId: selectedStoreId.value || undefined
   })
+}
+
+const handleRefresh = async (done: () => void) => {
+  if (selectedStoreId.value) {
+    const store = await CatalogService.getStoreDetails(selectedStoreId.value)
+    selectedStoreName.value = store?.name || null
+  }
+  catalogStore.loadCategories()
+  await handleSearch()
+  done()
 }
 
 const toggleCategory = (cat: string) => {
@@ -156,7 +166,7 @@ watch(loadMoreTrigger, (el) => {
 
 <template>
   <div class="catalog-list-view">
-
+    <FpPullToRefresh @refresh="handleRefresh">
     <!-- ── INLINE ADD-PRICE FORM ── -->
     <div v-if="addingPriceFor">
       <div class="ap-header">
@@ -276,6 +286,7 @@ watch(loadMoreTrigger, (el) => {
     </div>
 
     <BarcodeScanner v-if="showScanner" @scan="handleScan" @close="showScanner = false" />
+    </FpPullToRefresh>
   </div>
 </template>
 
