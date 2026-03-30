@@ -102,6 +102,11 @@ const routes = [
         path: '/leaderboard',
         name: 'Leaderboard',
         component: () => import('@/modules/profile/views/LeaderboardView.vue')
+    },
+    {
+        path: '/game',
+        name: 'Game',
+        component: () => import('@/modules/game').then(m => m.GameView)
     }
 ]
 

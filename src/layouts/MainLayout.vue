@@ -7,7 +7,7 @@ import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { changelog } from '@/data/changelog'
 import { setLocale, supportedLocales, i18n } from '@/i18n'
 import { useI18n } from 'vue-i18n'
-import { Home, Star, User, Package, Store, Trophy, Menu, X, CheckSquare, Calculator, Palette, FileText, LogOut, Sun, Moon, Plus, ShoppingCart } from 'lucide-vue-next'
+import { Home, Star, User, Package, Store, Trophy, Menu, X, CheckSquare, Calculator, Palette, FileText, LogOut, Sun, Moon, Plus, ShoppingCart, Gamepad2 } from 'lucide-vue-next'
 import { FpHaptics } from '@/shared/lib/haptics'
 const refreshKey = ref(0)
 const forceRefresh = () => { refreshKey.value += 1 }
@@ -271,6 +271,17 @@ const handleLogout = async () => {
 								<FileText :size="24" />
 							</span>
 							{{ t('nav.changelog') }}
+						</a>
+					</div>
+
+					<div class="nav-group">
+						<span class="nav-label">Развлечения</span>
+						<a class="drawer-link" :class="{ active: currentPath === '/game' }"
+							@click.prevent="navigate('/game'); isMenuOpen = false">
+							<span class="link-icon">
+								<Gamepad2 :size="24" />
+							</span>
+							Мини-игра
 						</a>
 					</div>
 				</div>
