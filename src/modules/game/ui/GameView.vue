@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { CatalogService, type ProductDTO } from '@/modules/catalog/services/CatalogService'
 import { FpHaptics } from '@/shared/lib/haptics'
-import { ArrowLeft, TrendingUp, TrendingDown, RefreshCcw } from 'lucide-vue-next'
+import { ArrowLeft, TrendingUp, TrendingDown, RefreshCcw, Heart, Zap } from 'lucide-vue-next'
 import confetti from 'canvas-confetti'
 
 const router = useRouter()
@@ -11,7 +11,8 @@ const router = useRouter()
 const isLoading = ref(true)
 const products = ref<ProductDTO[]>([])
 const score = ref(0)
-const bestScore = ref(0) // Optionally save to localStorage
+const bestScore = ref(0)
+const lives = ref(3) // <-- Added 3 lives
 const isGameOver = ref(false)
 
 const productA = ref<ProductDTO | null>(null)
@@ -21,17 +22,17 @@ const productB = ref<ProductDTO | null>(null)
 const gameState = ref<'playing' | 'reveal'>('playing')
 const lastGuess = ref<'correct' | 'wrong' | null>(null)
 
+// Quick answer tracking
+const roundStartTime = ref(0)
+const showBonus = ref(false)
+
 const loadProducts = async () => {
     try {
         isLoading.value = true
-        // Fetch a pool of products
         const res = await CatalogService.searchProducts('', {}, 1, 100)
-        
-        // Filter those with valid prices
         products.value = res.items.filter(p => p.normalizedPrice || p.lastPrice)
         
         if (products.value.length < 2) {
-            // Not enough products
             isGameOver.value = true
         } else {
             startRound()
@@ -55,16 +56,16 @@ const getRandomProduct = (excludeId?: string) => {
 const startRound = () => {
     gameState.value = 'playing'
     lastGuess.value = null
+    showBonus.value = false
 
-    // If it's the first round, pick both
     if (!productA.value || isGameOver.value) {
         productA.value = getRandomProduct()
     } else {
-        // Carry over product B to product A
         productA.value = productB.value
     }
-
     productB.value = getRandomProduct(productA.value?.id)
+    
+    roundStartTime.value = Date.now()
 }
 
 const getPriceValue = (p: ProductDTO) => {
@@ -76,54 +77,61 @@ const handleGuess = (guess: 'higher' | 'lower') => {
 
     const priceA = getPriceValue(productA.value)
     const priceB = getPriceValue(productB.value)
+    const timeTaken = Date.now() - roundStartTime.value
 
     let isCorrect = false
     if (guess === 'higher' && priceB >= priceA) isCorrect = true
     if (guess === 'lower' && priceB <= priceA) isCorrect = true
-
-    // Actually, handling exact same price: let's be generous
     if (priceA === priceB) isCorrect = true
 
     gameState.value = 'reveal'
 
     if (isCorrect) {
         lastGuess.value = 'correct'
-        score.value += 1
+        
+        let pointsAdded = 1
+        if (timeTaken < 2500) { // Fast answer! Under 2.5 seconds
+            pointsAdded = 3
+            showBonus.value = true
+        }
+        
+        score.value += pointsAdded
         if (score.value > bestScore.value) {
             bestScore.value = score.value
+            localStorage.setItem('fp_game_best_score', score.value.toString())
         }
         FpHaptics.success()
         
-        if (score.value % 5 === 0) {
-            // Celebrate every 5 streak
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 }
-            })
+        if (score.value % 10 === 0 || score.value % 10 === 1 || score.value % 10 === 2) {
+            // Celebrate around multiples of 10
+            if (Math.random() > 0.5) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
         }
 
-        setTimeout(() => {
-            startRound()
-        }, 1500)
+        setTimeout(() => startRound(), 1500)
     } else {
         lastGuess.value = 'wrong'
         FpHaptics.error()
-        isGameOver.value = true
+        lives.value -= 1
+        
+        if (lives.value <= 0) {
+            isGameOver.value = true
+        } else {
+            // Still have lives, start next round after reveal!
+            setTimeout(() => startRound(), 2500)
+        }
     }
 }
 
 const restartGame = () => {
     score.value = 0
+    lives.value = 3
     isGameOver.value = false
     startRound()
 }
 
 onMounted(() => {
-    // Load best score from local storage if needed
     const savedBest = localStorage.getItem('fp_game_best_score')
     if (savedBest) bestScore.value = parseInt(savedBest, 10)
-
     loadProducts()
 })
 
@@ -137,7 +145,6 @@ const getUnitDisplay = (p: ProductDTO) => {
     if (p.unit === 'л') return '1 л'
     return p.unit
 }
-
 </script>
 
 <template>
@@ -146,9 +153,11 @@ const getUnitDisplay = (p: ProductDTO) => {
             <button class="icon-btn" @click="router.back()">
                 <ArrowLeft :size="24" />
             </button>
+            <div class="lives-indicator">
+                <Heart v-for="n in 3" :key="n" :size="20" :class="{ 'lost': n > lives }" class="heart" />
+            </div>
             <div class="score-board">
-                <div class="score-badge current">Счет: {{ score }}</div>
-                <div class="score-badge best">Рекорд: {{ bestScore }}</div>
+                <div class="score-badge current">Счет: {{ score }} <Zap v-if="showBonus" :size="14" class="bonus-icon" /></div>
             </div>
         </header>
 
@@ -163,7 +172,6 @@ const getUnitDisplay = (p: ProductDTO) => {
         </div>
 
         <div v-else class="game-board">
-            
             <!-- Product A -->
             <transition name="slide-card">
                 <div v-if="productA" class="product-card card-a" :key="'a-'+productA.id">
@@ -193,6 +201,10 @@ const getUnitDisplay = (p: ProductDTO) => {
                                 {{ formatPrice(getPriceValue(productB)) }}
                             </span>
                             <span class="price-unit">за {{ getUnitDisplay(productB) }}</span>
+                            
+                            <div v-if="showBonus && lastGuess === 'correct'" class="bonus-text">
+                                +Скорость! ⚡
+                            </div>
                         </div>
                         <div class="price-hidden" v-else>
                             <span class="question-mark">?</span>
@@ -217,13 +229,11 @@ const getUnitDisplay = (p: ProductDTO) => {
         <transition name="fade">
             <div v-if="isGameOver && products.length >= 2" class="game-over-overlay">
                 <div class="game-over-card">
-                    <h2 class="title text-error">Неверно!</h2>
+                    <h2 class="title text-error">Игра окончена!</h2>
                     <p class="result-text">
-                        <strong>{{ productB?.name }}</strong> стоит 
-                        <span class="highlight">{{ formatPrice(getPriceValue(productB!)) }}</span>, 
-                        а не {{ lastGuess === 'higher' ? 'дешевле' : 'дороже' }}.
+                        У вас закончились жизни. Вы набрали отличный результат!
                     </p>
-                    <div class="final-score">Ваш счет: <strong>{{ score }}</strong></div>
+                    <div class="final-score">Ваш счет: <strong>{{ score }}</strong> (Рекорд: {{ bestScore }})</div>
                     
                     <button class="game-btn primary" @click="restartGame">
                         Сыграть еще раз
@@ -251,8 +261,27 @@ const getUnitDisplay = (p: ProductDTO) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
     z-index: 10;
+}
+
+.lives-indicator {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    
+    .heart {
+        color: #f43f5e;
+        fill: #f43f5e;
+        transition: all 0.3s;
+        
+        &.lost {
+            fill: transparent;
+            color: var(--color-border);
+            opacity: 0.5;
+            transform: scale(0.8);
+        }
+    }
 }
 
 .icon-btn {
@@ -268,9 +297,7 @@ const getUnitDisplay = (p: ProductDTO) => {
     box-shadow: var(--shadow-sm);
     transition: all 0.2s ease;
 
-    &:hover {
-        background: var(--color-surface-hover);
-    }
+    &:hover { background: var(--color-surface-hover); }
 }
 
 .score-board {
@@ -278,29 +305,37 @@ const getUnitDisplay = (p: ProductDTO) => {
     gap: 8px;
     
     .score-badge {
+        display: flex;
+        align-items: center;
+        gap: 4px;
         padding: 6px 12px;
         border-radius: 99px;
-        font-weight: 700;
-        font-size: 0.85rem;
+        font-weight: 800;
+        font-size: 0.9rem;
         
         &.current {
             background: var(--color-primary);
             color: var(--color-on-primary);
         }
-        
-        &.best {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            color: var(--color-text-secondary);
-        }
     }
+}
+
+.bonus-icon {
+    color: #fef08a;
+    fill: #fef08a;
+    animation: flash 1s infinite alternate;
+}
+
+@keyframes flash {
+    0% { opacity: 0.5; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1.2); }
 }
 
 .game-board {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
     position: relative;
     max-width: 500px;
     margin: 0 auto;
@@ -314,14 +349,14 @@ const getUnitDisplay = (p: ProductDTO) => {
     transform: translate(-50%, -50%);
     background: var(--color-background);
     color: var(--color-text-primary);
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     z-index: 5;
     border: 2px solid var(--color-border);
     box-shadow: var(--shadow-md);
@@ -333,7 +368,7 @@ const getUnitDisplay = (p: ProductDTO) => {
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-md);
-    padding: var(--spacing-xl);
+    padding: var(--spacing-lg);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -355,14 +390,14 @@ const getUnitDisplay = (p: ProductDTO) => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-xs);
     flex: 1;
     justify-content: center;
     width: 100%;
 }
 
 .product-name {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     font-weight: 800;
     color: var(--color-text-primary);
     margin: 0;
@@ -370,22 +405,23 @@ const getUnitDisplay = (p: ProductDTO) => {
 }
 
 .product-store {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--color-text-tertiary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 700;
+    margin: 4px 0;
 }
 
 .price-reveal {
-    margin-top: var(--spacing-lg);
+    margin-top: var(--spacing-md);
     display: flex;
     flex-direction: column;
     align-items: center;
     animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     
     .price-value {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         font-weight: 900;
         letter-spacing: -0.02em;
         line-height: 1;
@@ -393,17 +429,30 @@ const getUnitDisplay = (p: ProductDTO) => {
     }
     
     .price-unit {
-        font-size: 1rem;
+        font-size: 0.95rem;
         color: var(--color-text-tertiary);
-        margin-top: 4px;
+        margin-top: 2px;
         font-weight: 500;
     }
 }
 
+.bonus-text {
+    color: #eab308;
+    font-weight: 800;
+    font-size: 0.9rem;
+    margin-top: 8px;
+    animation: slideUpFade 0.5s ease-out;
+}
+
+@keyframes slideUpFade {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
 .price-hidden {
-    margin-top: var(--spacing-lg);
-    width: 80px;
-    height: 80px;
+    margin-top: var(--spacing-md);
+    width: 70px;
+    height: 70px;
     background: var(--color-background);
     border: 2px dashed var(--color-border);
     border-radius: 50%;
@@ -412,7 +461,7 @@ const getUnitDisplay = (p: ProductDTO) => {
     justify-content: center;
 
     .question-mark {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 900;
         color: var(--color-text-tertiary);
     }
@@ -420,9 +469,9 @@ const getUnitDisplay = (p: ProductDTO) => {
 
 .action-buttons {
     display: flex;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
     width: 100%;
-    margin-top: var(--spacing-xl);
+    margin-top: var(--spacing-md);
 }
 
 .guess-btn {
@@ -430,13 +479,13 @@ const getUnitDisplay = (p: ProductDTO) => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 16px;
+    gap: 6px;
+    padding: 12px;
     border: none;
     border-radius: var(--radius-md);
     cursor: pointer;
-    font-weight: 700;
-    font-size: 1.1rem;
+    font-weight: 800;
+    font-size: 1.05rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     color: white;
 
@@ -460,9 +509,7 @@ const getUnitDisplay = (p: ProductDTO) => {
         }
     }
     
-    &:active {
-        transform: scale(0.96);
-    }
+    &:active { transform: scale(0.96); }
 }
 
 .game-over-overlay {
@@ -496,13 +543,8 @@ const getUnitDisplay = (p: ProductDTO) => {
     .result-text {
         font-size: 1.1rem;
         color: var(--color-text-secondary);
-        margin-bottom: var(--spacing-lg);
+        margin-bottom: var(--spacing-md);
         line-height: 1.5;
-
-        .highlight {
-            font-weight: 800;
-            color: var(--color-text-primary);
-        }
     }
 
     .final-score {
@@ -534,31 +576,18 @@ const getUnitDisplay = (p: ProductDTO) => {
             box-shadow: var(--shadow-md);
         }
         
-        &:active {
-            transform: translateY(0);
-        }
+        &:active { transform: translateY(0); }
     }
 }
 
 .loading-state, .error-state {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    color: var(--color-text-tertiary);
-    gap: var(--spacing-md);
-    text-align: center;
+    flex-direction: column; align-items: center; justify-content: center;
+    flex: 1; color: var(--color-text-tertiary); gap: var(--spacing-md); text-align: center;
 }
 
-.spin-icon {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    100% { transform: rotate(360deg); }
-}
-
+.spin-icon { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
 @keyframes bounceIn {
     0% { opacity: 0; transform: scale(0.3); }
     50% { opacity: 1; transform: scale(1.05); }
@@ -566,33 +595,13 @@ const getUnitDisplay = (p: ProductDTO) => {
     100% { transform: scale(1); }
 }
 
-.slide-card-enter-active,
-.slide-card-leave-active {
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.slide-card-enter-from {
-    opacity: 0;
-    transform: translateY(50px) scale(0.95);
-}
-
-.slide-card-leave-to {
-    opacity: 0;
-    transform: translateY(-50px) scale(1.05);
-}
+.slide-card-enter-active, .slide-card-leave-active { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.slide-card-enter-from { opacity: 0; transform: translateY(30px) scale(0.98); }
+.slide-card-leave-to { opacity: 0; transform: translateY(-30px) scale(1.02); }
 
 .text-success { color: var(--color-success) !important; }
 .text-error { color: var(--color-error) !important; }
-
-.fade-enter-active, .fade-leave-active {
-    transition: opacity 0.3s;
-}
-.fade-enter-from, .fade-leave-to {
-    opacity: 0;
-}
-
-/* Add custom scrollbar hiding for clean UI */
-::-webkit-scrollbar {
-    display: none;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+::-webkit-scrollbar { display: none; }
 </style>
