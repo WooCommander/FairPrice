@@ -276,12 +276,12 @@ const handleLogout = async () => {
 
 					<div class="nav-group">
 						<span class="nav-label">Развлечения</span>
-						<a class="drawer-link" :class="{ active: currentPath === '/game' }"
-							@click.prevent="navigate('/game'); isMenuOpen = false">
+						<a class="drawer-link" :class="{ active: currentPath.startsWith('/games') }"
+							@click.prevent="navigate('/games'); isMenuOpen = false">
 							<span class="link-icon">
 								<Gamepad2 :size="24" />
 							</span>
-							Мини-игра
+							Игры
 						</a>
 					</div>
 				</div>

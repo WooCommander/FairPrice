@@ -104,9 +104,19 @@ const routes = [
         component: () => import('@/modules/profile/views/LeaderboardView.vue')
     },
     {
-        path: '/game',
-        name: 'Game',
-        component: () => import('@/modules/game').then(m => m.GameView)
+        path: '/games',
+        name: 'GamesHub',
+        component: () => import('@/modules/game').then(m => m.GamesHubView)
+    },
+    {
+        path: '/games/price-battle',
+        name: 'PriceBattle',
+        component: () => import('@/modules/game').then(m => m.PriceBattleView)
+    },
+    {
+        path: '/games/flow',
+        name: 'FlowGame',
+        component: () => import('@/modules/game').then(m => m.FlowGameView)
     }
 ]
 
