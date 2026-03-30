@@ -41,6 +41,42 @@ const LEVELS: Level[] = [
             { color: '#a855f7', r: 5, c: 1 }, { color: '#a855f7', r: 3, c: 0 },
             { color: '#f97316', r: 5, c: 0 }, { color: '#f97316', r: 4, c: 0 }
         ]
+    },
+    {
+        size: 6,
+        dots: [
+            { color: '#ef4444', r: 0, c: 0 }, { color: '#ef4444', r: 1, c: 0 },
+            { color: '#3b82f6', r: 1, c: 1 }, { color: '#3b82f6', r: 2, c: 1 },
+            { color: '#22c55e', r: 2, c: 2 }, { color: '#22c55e', r: 3, c: 2 }
+        ]
+    },
+    {
+        size: 7,
+        dots: [
+            { color: '#ef4444', r: 0, c: 0 }, { color: '#ef4444', r: 0, c: 1 },
+            { color: '#3b82f6', r: 0, c: 2 }, { color: '#3b82f6', r: 0, c: 3 },
+            { color: '#22c55e', r: 0, c: 4 }, { color: '#22c55e', r: 0, c: 5 },
+            { color: '#eab308', r: 0, c: 6 }, { color: '#eab308', r: 6, c: 6 }
+        ]
+    },
+    {
+        size: 8,
+        dots: [
+            { color: '#ef4444', r: 0, c: 0 }, { color: '#ef4444', r: 1, c: 0 },
+            { color: '#3b82f6', r: 1, c: 1 }, { color: '#3b82f6', r: 2, c: 1 },
+            { color: '#22c55e', r: 2, c: 2 }, { color: '#22c55e', r: 3, c: 2 },
+            { color: '#eab308', r: 3, c: 3 }, { color: '#eab308', r: 4, c: 3 }
+        ]
+    },
+    {
+        size: 10,
+        dots: [
+            { color: '#ef4444', r: 0, c: 0 }, { color: '#ef4444', r: 1, c: 0 },
+            { color: '#3b82f6', r: 1, c: 1 }, { color: '#3b82f6', r: 2, c: 1 },
+            { color: '#22c55e', r: 2, c: 2 }, { color: '#22c55e', r: 3, c: 2 },
+            { color: '#eab308', r: 3, c: 3 }, { color: '#eab308', r: 4, c: 3 },
+            { color: '#a855f7', r: 4, c: 4 }, { color: '#a855f7', r: 5, c: 4 }
+        ]
     }
 ]
 
