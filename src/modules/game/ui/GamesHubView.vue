@@ -17,20 +17,30 @@ const router = useRouter()
         <p class="subtitle">Отдохните с пользой или потренируйте логику!</p>
 
         <div class="games-grid">
-            <div class="game-card" @click="router.push('/games/price-battle')">
-                <div class="icon-wrap">
+            <div class="game-card theme-primary" @click="router.push('/games/price-battle')">
+                <div class="game-icon-wrap">
                     <Swords :size="32" />
                 </div>
-                <h3>Битва Цен</h3>
-                <p>Угадывай цены на реальные товары из своего списка покупок!</p>
+                <div class="game-info">
+                    <h2>Битва Цен</h2>
+                    <p>Угадывай цены на реальные товары из своего списка покупок!</p>
+                </div>
+                <div class="play-btn-wrap">
+                    <button class="play-btn">Играть</button>
+                </div>
             </div>
 
-            <div class="game-card flow-card" @click="router.push('/games/flow')">
-                <div class="icon-wrap">
+            <div class="game-card theme-success" @click="router.push('/games/flow')">
+                <div class="game-icon-wrap">
                     <Fingerprint :size="32" />
                 </div>
-                <h3>Цветные Точки</h3>
-                <p>Соединяй одинаковые цвета так, чтобы линии не пересекались.</p>
+                <div class="game-info">
+                    <h2>Цветные Точки</h2>
+                    <p>Соединяй одинаковые цвета так, чтобы линии не пересекались.</p>
+                </div>
+                <div class="play-btn-wrap">
+                    <button class="play-btn">Играть</button>
+                </div>
             </div>
         </div>
     </div>
