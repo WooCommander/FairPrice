@@ -250,11 +250,12 @@ const getUnitDisplay = (p: ProductDTO) => {
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-height: calc(100vh - 64px); 
-    padding: var(--spacing-md);
     position: relative;
+    padding: var(--spacing-md);
+    background-color: var(--color-background);
+    background-image: radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent);
     overflow: hidden;
-    background: radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent);
+    touch-action: none;
 }
 
 .game-header {
@@ -335,7 +336,7 @@ const getUnitDisplay = (p: ProductDTO) => {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 8px;
     position: relative;
     max-width: 500px;
     margin: 0 auto;
@@ -349,14 +350,14 @@ const getUnitDisplay = (p: ProductDTO) => {
     transform: translate(-50%, -50%);
     background: var(--color-background);
     color: var(--color-text-primary);
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     z-index: 5;
     border: 2px solid var(--color-border);
     box-shadow: var(--shadow-md);
@@ -364,11 +365,12 @@ const getUnitDisplay = (p: ProductDTO) => {
 
 .product-card {
     flex: 1;
+    min-height: 0; /* Разрешает flex-контейнеру сжиматься */
     background: var(--color-surface);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-md);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-sm);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -390,14 +392,14 @@ const getUnitDisplay = (p: ProductDTO) => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: 0px;
     flex: 1;
     justify-content: center;
     width: 100%;
 }
 
 .product-name {
-    font-size: 1.35rem;
+    font-size: 1.15rem;
     font-weight: 800;
     color: var(--color-text-primary);
     margin: 0;
@@ -405,23 +407,23 @@ const getUnitDisplay = (p: ProductDTO) => {
 }
 
 .product-store {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--color-text-tertiary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 700;
-    margin: 4px 0;
+    margin: 2px 0;
 }
 
 .price-reveal {
-    margin-top: var(--spacing-md);
+    margin-top: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
     animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     
     .price-value {
-        font-size: 2.2rem;
+        font-size: 1.8rem;
         font-weight: 900;
         letter-spacing: -0.02em;
         line-height: 1;
@@ -429,7 +431,7 @@ const getUnitDisplay = (p: ProductDTO) => {
     }
     
     .price-unit {
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         color: var(--color-text-tertiary);
         margin-top: 2px;
         font-weight: 500;
@@ -439,8 +441,8 @@ const getUnitDisplay = (p: ProductDTO) => {
 .bonus-text {
     color: #eab308;
     font-weight: 800;
-    font-size: 0.9rem;
-    margin-top: 8px;
+    font-size: 0.85rem;
+    margin-top: 4px;
     animation: slideUpFade 0.5s ease-out;
 }
 
@@ -450,9 +452,9 @@ const getUnitDisplay = (p: ProductDTO) => {
 }
 
 .price-hidden {
-    margin-top: var(--spacing-md);
-    width: 70px;
-    height: 70px;
+    margin-top: 8px;
+    width: 50px;
+    height: 50px;
     background: var(--color-background);
     border: 2px dashed var(--color-border);
     border-radius: 50%;
@@ -461,7 +463,7 @@ const getUnitDisplay = (p: ProductDTO) => {
     justify-content: center;
 
     .question-mark {
-        font-size: 2rem;
+        font-size: 1.6rem;
         font-weight: 900;
         color: var(--color-text-tertiary);
     }
@@ -471,7 +473,7 @@ const getUnitDisplay = (p: ProductDTO) => {
     display: flex;
     gap: var(--spacing-sm);
     width: 100%;
-    margin-top: var(--spacing-md);
+    margin-top: 8px;
 }
 
 .guess-btn {
@@ -479,13 +481,13 @@ const getUnitDisplay = (p: ProductDTO) => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    padding: 12px;
+    gap: 4px;
+    padding: 8px;
     border: none;
     border-radius: var(--radius-md);
     cursor: pointer;
     font-weight: 800;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     color: white;
 

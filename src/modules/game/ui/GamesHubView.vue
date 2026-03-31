@@ -1,31 +1,8 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { ArrowLeft, TrendingUp, Route } from 'lucide-vue-next'
+import { Swords, Fingerprint, ArrowLeft } from 'lucide-vue-next'
 
 const router = useRouter()
-
-const games = [
-    {
-        id: 'price-battle',
-        name: 'Битва Цен',
-        description: 'Угадай цену товара из каталога и тренируй память!',
-        icon: TrendingUp,
-        path: '/games/price-battle',
-        color: 'primary'
-    },
-    {
-        id: 'flow',
-        name: 'Цветные Точки',
-        description: 'Классическая логическая игра. Соедини все точки, не пересекая пути.',
-        icon: Route,
-        path: '/games/flow',
-        color: 'success'
-    }
-]
-
-const navigateTo = (path: string) => {
-    router.push(path)
-}
 </script>
 
 <template>
@@ -40,17 +17,20 @@ const navigateTo = (path: string) => {
         <p class="subtitle">Отдохните с пользой или потренируйте логику!</p>
 
         <div class="games-grid">
-            <div v-for="game in games" :key="game.id" class="game-card" :class="'theme-' + game.color" @click="navigateTo(game.path)">
-                <div class="game-icon-wrap">
-                    <component :is="game.icon" :size="32" class="game-icon" />
+            <div class="game-card" @click="router.push('/games/price-battle')">
+                <div class="icon-wrap">
+                    <Swords :size="32" />
                 </div>
-                <div class="game-info">
-                    <h2>{{ game.name }}</h2>
-                    <p>{{ game.description }}</p>
+                <h3>Битва Цен</h3>
+                <p>Угадывай цены на реальные товары из своего списка покупок!</p>
+            </div>
+
+            <div class="game-card flow-card" @click="router.push('/games/flow')">
+                <div class="icon-wrap">
+                    <Fingerprint :size="32" />
                 </div>
-                <div class="play-btn-wrap">
-                    <button class="play-btn">Играть</button>
-                </div>
+                <h3>Цветные Точки</h3>
+                <p>Соединяй одинаковые цвета так, чтобы линии не пересекались.</p>
             </div>
         </div>
     </div>

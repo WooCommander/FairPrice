@@ -8,6 +8,7 @@ export interface CommunityLevel {
     solutions: Record<string, { r: number, c: number }[]>
     likes: number
     created_at: string
+    profiles?: { display_name: string }
 }
 
 export interface LevelScore {
@@ -37,18 +38,26 @@ class GameService {
         return data
     }
 
-    async getCommunityLevels(limit = 50): Promise<CommunityLevel[]> {
+    async getCommunityLevels(limit = 50): Promise<any[]> {
         const { data, error } = await supabase
             .from('community_levels')
             .select('*')
             .order('created_at', { ascending: false })
             .limit(limit)
 
-        if (error) {
+        if (error || !data) {
             console.error('Error fetching levels:', error)
             return []
         }
-        return data || []
+
+        const userIds = [...new Set(data.filter(d => d.creator_id).map(d => d.creator_id))]
+        const { data: profiles } = await supabase.from('profiles').select('id, display_name').in('id', userIds)
+        const profileMap = (profiles || []).reduce((acc: any, p: any) => ({ ...acc, [p.id]: p.display_name }), {})
+
+        return data.map((d: any) => ({
+            ...d,
+            profiles: { display_name: profileMap[d.creator_id] }
+        }))
     }
 
     async saveScore(levelId: string, score: number): Promise<void> {
@@ -71,17 +80,24 @@ class GameService {
     async getLeaderboard(levelId: string): Promise<any[]> {
         const { data, error } = await supabase
             .from('level_scores')
-            .select('id, score, created_at, user_id, profiles(display_name)')
+            .select('id, score, created_at, user_id')
             .eq('level_id', levelId)
             .order('score', { ascending: false })
             .limit(10)
 
-        if (error) {
+        if (error || !data) {
             console.error('Error fetching leaderboard:', error)
             return []
         }
-        
-        return data || []
+
+        const userIds = [...new Set(data.filter(d => d.user_id).map(d => d.user_id))]
+        const { data: profiles } = await supabase.from('profiles').select('id, display_name').in('id', userIds)
+        const profileMap = (profiles || []).reduce((acc: any, p: any) => ({ ...acc, [p.id]: p.display_name }), {})
+
+        return data.map((d: any) => ({
+            ...d,
+            profiles: { display_name: profileMap[d.user_id] }
+        }))
     }
 
     async likeLevel(levelId: string): Promise<number | null> {

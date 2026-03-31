@@ -1,6 +1,6 @@
 import { supabase } from '@/api/supabase'
 
-export type LeaderboardCategory = 'reputation' | 'products' | 'prices'
+export type LeaderboardCategory = 'reputation' | 'products' | 'prices' | 'games'
 
 export interface LeaderboardEntry {
     userId: string
@@ -54,6 +54,16 @@ class LeaderboardServiceImpl {
                 products_count: Number(r.products_count),
                 prices_count: Number(r.prices_count),
                 score: Number(r.prices_count)
+            }))
+        } else if (category === 'games') {
+            const { data, error } = await supabase.rpc('leaderboard_games')
+            if (error) throw error
+            rows = (data || []).map((r: any) => ({
+                user_id: r.user_id,
+                display_name: r.display_name,
+                products_count: Number(r.products_count),
+                prices_count: Number(r.prices_count),
+                score: Number(r.game_score)
             }))
         } else {
             const { data, error } = await supabase.rpc('leaderboard_reputation')

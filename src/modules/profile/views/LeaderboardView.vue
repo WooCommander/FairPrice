@@ -6,6 +6,7 @@ import { FpSkeleton } from '@/design-system'
 
 const categories: { key: LeaderboardCategory; label: string; unit: string; icon: string }[] = [
     { key: 'reputation', label: 'Репутация', unit: 'очков', icon: '🏆' },
+    { key: 'games', label: 'Игры', unit: 'pts', icon: '🎮' },
     { key: 'products', label: 'Товары', unit: 'товаров', icon: '📦' },
     { key: 'prices', label: 'Цены', unit: 'цен', icon: '💰' },
 ]

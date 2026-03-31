@@ -557,9 +557,14 @@ onUnmounted(() => {
                 <div class="modal-content" @click.stop>
                     <h3>Топ Игроков 🏆</h3>
                     <div class="leaderboard-list">
+                        <div class="leaderboard-header" v-if="leaderboardData.length > 0">
+                            <span class="rank">Место</span>
+                            <span class="name">Игрок</span>
+                            <span class="score" style="text-align: right;">Очки</span>
+                        </div>
                         <div v-for="(record, index) in leaderboardData" :key="record.id" class="leaderboard-item">
                             <span class="rank">#{{ index + 1 }}</span>
-                            <span class="name">{{ record.profiles?.display_name || 'Аноним' }}</span>
+                            <span class="name">{{ record.profiles?.display_name || 'Инкогнито' }}</span>
                             <span class="score">{{ record.score }} pts</span>
                         </div>
                         <div v-if="leaderboardData.length === 0" class="empty-state" style="text-align: center; color: var(--color-text-secondary); margin: 24px 0;">
@@ -681,8 +686,8 @@ onUnmounted(() => {
                         
                         <button 
                             v-if="currentLevelIndex >= 5 && !currentCommunityLevelId && !hasPublished" 
-                            class="game-btn" 
-                            style="background: var(--color-primary); color: white; width: 100%; justify-content: center; padding: 12px 24px; border-radius: 99px;"
+                            class="game-btn primary" 
+                            style="width: 100%; justify-content: center;"
                             @click="shareLevel"
                             :disabled="isPublishing"
                         >
@@ -692,8 +697,8 @@ onUnmounted(() => {
 
                         <button 
                             v-if="currentLevelIndex >= 5 && !currentCommunityLevelId && hasPublished" 
-                            class="icon-btn" 
-                            style="background: var(--color-surface); color: var(--color-text-secondary); width: 100%; justify-content: center; padding: 12px 24px; border-radius: 99px; border: 1px solid var(--color-border);"
+                            class="game-btn" 
+                            style="width: 100%; justify-content: center; background: var(--color-surface); color: var(--color-text-secondary); border: 1px solid var(--color-border);"
                             disabled
                         >
                             <ThumbsUp :size="20" style="margin-right: 8px;" />
@@ -702,8 +707,8 @@ onUnmounted(() => {
 
                         <button 
                             v-if="currentCommunityLevelId" 
-                            class="icon-btn" 
-                            style="background: var(--color-surface); color: var(--color-text-primary); width: 100%; justify-content: center; padding: 12px 24px; border-radius: 99px; border: 1px solid var(--color-primary);"
+                            class="game-btn" 
+                            style="width: 100%; justify-content: center; background: var(--color-surface); border: 2px solid var(--color-primary); color: var(--color-primary);"
                             @click="likeCurrentLevel"
                             :disabled="hasLikedLocally"
                         >
@@ -713,8 +718,8 @@ onUnmounted(() => {
 
                         <button 
                             v-if="currentCommunityLevelId || hasPublished" 
-                            class="icon-btn" 
-                            style="background: var(--color-surface); color: var(--color-primary); width: 100%; justify-content: center; padding: 12px 24px; border-radius: 99px; border: 1px solid var(--color-primary);"
+                            class="game-btn" 
+                            style="width: 100%; justify-content: center; background: var(--color-surface); border: 2px solid var(--color-primary); color: var(--color-primary);"
                             @click="fetchLeaderboard"
                         >
                             <Trophy :size="20" style="margin-right: 8px;" />
@@ -733,9 +738,8 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-height: calc(100vh - 64px); 
-    padding: var(--spacing-md);
     position: relative;
+    padding: var(--spacing-md);
     background: var(--color-background);
     touch-action: none; // Essential for touch games
     overflow: hidden;
@@ -951,6 +955,25 @@ onUnmounted(() => {
     gap: var(--spacing-sm);
     max-height: 40vh;
     overflow-y: auto;
+}
+
+.leaderboard-header {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--spacing-md);
+    margin-bottom: -16px;
+    
+    span {
+        font-size: 0.8rem;
+        color: var(--color-text-secondary);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .rank { min-width: 50px; }
+    .name { flex: 1; }
+    .score { font-weight: 500; color: var(--color-text-secondary); }
 }
 
 .leaderboard-item {

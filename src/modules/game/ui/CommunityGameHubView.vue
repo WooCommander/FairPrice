@@ -46,9 +46,10 @@ const playLevel = (level: CommunityLevel) => {
             <div v-else class="levels-grid">
                 <div v-for="level in levels" :key="level.id" class="level-card">
                     <div class="level-header">
-                        <span class="size-badge">{{ level.size }}x{{ level.size }}</span>
-                        <!-- Имя автора можно было бы вытащить через join с auth.users, но пока показываем Аноним -->
-                        <span class="author">Автор: Игрок</span>
+                        <div class="meta" style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 8px;">
+                            <span>Создатель: {{ level.profiles?.display_name || 'Аноним' }}</span><br>
+                            <span>Размер: {{ level.size }}x{{ level.size }}</span>
+                        </div>
                     </div>
                     
                     <div class="level-preview" :style="{ gridTemplateColumns: `repeat(${level.size}, 1fr)` }">
