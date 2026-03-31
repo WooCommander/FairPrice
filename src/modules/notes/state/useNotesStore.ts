@@ -1,14 +1,13 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, readonly } from 'vue'
 import type { Note, NoteInsertDTO, NoteUpdateDTO } from '../domain/Note'
 import { NoteService } from '../services/NoteService'
 import { authStore } from '@/modules/auth/store/authStore'
 
-export const useNotesStore = defineStore('notes', () => {
-    const notes = ref<Note[]>([])
-    const isLoading = ref(false)
-    const error = ref<string | null>(null)
+const notes = ref<Note[]>([])
+const isLoading = ref(false)
+const error = ref<string | null>(null)
 
+export const useNotesStore = () => {
     const fetchNotes = async () => {
         if (!authStore.user.value) {
             notes.value = []
@@ -44,8 +43,6 @@ export const useNotesStore = defineStore('notes', () => {
             const idx = notes.value.findIndex(n => n.id === id)
             if (idx !== -1) {
                 notes.value[idx] = updated
-                // Move updated note to top (since we sort by created_at maybe we shouldn't move it, 
-                // but usually sticky notes stay in their created order. Supabase order is created_at desc)
             }
             return updated
         } catch (err: any) {
@@ -65,12 +62,12 @@ export const useNotesStore = defineStore('notes', () => {
     }
 
     return {
-        notes,
-        isLoading,
-        error,
+        notes: readonly(notes),
+        isLoading: readonly(isLoading),
+        error: readonly(error),
         fetchNotes,
         addNote,
         editNote,
         removeNote
     }
-})
+}

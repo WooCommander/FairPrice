@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import { X, Check } from 'lucide-vue-next'
-import { NOTE_COLORS, type Note, type NoteInsertDTO } from '../domain/Note'
+import { NOTE_COLORS, type Note, type NoteInsertDTO } from '../../domain/Note'
 import { FpHaptics } from '@/shared/lib/haptics'
 
 interface Props {
