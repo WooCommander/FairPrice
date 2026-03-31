@@ -8,13 +8,13 @@ import NoteModal from './components/NoteModal.vue'
 import { FpHaptics } from '@/shared/lib/haptics'
 
 const router = useRouter()
-const notesStore = useNotesStore()
+const { notes, isLoading, fetchNotes, addNote, editNote, removeNote } = useNotesStore()
 
 const isModalOpen = ref(false)
 const editingNote = ref<Note | null>(null)
 
 onMounted(() => {
-    notesStore.fetchNotes()
+    fetchNotes()
 })
 
 const openAddModal = () => {
@@ -39,14 +39,13 @@ const closeModal = () => {
 const handleSaveNote = async (payload: { id?: string, note: any }) => {
     try {
         if (payload.id) {
-            await notesStore.editNote(payload.id, payload.note)
+            await editNote(payload.id, payload.note)
         } else {
-            await notesStore.addNote(payload.note)
+            await addNote(payload.note)
         }
         closeModal()
     } catch (e) {
         console.error(e)
-        // Show error notification here if you implement a notification store
     }
 }
 
@@ -56,7 +55,7 @@ const handleDelete = async (note: Note) => {
 
     if (isConfirmed) {
         FpHaptics.success()
-        await notesStore.removeNote(note.id)
+        await removeNote(note.id)
     }
 }
 </script>
@@ -73,12 +72,12 @@ const handleDelete = async (note: Note) => {
         <p class="subtitle">Ваши личные записи. Доступны только вам.</p>
 
         <!-- Loading / Empty states -->
-        <div v-if="notesStore.isLoading.value && notesStore.notes.value.length === 0" class="state-container">
+        <div v-if="isLoading && notes.length === 0" class="state-container">
             <div class="loader"></div>
             <p>Загрузка заметок...</p>
         </div>
 
-        <div v-else-if="notesStore.notes.value.length === 0" class="state-container empty-state">
+        <div v-else-if="notes.length === 0" class="state-container empty-state">
             <div class="empty-icon-wrapper">
                 <Edit2 :size="48" class="text-secondary" />
             </div>
@@ -89,7 +88,7 @@ const handleDelete = async (note: Note) => {
         <!-- Notes Masonry Grid -->
         <div v-else class="notes-masonry">
             <div 
-                v-for="note in notesStore.notes.value" 
+                v-for="note in notes" 
                 :key="note.id" 
                 class="note-card"
                 :style="{ backgroundColor: note.color }"
