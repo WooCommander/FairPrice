@@ -128,6 +128,12 @@ const routes = [
         name: 'Notes',
         component: () => import('@/modules/notes').then(m => m.NotesView),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/birthdays',
+        name: 'Birthdays',
+        component: () => import('@/modules/birthdays').then(m => m.BirthdaysView),
+        meta: { requiresAuth: true }
     }
 ]
 
