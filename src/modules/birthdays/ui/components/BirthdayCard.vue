@@ -8,7 +8,7 @@ const props = defineProps<{
     birthday: Birthday
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
     (e: 'delete', id: string): void
 }>()
 
