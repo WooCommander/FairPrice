@@ -31,7 +31,7 @@ const loadProducts = async () => {
         isLoading.value = true
         const res = await CatalogService.searchProducts('', {}, 1, 100)
         products.value = res.items.filter(p => p.normalizedPrice || p.lastPrice)
-        
+
         if (products.value.length < 2) {
             isGameOver.value = true
         } else {
@@ -64,7 +64,7 @@ const startRound = () => {
         productA.value = productB.value
     }
     productB.value = getRandomProduct(productA.value?.id)
-    
+
     roundStartTime.value = Date.now()
 }
 
@@ -88,20 +88,20 @@ const handleGuess = (guess: 'higher' | 'lower') => {
 
     if (isCorrect) {
         lastGuess.value = 'correct'
-        
+
         let pointsAdded = 1
         if (timeTaken < 2500) { // Fast answer! Under 2.5 seconds
             pointsAdded = 3
             showBonus.value = true
         }
-        
+
         score.value += pointsAdded
         if (score.value > bestScore.value) {
             bestScore.value = score.value
             localStorage.setItem('fp_game_best_score', score.value.toString())
         }
         FpHaptics.success()
-        
+
         if (score.value % 10 === 0 || score.value % 10 === 1 || score.value % 10 === 2) {
             // Celebrate around multiples of 10
             if (Math.random() > 0.5) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
@@ -112,7 +112,7 @@ const handleGuess = (guess: 'higher' | 'lower') => {
         lastGuess.value = 'wrong'
         FpHaptics.error()
         lives.value -= 1
-        
+
         if (lives.value <= 0) {
             isGameOver.value = true
         } else {
@@ -157,7 +157,9 @@ const getUnitDisplay = (p: ProductDTO) => {
                 <Heart v-for="n in 3" :key="n" :size="20" :class="{ 'lost': n > lives }" class="heart" />
             </div>
             <div class="score-board">
-                <div class="score-badge current">Счет: {{ score }} <Zap v-if="showBonus" :size="14" class="bonus-icon" /></div>
+                <div class="score-badge current">Счет: {{ score }}
+                    <Zap v-if="showBonus" :size="14" class="bonus-icon" />
+                </div>
             </div>
         </header>
 
@@ -174,11 +176,11 @@ const getUnitDisplay = (p: ProductDTO) => {
         <div v-else class="game-board">
             <!-- Product A -->
             <transition name="slide-card">
-                <div v-if="productA" class="product-card card-a" :key="'a-'+productA.id">
+                <div v-if="productA" class="product-card card-a" :key="'a-' + productA.id">
                     <div class="card-content">
                         <h3 class="product-name">{{ productA.name }}</h3>
                         <p class="product-store" v-if="productA.lastStore">{{ productA.lastStore }}</p>
-                        
+
                         <div class="price-reveal">
                             <span class="price-value">{{ formatPrice(getPriceValue(productA)) }}</span>
                             <span class="price-unit">за {{ getUnitDisplay(productA) }}</span>
@@ -191,17 +193,18 @@ const getUnitDisplay = (p: ProductDTO) => {
 
             <!-- Product B -->
             <transition name="slide-card">
-                <div v-if="productB" class="product-card card-b" :key="'b-'+productB.id">
+                <div v-if="productB" class="product-card card-b" :key="'b-' + productB.id">
                     <div class="card-content">
                         <h3 class="product-name">{{ productB.name }}</h3>
                         <p class="product-store" v-if="productB.lastStore">{{ productB.lastStore }}</p>
-                        
+
                         <div class="price-reveal" v-if="gameState === 'reveal'">
-                            <span class="price-value" :class="{ 'text-success': lastGuess === 'correct', 'text-error': lastGuess === 'wrong' }">
+                            <span class="price-value"
+                                :class="{ 'text-success': lastGuess === 'correct', 'text-error': lastGuess === 'wrong' }">
                                 {{ formatPrice(getPriceValue(productB)) }}
                             </span>
                             <span class="price-unit">за {{ getUnitDisplay(productB) }}</span>
-                            
+
                             <div v-if="showBonus && lastGuess === 'correct'" class="bonus-text">
                                 +Скорость! ⚡
                             </div>
@@ -234,7 +237,7 @@ const getUnitDisplay = (p: ProductDTO) => {
                         У вас закончились жизни. Вы набрали отличный результат!
                     </p>
                     <div class="final-score">Ваш счет: <strong>{{ score }}</strong> (Рекорд: {{ bestScore }})</div>
-                    
+
                     <button class="game-btn primary" @click="restartGame">
                         Сыграть еще раз
                     </button>
@@ -249,9 +252,10 @@ const getUnitDisplay = (p: ProductDTO) => {
 .game-view {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: calc(100dvh - 150px);
+    max-height: calc(100dvh - 150px);
     position: relative;
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     background-color: var(--color-background);
     background-image: radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent);
     overflow: hidden;
@@ -262,7 +266,7 @@ const getUnitDisplay = (p: ProductDTO) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: 8px;
     z-index: 10;
 }
 
@@ -270,12 +274,12 @@ const getUnitDisplay = (p: ProductDTO) => {
     display: flex;
     gap: 6px;
     align-items: center;
-    
+
     .heart {
         color: #f43f5e;
         fill: #f43f5e;
         transition: all 0.3s;
-        
+
         &.lost {
             fill: transparent;
             color: var(--color-border);
@@ -298,13 +302,15 @@ const getUnitDisplay = (p: ProductDTO) => {
     box-shadow: var(--shadow-sm);
     transition: all 0.2s ease;
 
-    &:hover { background: var(--color-surface-hover); }
+    &:hover {
+        background: var(--color-surface-hover);
+    }
 }
 
 .score-board {
     display: flex;
     gap: 8px;
-    
+
     .score-badge {
         display: flex;
         align-items: center;
@@ -313,7 +319,7 @@ const getUnitDisplay = (p: ProductDTO) => {
         border-radius: 99px;
         font-weight: 800;
         font-size: 0.9rem;
-        
+
         &.current {
             background: var(--color-primary);
             color: var(--color-on-primary);
@@ -328,8 +334,15 @@ const getUnitDisplay = (p: ProductDTO) => {
 }
 
 @keyframes flash {
-    0% { opacity: 0.5; transform: scale(0.9); }
-    100% { opacity: 1; transform: scale(1.2); }
+    0% {
+        opacity: 0.5;
+        transform: scale(0.9);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
 }
 
 .game-board {
@@ -365,14 +378,13 @@ const getUnitDisplay = (p: ProductDTO) => {
 
 .product-card {
     flex: 1;
-    min-height: 0; /* Разрешает flex-контейнеру сжиматься */
+    display: flex;
+    flex-direction: column;
     background: var(--color-surface);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-md);
-    padding: var(--spacing-sm);
-    display: flex;
-    flex-direction: column;
+    padding: var(--spacing-md);
     align-items: center;
     justify-content: center;
     text-align: center;
@@ -392,14 +404,14 @@ const getUnitDisplay = (p: ProductDTO) => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0px;
+    gap: 4px;
     flex: 1;
     justify-content: center;
     width: 100%;
 }
 
 .product-name {
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     font-weight: 800;
     color: var(--color-text-primary);
     margin: 0;
@@ -407,12 +419,12 @@ const getUnitDisplay = (p: ProductDTO) => {
 }
 
 .product-store {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--color-text-tertiary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 700;
-    margin: 2px 0;
+    margin: 4px 0;
 }
 
 .price-reveal {
@@ -421,17 +433,17 @@ const getUnitDisplay = (p: ProductDTO) => {
     flex-direction: column;
     align-items: center;
     animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    
+
     .price-value {
-        font-size: 1.8rem;
+        font-size: 2rem;
         font-weight: 900;
         letter-spacing: -0.02em;
         line-height: 1;
         transition: color 0.3s;
     }
-    
+
     .price-unit {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         color: var(--color-text-tertiary);
         margin-top: 2px;
         font-weight: 500;
@@ -447,14 +459,21 @@ const getUnitDisplay = (p: ProductDTO) => {
 }
 
 @keyframes slideUpFade {
-    0% { opacity: 0; transform: translateY(10px); }
-    100% { opacity: 1; transform: translateY(0); }
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .price-hidden {
     margin-top: 8px;
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     background: var(--color-background);
     border: 2px dashed var(--color-border);
     border-radius: 50%;
@@ -463,7 +482,7 @@ const getUnitDisplay = (p: ProductDTO) => {
     justify-content: center;
 
     .question-mark {
-        font-size: 1.6rem;
+        font-size: 1.8rem;
         font-weight: 900;
         color: var(--color-text-tertiary);
     }
@@ -495,7 +514,8 @@ const getUnitDisplay = (p: ProductDTO) => {
         background: linear-gradient(135deg, var(--color-error), #fb7185);
         box-shadow: 0 4px 12px color-mix(in srgb, var(--color-error) 40%, transparent);
 
-        &:hover, &:active {
+        &:hover,
+        &:active {
             transform: translateY(-2px);
             box-shadow: 0 6px 16px color-mix(in srgb, var(--color-error) 60%, transparent);
         }
@@ -505,18 +525,24 @@ const getUnitDisplay = (p: ProductDTO) => {
         background: linear-gradient(135deg, var(--color-success), #34d399);
         box-shadow: 0 4px 12px color-mix(in srgb, var(--color-success) 40%, transparent);
 
-        &:hover, &:active {
+        &:hover,
+        &:active {
             transform: translateY(2px);
             box-shadow: 0 6px 16px color-mix(in srgb, var(--color-success) 60%, transparent);
         }
     }
-    
-    &:active { transform: scale(0.96); }
+
+    &:active {
+        transform: scale(0.96);
+    }
 }
 
 .game-over-overlay {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: color-mix(in srgb, var(--color-background) 80%, transparent);
     backdrop-filter: blur(8px);
     z-index: 100;
@@ -568,42 +594,98 @@ const getUnitDisplay = (p: ProductDTO) => {
     border: none;
     cursor: pointer;
     transition: all 0.2s;
-    
+
     &.primary {
         background: var(--color-primary);
         color: var(--color-on-primary);
-        
+
         &:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
-        
-        &:active { transform: translateY(0); }
+
+        &:active {
+            transform: translateY(0);
+        }
     }
 }
 
-.loading-state, .error-state {
+.loading-state,
+.error-state {
     display: flex;
-    flex-direction: column; align-items: center; justify-content: center;
-    flex: 1; color: var(--color-text-tertiary); gap: var(--spacing-md); text-align: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: var(--color-text-tertiary);
+    gap: var(--spacing-md);
+    text-align: center;
 }
 
-.spin-icon { animation: spin 1s linear infinite; }
-@keyframes spin { 100% { transform: rotate(360deg); } }
+.spin-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 @keyframes bounceIn {
-    0% { opacity: 0; transform: scale(0.3); }
-    50% { opacity: 1; transform: scale(1.05); }
-    70% { transform: scale(0.9); }
-    100% { transform: scale(1); }
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    70% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
-.slide-card-enter-active, .slide-card-leave-active { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-.slide-card-enter-from { opacity: 0; transform: translateY(30px) scale(0.98); }
-.slide-card-leave-to { opacity: 0; transform: translateY(-30px) scale(1.02); }
+.slide-card-enter-active,
+.slide-card-leave-active {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-.text-success { color: var(--color-success) !important; }
-.text-error { color: var(--color-error) !important; }
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-::-webkit-scrollbar { display: none; }
+.slide-card-enter-from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+}
+
+.slide-card-leave-to {
+    opacity: 0;
+    transform: translateY(-30px) scale(1.02);
+}
+
+.text-success {
+    color: var(--color-success) !important;
+}
+
+.text-error {
+    color: var(--color-error) !important;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
 </style>
