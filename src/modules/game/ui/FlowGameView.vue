@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, RefreshCcw } from 'lucide-vue-next'
+import { ArrowLeft, RefreshCcw, Lightbulb } from 'lucide-vue-next'
 import { FpHaptics } from '@/shared/lib/haptics'
 import confetti from 'canvas-confetti'
 
-const router = useRouter()
-
 // Level Definitions
-interface Dot { color: string; r: number; c: number }
-interface Level { size: number; dots: Dot[] }
+interface Level {
+    size: number
+    dots: { color: string, r: number, c: number }[]
+    solutions?: Record<string, { r: number, c: number }[]>
+}
 
 const LEVELS: Level[] = [
     {
@@ -45,44 +46,62 @@ const LEVELS: Level[] = [
     {
         size: 6,
         dots: [
-            { color: '#ef4444', r: 0, c: 0 }, { color: '#ef4444', r: 1, c: 0 },
-            { color: '#3b82f6', r: 1, c: 1 }, { color: '#3b82f6', r: 2, c: 1 },
-            { color: '#22c55e', r: 2, c: 2 }, { color: '#22c55e', r: 3, c: 2 }
-        ]
+            { color: '#ef4444', r: 0, c: 0 }, { color: '#ef4444', r: 4, c: 2 },
+            { color: '#3b82f6', r: 0, c: 1 }, { color: '#3b82f6', r: 4, c: 4 },
+            { color: '#22c55e', r: 1, c: 1 }, { color: '#22c55e', r: 2, c: 1 },
+            { color: '#eab308', r: 0, c: 4 }, { color: '#eab308', r: 3, c: 4 }
+        ],
+        solutions: {
+            '#ef4444': [{r:0,c:0},{r:1,c:0},{r:2,c:0},{r:3,c:0},{r:4,c:0},{r:4,c:1},{r:4,c:2}],
+            '#3b82f6': [{r:0,c:1},{r:0,c:2},{r:0,c:3},{r:1,c:3},{r:2,c:3},{r:3,c:3},{r:4,c:3},{r:4,c:4}],
+            '#22c55e': [{r:1,c:1},{r:1,c:2},{r:2,c:2},{r:3,c:2},{r:3,c:1},{r:2,c:1}],
+            '#eab308': [{r:0,c:4},{r:1,c:4},{r:2,c:4},{r:3,c:4}]
+        }
+    },
+    {
+        size: 6,
+        dots: [
+            { color: '#ef4444', r: 0, c: 0 }, { color: '#ef4444', r: 5, c: 0 },
+            { color: '#3b82f6', r: 0, c: 3 }, { color: '#3b82f6', r: 3, c: 5 },
+            { color: '#22c55e', r: 0, c: 4 }, { color: '#22c55e', r: 2, c: 5 },
+            { color: '#eab308', r: 2, c: 4 }, { color: '#eab308', r: 4, c: 4 },
+            { color: '#a855f7', r: 1, c: 0 }, { color: '#a855f7', r: 1, c: 1 }
+        ],
+        solutions: {
+            '#ef4444': [{r:0,c:0},{r:0,c:1},{r:0,c:2},{r:1,c:2},{r:2,c:2},{r:3,c:2},{r:4,c:2},{r:5,c:2},{r:5,c:1},{r:5,c:0}],
+            '#3b82f6': [{r:0,c:3},{r:1,c:3},{r:2,c:3},{r:3,c:3},{r:4,c:3},{r:5,c:3},{r:5,c:4},{r:5,c:5},{r:4,c:5},{r:3,c:5}],
+            '#22c55e': [{r:0,c:4},{r:0,c:5},{r:1,c:5},{r:2,c:5}],
+            '#eab308': [{r:2,c:4},{r:3,c:4},{r:4,c:4}],
+            '#a855f7': [{r:1,c:0},{r:2,c:0},{r:3,c:0},{r:4,c:0},{r:4,c:1},{r:3,c:1},{r:2,c:1},{r:1,c:1}]
+        }
     },
     {
         size: 7,
         dots: [
-            { color: '#ef4444', r: 0, c: 0 }, { color: '#ef4444', r: 0, c: 1 },
-            { color: '#3b82f6', r: 0, c: 2 }, { color: '#3b82f6', r: 0, c: 3 },
-            { color: '#22c55e', r: 0, c: 4 }, { color: '#22c55e', r: 0, c: 5 },
-            { color: '#eab308', r: 0, c: 6 }, { color: '#eab308', r: 6, c: 6 }
-        ]
-    },
-    {
-        size: 8,
-        dots: [
-            { color: '#ef4444', r: 0, c: 0 }, { color: '#ef4444', r: 1, c: 0 },
-            { color: '#3b82f6', r: 1, c: 1 }, { color: '#3b82f6', r: 2, c: 1 },
-            { color: '#22c55e', r: 2, c: 2 }, { color: '#22c55e', r: 3, c: 2 },
-            { color: '#eab308', r: 3, c: 3 }, { color: '#eab308', r: 4, c: 3 }
-        ]
-    },
-    {
-        size: 10,
-        dots: [
-            { color: '#ef4444', r: 0, c: 0 }, { color: '#ef4444', r: 1, c: 0 },
-            { color: '#3b82f6', r: 1, c: 1 }, { color: '#3b82f6', r: 2, c: 1 },
-            { color: '#22c55e', r: 2, c: 2 }, { color: '#22c55e', r: 3, c: 2 },
-            { color: '#eab308', r: 3, c: 3 }, { color: '#eab308', r: 4, c: 3 },
-            { color: '#a855f7', r: 4, c: 4 }, { color: '#a855f7', r: 5, c: 4 }
-        ]
+            { color: '#ef4444', r: 0, c: 0 }, { color: '#ef4444', r: 1, c: 6 },
+            { color: '#3b82f6', r: 2, c: 6 }, { color: '#3b82f6', r: 6, c: 0 },
+            { color: '#22c55e', r: 5, c: 0 }, { color: '#22c55e', r: 1, c: 1 },
+            { color: '#eab308', r: 1, c: 2 }, { color: '#eab308', r: 3, c: 3 }
+        ],
+        solutions: {
+            '#ef4444': [{r:0,c:0},{r:0,c:1},{r:0,c:2},{r:0,c:3},{r:0,c:4},{r:0,c:5},{r:0,c:6},{r:1,c:6}],
+            '#3b82f6': [{r:2,c:6},{r:3,c:6},{r:4,c:6},{r:5,c:6},{r:6,c:6},{r:6,c:5},{r:6,c:4},{r:6,c:3},{r:6,c:2},{r:6,c:1},{r:6,c:0}],
+            '#22c55e': [{r:5,c:0},{r:4,c:0},{r:3,c:0},{r:2,c:0},{r:1,c:0},{r:1,c:1}],
+            '#eab308': [{r:1,c:2},{r:1,c:3},{r:1,c:4},{r:1,c:5},{r:2,c:5},{r:3,c:5},{r:4,c:5},{r:5,c:5},{r:5,c:4},{r:5,c:3},{r:5,c:2},{r:5,c:1},{r:4,c:1},{r:3,c:1},{r:2,c:1},{r:2,c:2},{r:2,c:3},{r:2,c:4},{r:3,c:4},{r:4,c:4},{r:4,c:3},{r:4,c:2},{r:3,c:2},{r:3,c:3}]
+        }
     }
 ]
+
+const router = useRouter()
 
 // State
 const currentLevelIndex = ref(0)
 const levelPassed = ref(false)
+
+const timer = ref(0)
+const totalScore = ref(0)
+const bestScore = ref(0)
+let intervalId: ReturnType<typeof setInterval> | null = null
 
 const gridSize = computed(() => LEVELS[currentLevelIndex.value].size)
 const dots = computed(() => LEVELS[currentLevelIndex.value].dots)
@@ -94,6 +113,12 @@ const activeColor = ref<string | null>(null)
 const gridRef = ref<HTMLElement | null>(null)
 let cellWidth = 0
 
+const formattedTime = computed(() => {
+    const m = Math.floor(timer.value / 60)
+    const s = timer.value % 60
+    return `${m}:${s.toString().padStart(2, '0')}`
+})
+
 // Board initialization
 const initBoard = () => {
     levelPassed.value = false
@@ -101,6 +126,13 @@ const initBoard = () => {
     dots.value.forEach(d => {
         paths.value[d.color] = []
     })
+    
+    if (intervalId) clearInterval(intervalId)
+    timer.value = 0
+    intervalId = setInterval(() => {
+        if (!levelPassed.value) timer.value++
+    }, 1000)
+    
     updateCellSize()
 }
 
@@ -134,6 +166,55 @@ const UpdateCellSizeInner = (gridW: number) => {
 const updateCellSize = () => {
     if (gridRef.value) {
         cellWidth = gridRef.value.getBoundingClientRect().width / gridSize.value
+    }
+}
+
+const showHintUsed = ref(false)
+
+const useHint = () => {
+    // Стоимость подсказки
+    const HINT_COST = 200
+    
+    const colors = Array.from(new Set(dots.value.map(d => d.color)))
+    
+    // Ищем незавершенные или неправильные пути
+    let targetColor: string | null = null
+    for (const color of colors) {
+        const path = paths.value[color]
+        const colorDots = dots.value.filter(d => d.color === color)
+        if (!path || path.length < 2) {
+            targetColor = color
+            break
+        }
+        
+        const first = path[0]
+        const last = path[path.length - 1]
+        
+        const connectsA = (first.r === colorDots[0].r && first.c === colorDots[0].c && last.r === colorDots[1].r && last.c === colorDots[1].c)
+        const connectsB = (first.r === colorDots[1].r && first.c === colorDots[1].c && last.r === colorDots[0].r && last.c === colorDots[0].c)
+        
+        if (!connectsA && !connectsB) {
+            targetColor = color
+            break
+        }
+    }
+
+    if (targetColor) {
+        // Уменьшаем счет
+        totalScore.value -= HINT_COST
+        
+        // Автоматически строим путь подсказки из solution (с анимацией)
+        const solutionPath = (LEVELS[currentLevelIndex.value] as any).solutions[targetColor]
+        paths.value[targetColor] = solutionPath
+        
+        FpHaptics.success()
+        
+        // Показываем минус UI
+        showHintUsed.value = true
+        setTimeout(() => showHintUsed.value = false, 1500)
+
+        // Проверяем победу сразу после подсказки
+        checkWin()
     }
 }
 
@@ -242,22 +323,27 @@ const pipesConnected = computed(() => {
     return count
 })
 
-const cellsFilledCount = computed(() => {
-    let count = 0
-    for (const path of Object.values(paths.value)) {
-        count += path.length
-    }
-    return count
-})
-
 const totalColors = computed(() => new Set(dots.value.map(d => d.color)).size)
-const totalCells = computed(() => gridSize.value * gridSize.value)
 
 const checkWin = () => {
     if (levelPassed.value) return
 
-    if (pipesConnected.value === totalColors.value && cellsFilledCount.value === totalCells.value) {
+    // Победа засчитывается, если просто соединены все цвета (без проверки заполнения 100% поля)
+    if (pipesConnected.value === totalColors.value) {
         levelPassed.value = true
+        if (intervalId) clearInterval(intervalId)
+        
+        // Calculate points
+        const basePoints = gridSize.value * 50
+        const expectedTime = gridSize.value * 5 // e.g. 5x5 = 25s, 8x8 = 40s
+        const speedBonus = Math.max(0, expectedTime - timer.value) * 10
+        totalScore.value += basePoints + speedBonus
+        
+        if (totalScore.value > bestScore.value) {
+            bestScore.value = totalScore.value
+            localStorage.setItem('fp_flow_best', bestScore.value.toString())
+        }
+
         FpHaptics.success()
         setTimeout(() => {
             confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } })
@@ -283,11 +369,14 @@ const getSvgPoints = (path: {r: number, c: number}[]) => {
 }
 
 onMounted(() => {
+    const saved = localStorage.getItem('fp_flow_best')
+    if (saved) bestScore.value = parseInt(saved, 10)
     initBoard()
     window.addEventListener('resize', updateCellSize)
 })
 
 onUnmounted(() => {
+    if (intervalId) clearInterval(intervalId)
     window.removeEventListener('resize', updateCellSize)
 })
 
@@ -300,20 +389,35 @@ onUnmounted(() => {
                 <ArrowLeft :size="24" />
             </button>
             <div class="level-indicator">
-                Уровень {{ currentLevelIndex + 1 }} из {{ LEVELS.length }}
+                Ур. {{ currentLevelIndex + 1 }} / {{ LEVELS.length }}
             </div>
-            <button class="icon-btn restart-btn" @click="initBoard()">
-                <RefreshCcw :size="24" />
-            </button>
+            <div class="timer-badge">
+                {{ formattedTime }}
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="icon-btn" style="color: #eab308; border-color: #eab308;" @click="useHint">
+                    <Lightbulb :size="24" />
+                </button>
+                <button class="icon-btn restart-btn" @click="initBoard()">
+                    <RefreshCcw :size="24" />
+                </button>
+            </div>
         </header>
 
-        <div class="stats-panel">
+        <div class="stats-panel" style="position: relative;">
+            <div class="stat-badge score-badge">
+                Счет: {{ totalScore }}
+            </div>
             <div class="stat-badge" :class="{'completed': pipesConnected === totalColors}">
                 Соединения: {{ pipesConnected }} / {{ totalColors }}
             </div>
-            <div class="stat-badge" :class="{'completed': cellsFilledCount === totalCells}">
-                Поле: {{ Math.floor((cellsFilledCount / totalCells) * 100) }}%
-            </div>
+            
+            <Transition name="fade-up">
+                <div v-if="showHintUsed" class="hint-minus">
+                    -200
+                </div>
+            </Transition>
         </div>
 
         <div class="board-container">
@@ -408,6 +512,18 @@ onUnmounted(() => {
     color: var(--color-text-primary);
 }
 
+.timer-badge {
+    background: var(--color-background);
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-family: monospace;
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: var(--color-primary);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid var(--color-border);
+}
+
 .icon-btn {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -442,6 +558,12 @@ onUnmounted(() => {
     color: var(--color-text-secondary);
     transition: all 0.3s ease;
     
+    &.score-badge {
+        color: #f59e0b;
+        border-color: #f59e0b;
+        background: color-mix(in srgb, #f59e0b 10%, transparent);
+    }
+
     &.completed {
         background: color-mix(in srgb, var(--color-success) 15%, transparent);
         border-color: var(--color-success);
@@ -508,13 +630,45 @@ onUnmounted(() => {
 .game-over-overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: color-mix(in srgb, var(--color-background) 80%, transparent);
+    background: rgba(var(--color-background-rgb), 0.85);
     backdrop-filter: blur(8px);
-    z-index: 100;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-lg);
+    z-index: 20;
+    gap: var(--spacing-lg);
+
+    h2 {
+        font-size: 2rem;
+        color: var(--color-success);
+        margin: 0;
+        text-shadow: 0 4px 12px rgba(var(--color-success-rgb), 0.3);
+    }
+}
+
+.hint-minus {
+    position: absolute;
+    top: -30px;
+    right: 20px;
+    color: var(--color-danger);
+    font-weight: 900;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    pointer-events: none;
+}
+
+.fade-up-enter-active,
+.fade-up-leave-active {
+    transition: all 0.5s ease;
+}
+.fade-up-enter-from {
+    opacity: 0;
+    transform: translateY(10px);
+}
+.fade-up-leave-to {
+    opacity: 0;
+    transform: translateY(-20px);
 }
 
 .game-over-card {
