@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, RefreshCcw, Lightbulb, Share2, Trophy } from 'lucide-vue-next'
+import { ArrowLeft, RefreshCcw, Lightbulb, Share2, Trophy, ThumbsUp } from 'lucide-vue-next'
 import { FpHaptics } from '@/shared/lib/haptics'
 import confetti from 'canvas-confetti'
 import { gameService } from '../services/GameService'
@@ -170,6 +170,10 @@ const EXTRA_LEVELS = [
 
 LEVELS.push(...EXTRA_LEVELS)
 
+// State
+const router = useRouter()
+const isPlayingFromHub = ref(false)
+
 // Загрузка комьюнити уровня если перешли из хаба
 const communityPlayRaw = localStorage.getItem('fp_community_play')
 if (communityPlayRaw) {
@@ -177,6 +181,7 @@ if (communityPlayRaw) {
         const communityLevel = JSON.parse(communityPlayRaw)
         LEVELS.unshift(communityLevel) // Кладем в начало
         localStorage.removeItem('fp_community_play')
+        isPlayingFromHub.value = true
         
         // Хакаем, чтобы currentCommunityLevelId подхватился при инициализации
         setTimeout(() => {
@@ -186,14 +191,15 @@ if (communityPlayRaw) {
     } catch(e) {}
 }
 
-// State
-const router = useRouter()
-const currentLevelIndex = ref(0)
+const savedLevelIndex = parseInt(localStorage.getItem('fp_flow_current_level') || '0')
+// Если играем из хаба, форсируем индекс 0
+const currentLevelIndex = ref(isPlayingFromHub.value ? 0 : Math.min(savedLevelIndex, LEVELS.length - 1))
 const levelPassed = ref(false)
 
 const timer = ref(0)
-const totalScore = ref(0)
-const bestScore = ref(0)
+const savedScore = parseInt(localStorage.getItem('fp_flow_total_score') || '0')
+const totalScore = ref(isPlayingFromHub.value ? 0 : savedScore)
+const bestScore = ref(parseInt(localStorage.getItem('fp_flow_best') || '0'))
 let intervalId: ReturnType<typeof setInterval> | null = null
 
 const gridSize = computed(() => LEVELS[currentLevelIndex.value].size)
@@ -448,6 +454,16 @@ const shareLevel = async () => {
     }
 }
 
+const hasLikedLocally = ref(false)
+const likeCurrentLevel = async () => {
+    if (!currentCommunityLevelId.value || hasLikedLocally.value) return
+    const newLikes = await gameService.likeLevel(currentCommunityLevelId.value)
+    if (newLikes !== null) {
+        hasLikedLocally.value = true
+        FpHaptics.success()
+    }
+}
+
 const fetchLeaderboard = async () => {
     if (!currentCommunityLevelId.value && !hasPublished.value) return
     let lid = currentCommunityLevelId.value
@@ -475,6 +491,11 @@ const checkWin = () => {
         const speedBonus = Math.max(0, expectedTime - timer.value) * 10
         totalScore.value += basePoints + speedBonus
         
+        // Сохраняем накопительный счет если это основная кампания
+        if (!isPlayingFromHub.value) {
+            localStorage.setItem('fp_flow_total_score', totalScore.value.toString())
+        }
+
         if (totalScore.value > bestScore.value) {
             bestScore.value = totalScore.value
             localStorage.setItem('fp_flow_best', bestScore.value.toString())
@@ -495,6 +516,10 @@ const checkWin = () => {
 const nextLevel = () => {
     if (currentLevelIndex.value < LEVELS.length - 1) {
         currentLevelIndex.value++
+        // Если это не загруженный из комьюнити уровень, сохраняем прогресс локальной кампании
+        if (!currentCommunityLevelId.value) {
+            localStorage.setItem('fp_flow_current_level', currentLevelIndex.value.toString())
+        }
         initBoard()
     }
 }
@@ -641,18 +666,21 @@ onUnmounted(() => {
                     <h2 class="title text-success">Уровень Пройден!</h2>
                     <p class="result-text">Отличная работа! Все цвета соединены.</p>
                     
-                    <div class="actions" style="display: flex; gap: 16px; margin-top: 16px;">
-                        <button v-if="currentLevelIndex < LEVELS.length - 1" class="game-btn success" @click="nextLevel">
+                    <div class="actions" style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px; width: 100%;">
+                        <button v-if="currentLevelIndex < LEVELS.length - 1 && !isPlayingFromHub" class="game-btn success" style="width: 100%; justify-content: center;" @click="nextLevel">
                             Следующий уровень
                         </button>
-                        <button v-else class="game-btn primary" @click="router.push('/games')">
+                        <button v-else-if="!isPlayingFromHub" class="game-btn primary" style="width: 100%; justify-content: center;" @click="$router.push('/games')">
                             Вы прошли всё! Вернуться
+                        </button>
+                        <button v-else class="game-btn primary" style="width: 100%; justify-content: center;" @click="$router.back()">
+                            Вернуться в Хаб
                         </button>
                         
                         <button 
                             v-if="currentLevelIndex >= 5 && !currentCommunityLevelId && !hasPublished" 
                             class="icon-btn" 
-                            style="background: var(--color-primary); color: white; width: auto; padding: 12px 24px; border-radius: 99px;"
+                            style="background: var(--color-primary); color: white; width: 100%; justify-content: center; padding: 12px 24px; border-radius: 99px;"
                             @click="shareLevel"
                             :disabled="isPublishing"
                         >
@@ -661,9 +689,30 @@ onUnmounted(() => {
                         </button>
 
                         <button 
+                            v-if="currentLevelIndex >= 5 && !currentCommunityLevelId && hasPublished" 
+                            class="icon-btn" 
+                            style="background: var(--color-surface); color: var(--color-text-secondary); width: 100%; justify-content: center; padding: 12px 24px; border-radius: 99px; border: 1px solid var(--color-border);"
+                            disabled
+                        >
+                            <ThumbsUp :size="20" style="margin-right: 8px;" />
+                            Уровень опубликован
+                        </button>
+
+                        <button 
+                            v-if="currentCommunityLevelId" 
+                            class="icon-btn" 
+                            style="background: var(--color-surface); color: var(--color-text-primary); width: 100%; justify-content: center; padding: 12px 24px; border-radius: 99px; border: 1px solid var(--color-primary);"
+                            @click="likeCurrentLevel"
+                            :disabled="hasLikedLocally"
+                        >
+                            <ThumbsUp :size="20" style="margin-right: 8px;" />
+                            {{ hasLikedLocally ? 'Вам понравилось!' : 'Крутой уровень!' }}
+                        </button>
+
+                        <button 
                             v-if="currentCommunityLevelId || hasPublished" 
                             class="icon-btn" 
-                            style="background: var(--color-surface); color: var(--color-primary); width: auto; padding: 12px 24px; border-radius: 99px; border: 1px solid var(--color-primary);"
+                            style="background: var(--color-surface); color: var(--color-primary); width: 100%; justify-content: center; padding: 12px 24px; border-radius: 99px; border: 1px solid var(--color-primary);"
                             @click="fetchLeaderboard"
                         >
                             <Trophy :size="20" style="margin-right: 8px;" />

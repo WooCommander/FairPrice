@@ -71,6 +71,7 @@ const playLevel = (level: CommunityLevel) => {
                         
                         <div class="stats">
                             <div class="stat"><Medal :size="16" /> Рекорды</div>
+                            <div class="stat" v-if="level.likes > 0"><ThumbsUp :size="16" /> {{ level.likes }}</div>
                         </div>
                     </div>
                 </div>

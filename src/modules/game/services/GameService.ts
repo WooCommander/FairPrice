@@ -83,6 +83,22 @@ class GameService {
         
         return data || []
     }
+
+    async likeLevel(levelId: string): Promise<number | null> {
+        // Защита от накрутки локально
+        if (localStorage.getItem('fp_liked_' + levelId)) return null
+
+        const { data: levelData } = await supabase.from('community_levels').select('likes').eq('id', levelId).single()
+        if (levelData) {
+            const newLikes = (levelData.likes || 0) + 1
+            const { error } = await supabase.from('community_levels').update({ likes: newLikes }).eq('id', levelId)
+            if (!error) {
+                localStorage.setItem('fp_liked_' + levelId, '1')
+                return newLikes
+            }
+        }
+        return null
+    }
 }
 
 export const gameService = new GameService()
