@@ -7,7 +7,7 @@ import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { changelog } from '@/data/changelog'
 import { setLocale, supportedLocales, i18n } from '@/i18n'
 import { useI18n } from 'vue-i18n'
-import { Home, Star, User, Package, Store, Trophy, Menu, X, CheckSquare, Calculator, Palette, FileText, LogOut, Sun, Moon, Plus, ShoppingCart, Gamepad2 } from 'lucide-vue-next'
+import { Home, Star, User, Package, Store, Trophy, Menu, X, CheckSquare, Calculator, Palette, FileText, LogOut, Sun, Moon, Plus, ShoppingCart, Gamepad2, StickyNote } from 'lucide-vue-next'
 import { FpHaptics } from '@/shared/lib/haptics'
 const refreshKey = ref(0)
 const forceRefresh = () => { refreshKey.value += 1 }
@@ -246,6 +246,13 @@ const handleLogout = async () => {
 								<Calculator :size="24" />
 							</span>
 							{{ t('nav.quickCalc') }}
+						</a>
+						<a class="drawer-link" :class="{ active: currentPath === '/notes' }"
+							@click.prevent="navigate('/notes'); isMenuOpen = false">
+							<span class="link-icon">
+								<StickyNote :size="24" />
+							</span>
+							Заметки
 						</a>
 						<a class="drawer-link" :class="{ active: currentPath === '/favorites' }"
 							@click.prevent="navigate('/favorites'); isMenuOpen = false">

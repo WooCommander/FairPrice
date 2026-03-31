@@ -122,6 +122,12 @@ const routes = [
         path: '/games/community-flow',
         name: 'CommunityFlowGame',
         component: () => import('@/modules/game').then(m => m.CommunityGameHubView)
+    },
+    {
+        path: '/notes',
+        name: 'Notes',
+        component: () => import('@/modules/notes').then(m => m.NotesView),
+        meta: { requiresAuth: true }
     }
 ]
 
