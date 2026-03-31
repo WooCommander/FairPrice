@@ -117,6 +117,11 @@ const routes = [
         path: '/games/flow',
         name: 'FlowGame',
         component: () => import('@/modules/game').then(m => m.FlowGameView)
+    },
+    {
+        path: '/games/community-flow',
+        name: 'CommunityFlowGame',
+        component: () => import('@/modules/game').then(m => m.CommunityGameHubView)
     }
 ]
 

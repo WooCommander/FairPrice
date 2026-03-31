@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, RefreshCcw, Lightbulb } from 'lucide-vue-next'
+import { ArrowLeft, RefreshCcw, Lightbulb, Share2, Trophy } from 'lucide-vue-next'
 import { FpHaptics } from '@/shared/lib/haptics'
 import confetti from 'canvas-confetti'
+import { gameService } from '../services/GameService'
 
 // Level Definitions
 interface Level {
+    id?: string
     size: number
     dots: { color: string, r: number, c: number }[]
     solutions?: Record<string, { r: number, c: number }[]>
@@ -92,9 +94,100 @@ const LEVELS: Level[] = [
     }
 ]
 
-const router = useRouter()
+// Генератор математически проходимых уровней (рандомное блуждание)
+const generateFlowLevel = (size: number, numColors: number): Level => {
+    const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#06b6d4', '#ec4899', '#8b5cf6', '#14b8a6']
+    let grid: number[][] = Array(size).fill(0).map(() => Array(size).fill(-1))
+    let paths: {r: number, c: number}[][] = Array(numColors).fill(0).map(() => [])
+    let empty: {r: number, c: number}[] = []
+    
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) empty.push({ r, c })
+    }
+    
+    // Перемешиваем пустые ячейки
+    for (let i = empty.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [empty[i], empty[j]] = [empty[j], empty[i]]
+    }
+    
+    // Стартуем
+    for (let i = 0; i < numColors; i++) {
+        let spot = empty.pop()!
+        grid[spot.r][spot.c] = i
+        paths[i].push(spot)
+    }
+    
+    let progress = true
+    while (progress) {
+        progress = false
+        let order = Array(numColors).fill(0).map((_, i) => i).sort(() => Math.random() - 0.5)
+        
+        for (let c of order) {
+            let path = paths[c]
+            let head = path[path.length - 1]
+            let neighbors = [
+                { r: head.r - 1, c: head.c }, { r: head.r + 1, c: head.c },
+                { r: head.r, c: head.c - 1 }, { r: head.r, c: head.c + 1 }
+            ].filter(n => n.r >= 0 && n.r < size && n.c >= 0 && n.c < size && grid[n.r][n.c] === -1)
+            
+            if (neighbors.length > 0) {
+                let nxt = neighbors[Math.floor(Math.random() * neighbors.length)]
+                grid[nxt.r][nxt.c] = c
+                path.push(nxt)
+                empty = empty.filter(e => e.r !== nxt.r || e.c !== nxt.c)
+                progress = true
+            }
+        }
+    }
+    
+    // Отсеиваем пути, которые не смогли вырасти
+    let validPaths = paths.filter(p => p.length >= 2)
+    if (validPaths.length < numColors) return generateFlowLevel(size, numColors) // ретрай
+    
+    let dots = []
+    let solutions: Record<string, {r: number, c: number}[]> = {}
+    
+    for (let i = 0; i < validPaths.length; i++) {
+        let color = COLORS[i % COLORS.length]
+        let p = validPaths[i]
+        dots.push({ color, r: p[0].r, c: p[0].c })
+        dots.push({ color, r: p[p.length - 1].r, c: p[p.length - 1].c })
+        solutions[color] = p
+    }
+    
+    return { size, dots, solutions }
+}
+
+const EXTRA_LEVELS = [
+    generateFlowLevel(6, 4),
+    generateFlowLevel(7, 5), generateFlowLevel(7, 6),
+    generateFlowLevel(8, 6), generateFlowLevel(8, 7), generateFlowLevel(8, 8),
+    generateFlowLevel(9, 7), generateFlowLevel(9, 8), generateFlowLevel(9, 9),
+    generateFlowLevel(10, 8), generateFlowLevel(10, 9), generateFlowLevel(10, 10),
+    generateFlowLevel(11, 9), generateFlowLevel(11, 10), generateFlowLevel(12, 10)
+]
+
+LEVELS.push(...EXTRA_LEVELS)
+
+// Загрузка комьюнити уровня если перешли из хаба
+const communityPlayRaw = localStorage.getItem('fp_community_play')
+if (communityPlayRaw) {
+    try {
+        const communityLevel = JSON.parse(communityPlayRaw)
+        LEVELS.unshift(communityLevel) // Кладем в начало
+        localStorage.removeItem('fp_community_play')
+        
+        // Хакаем, чтобы currentCommunityLevelId подхватился при инициализации
+        setTimeout(() => {
+            const el = document.getElementById('community-level-injector')
+            if (el) el.click()
+        }, 50)
+    } catch(e) {}
+}
 
 // State
+const router = useRouter()
 const currentLevelIndex = ref(0)
 const levelPassed = ref(false)
 
@@ -323,6 +416,49 @@ const pipesConnected = computed(() => {
     return count
 })
 
+const showLeaderboard = ref(false)
+const leaderboardData = ref<any[]>([])
+
+// Community sharing
+const isPublishing = ref(false)
+const hasPublished = ref(false)
+const currentCommunityLevelId = ref<string | null>(null) // Заполняется если играем в комьюнити уровень
+
+const shareLevel = async () => {
+    if (isPublishing.value || hasPublished.value) return
+    
+    // Публикуем только сгенерированные уровни (индекс >= 5)
+    if (currentLevelIndex.value < 5 && !currentCommunityLevelId.value) return
+
+    isPublishing.value = true
+    try {
+        const levelData = LEVELS[currentLevelIndex.value]
+        const res = await gameService.shareLevel({
+            size: levelData.size,
+            dots: levelData.dots,
+            solutions: levelData.solutions
+        })
+        if (res) {
+            hasPublished.value = true
+            currentCommunityLevelId.value = res.id
+            await gameService.saveScore(res.id, totalScore.value)
+        }
+    } finally {
+        isPublishing.value = false
+    }
+}
+
+const fetchLeaderboard = async () => {
+    if (!currentCommunityLevelId.value && !hasPublished.value) return
+    let lid = currentCommunityLevelId.value
+    if (!lid) {
+        // Find if we just published it and didn't save ID, wait, it is saved in res.id
+        return
+    }
+    showLeaderboard.value = true
+    leaderboardData.value = await gameService.getLeaderboard(lid)
+}
+
 const totalColors = computed(() => new Set(dots.value.map(d => d.color)).size)
 
 const checkWin = () => {
@@ -342,6 +478,11 @@ const checkWin = () => {
         if (totalScore.value > bestScore.value) {
             bestScore.value = totalScore.value
             localStorage.setItem('fp_flow_best', bestScore.value.toString())
+        }
+        
+        // Если это комьюнити уровень, сохраняем рекорд
+        if (currentCommunityLevelId.value) {
+            gameService.saveScore(currentCommunityLevelId.value, totalScore.value)
         }
 
         FpHaptics.success()
@@ -384,12 +525,40 @@ onUnmounted(() => {
 
 <template>
     <div class="flow-view">
+        <div id="community-level-injector" style="display:none" @click="currentCommunityLevelId = LEVELS[0].id || null"></div>
+        <!-- Leaderboard Modal -->
+        <transition name="pop">
+            <div v-if="showLeaderboard" class="modal-overlay" @click="showLeaderboard = false">
+                <div class="modal-content" @click.stop>
+                    <h3>Топ Игроков 🏆</h3>
+                    <div class="leaderboard-list">
+                        <div v-for="(record, index) in leaderboardData" :key="record.id" class="leaderboard-item">
+                            <span class="rank">#{{ index + 1 }}</span>
+                            <span class="name">{{ record.profiles?.display_name || 'Аноним' }}</span>
+                            <span class="score">{{ record.score }} pts</span>
+                        </div>
+                        <div v-if="leaderboardData.length === 0" class="empty-state">
+                            Пока нет рекордов. Будьте первым!
+                        </div>
+                    </div>
+                    <button class="primary-btn mt-4" @click="showLeaderboard = false">Закрыть</button>
+                </div>
+            </div>
+        </transition>
+
         <header class="game-header">
-            <button class="icon-btn" @click="router.back()">
-                <ArrowLeft :size="24" />
-            </button>
+            <div style="display: flex; gap: 8px;">
+                <button class="icon-btn" @click="router.back()">
+                    <ArrowLeft :size="24" />
+                </button>
+                <button class="icon-btn" style="color: var(--color-primary); border-color: var(--color-primary);" @click="router.push('/games/community-flow')">
+                    <Trophy :size="24" />
+                </button>
+            </div>
+            
             <div class="level-indicator">
-                Ур. {{ currentLevelIndex + 1 }} / {{ LEVELS.length }}
+                <span v-if="currentCommunityLevelId">Уровень Сообщества</span>
+                <span v-else>Ур. {{ currentLevelIndex + (currentCommunityLevelId ? 0 : 1) }} / {{ LEVELS.length }}</span>
             </div>
             <div class="timer-badge">
                 {{ formattedTime }}
@@ -472,12 +641,35 @@ onUnmounted(() => {
                     <h2 class="title text-success">Уровень Пройден!</h2>
                     <p class="result-text">Отличная работа! Все цвета соединены.</p>
                     
-                    <button v-if="currentLevelIndex < LEVELS.length - 1" class="game-btn success" @click="nextLevel">
-                        Следующий уровень
-                    </button>
-                    <button v-else class="game-btn primary" @click="router.push('/games')">
-                        Вы прошли всё! Вернуться
-                    </button>
+                    <div class="actions" style="display: flex; gap: 16px; margin-top: 16px;">
+                        <button v-if="currentLevelIndex < LEVELS.length - 1" class="game-btn success" @click="nextLevel">
+                            Следующий уровень
+                        </button>
+                        <button v-else class="game-btn primary" @click="router.push('/games')">
+                            Вы прошли всё! Вернуться
+                        </button>
+                        
+                        <button 
+                            v-if="currentLevelIndex >= 5 && !currentCommunityLevelId && !hasPublished" 
+                            class="icon-btn" 
+                            style="background: var(--color-primary); color: white; width: auto; padding: 12px 24px; border-radius: 99px;"
+                            @click="shareLevel"
+                            :disabled="isPublishing"
+                        >
+                            <Share2 :size="20" style="margin-right: 8px;" />
+                            {{ isPublishing ? 'Публикация...' : 'Опубликовать' }}
+                        </button>
+
+                        <button 
+                            v-if="currentCommunityLevelId || hasPublished" 
+                            class="icon-btn" 
+                            style="background: var(--color-surface); color: var(--color-primary); width: auto; padding: 12px 24px; border-radius: 99px; border: 1px solid var(--color-primary);"
+                            @click="fetchLeaderboard"
+                        >
+                            <Trophy :size="20" style="margin-right: 8px;" />
+                            Рекорды
+                        </button>
+                    </div>
                 </div>
             </div>
         </transition>
@@ -670,6 +862,79 @@ onUnmounted(() => {
     opacity: 0;
     transform: translateY(-20px);
 }
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+}
+
+.modal-content {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    h3 {
+        margin-top: 0;
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-text-primary);
+    }
+}
+
+.leaderboard-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-height: 40vh;
+    overflow-y: auto;
+}
+
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    background: var(--color-background);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    
+    .rank {
+        font-weight: bold;
+        color: var(--color-primary);
+        min-width: 30px;
+    }
+    
+    .name {
+        flex: 1;
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+    
+    .score {
+        font-weight: bold;
+        color: #f59e0b;
+    }
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--color-text-secondary);
+    padding: var(--spacing-lg) 0;
+}
+
+.pop-enter-active, .pop-leave-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.pop-enter-from, .pop-leave-to { opacity: 0; transform: scale(0.9); }
 
 .game-over-card {
     background: var(--color-surface);
