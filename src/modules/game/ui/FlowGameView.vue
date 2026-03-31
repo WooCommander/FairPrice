@@ -562,11 +562,13 @@ onUnmounted(() => {
                             <span class="name">{{ record.profiles?.display_name || 'Аноним' }}</span>
                             <span class="score">{{ record.score }} pts</span>
                         </div>
-                        <div v-if="leaderboardData.length === 0" class="empty-state">
+                        <div v-if="leaderboardData.length === 0" class="empty-state" style="text-align: center; color: var(--color-text-secondary); margin: 24px 0;">
                             Пока нет рекордов. Будьте первым!
                         </div>
                     </div>
-                    <button class="primary-btn mt-4" @click="showLeaderboard = false">Закрыть</button>
+                    <button class="game-btn primary" style="width: 100%; justify-content: center; margin-top: 16px;" @click="showLeaderboard = false">
+                        Закрыть
+                    </button>
                 </div>
             </div>
         </transition>
@@ -679,7 +681,7 @@ onUnmounted(() => {
                         
                         <button 
                             v-if="currentLevelIndex >= 5 && !currentCommunityLevelId && !hasPublished" 
-                            class="icon-btn" 
+                            class="game-btn" 
                             style="background: var(--color-primary); color: white; width: 100%; justify-content: center; padding: 12px 24px; border-radius: 99px;"
                             @click="shareLevel"
                             :disabled="isPublishing"

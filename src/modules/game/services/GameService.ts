@@ -71,7 +71,7 @@ class GameService {
     async getLeaderboard(levelId: string): Promise<any[]> {
         const { data, error } = await supabase
             .from('level_scores')
-            .select('id, score, created_at, user_id, profiles:user_id(display_name)')
+            .select('id, score, created_at, user_id, profiles(display_name)')
             .eq('level_id', levelId)
             .order('score', { ascending: false })
             .limit(10)
