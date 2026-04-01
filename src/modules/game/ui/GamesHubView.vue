@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { Swords, Fingerprint, Brain, ArrowLeft } from 'lucide-vue-next'
+import { Swords, Fingerprint, Brain, ShoppingCart, ArrowLeft } from 'lucide-vue-next'
 
 const router = useRouter()
 </script>
@@ -37,6 +37,19 @@ const router = useRouter()
                 <div class="game-info">
                     <h2>Битва Цен</h2>
                     <p>Угадывай цены на реальные товары из своего списка покупок!</p>
+                </div>
+                <div class="play-btn-wrap">
+                    <button class="play-btn">Играть</button>
+                </div>
+            </div>
+
+            <div class="game-card theme-orange" @click="router.push('/games/basket')">
+                <div class="game-icon-wrap">
+                    <ShoppingCart :size="32" />
+                </div>
+                <div class="game-info">
+                    <h2>Корзина на бюджет</h2>
+                    <p>Набери товары из каталога как можно ближе к бюджету — но не превысь его!</p>
                 </div>
                 <div class="play-btn-wrap">
                     <button class="play-btn">Играть</button>
@@ -147,6 +160,11 @@ const router = useRouter()
     &.theme-accent {
         .game-icon-wrap { background: color-mix(in srgb, #f59e0b 15%, transparent); color: #f59e0b; }
         .play-btn { background: #f59e0b; color: white; }
+    }
+
+    &.theme-orange {
+        .game-icon-wrap { background: color-mix(in srgb, #f97316 15%, transparent); color: #f97316; }
+        .play-btn { background: #f97316; color: white; }
     }
 }
 

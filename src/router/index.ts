@@ -151,6 +151,11 @@ const routes = [
         path: '/games/memory',
         name: 'MemoryGame',
         component: () => import('@/modules/game').then(m => m.MemoryGameView)
+    },
+    {
+        path: '/games/basket',
+        name: 'BasketGame',
+        component: () => import('@/modules/game').then(m => m.BasketGameView)
     }
 ]
 
