@@ -1,5 +1,5 @@
 /* Main Global Styles */
-@import './tokens.scss';
+@use './tokens.scss';
 
 :root {
     --radius-sm: 4px;
