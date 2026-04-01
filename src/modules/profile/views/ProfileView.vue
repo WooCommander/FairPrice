@@ -486,8 +486,12 @@ onMounted(async () => {
   .user-info {
     z-index: 1;
     width: 100%;
+    min-width: 0;
 
     h1 {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       margin: 0;
       font-size: var(--text-h3);
       font-weight: 700;
@@ -498,6 +502,9 @@ onMounted(async () => {
       color: var(--color-text-secondary);
       margin: 4px 0 12px;
       font-size: var(--text-body-1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 
@@ -969,6 +976,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 
   h1 {
     margin: 0;

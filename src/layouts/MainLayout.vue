@@ -553,6 +553,8 @@ const handleLogout = async () => {
 	display: flex;
 	align-items: center;
 	gap: 16px;
+	min-width: 0;
+	flex: 1;
 }
 
 .drawer-avatar {
@@ -576,12 +578,16 @@ const handleLogout = async () => {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
+	min-width: 0;
 }
 
 .drawer-email {
 	font-weight: 600;
 	color: var(--color-text-primary);
 	font-size: 0.95rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .drawer-status {
