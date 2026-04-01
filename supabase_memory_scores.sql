@@ -48,5 +48,14 @@ LANGUAGE sql SECURITY DEFINER AS $$
     LIMIT p_limit;
 $$;
 
+-- 4. Получение случайных товаров для игр (решает проблему "всегда одни и те же")
+CREATE OR REPLACE FUNCTION get_random_products(p_limit int)
+RETURNS SETOF products AS $$
+BEGIN
+  RETURN QUERY SELECT * FROM products ORDER BY random() LIMIT p_limit;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
 -- 4. Также обновим остальные RPC, чтобы они возвращали корректные данные, если они вдруг не работают
 -- (Оставляем как есть, если работают, но убеждаемся, что они существуют)
