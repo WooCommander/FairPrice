@@ -230,7 +230,7 @@ onMounted(() => {
                         <FpNumberInput v-model="itemPrice" label="Цена (₽)" :min="0" :step="0.01" />
                     </div>
                     <div class="flex-field">
-                        <FpNumberInput v-model="itemQuantity" label="Кол-во" :min="0" :step="1" />
+                        <FpNumberInput v-model="itemQuantity" label="Кол-во" :min="0" :step="1" stepper />
                     </div>
                     <div class="fixed-field">
                         <FpMobilePicker

@@ -142,7 +142,7 @@ const formatPrice = (p: number) => {
                 <div class="row details-row">
                     <div class="details-inputs">
                         <FpNumberInput v-model="newItemPrice" label="Цена (рек.)" :min="0" :step="0.01" />
-                        <FpNumberInput v-model="newItemQuantity" label="Кол-во" :min="1" :step="1" />
+                        <FpNumberInput v-model="newItemQuantity" label="Кол-во" :min="1" :step="1" stepper />
                     </div>
                     <FpButton @click="addItem" :disabled="!newItemText.trim()" variant="primary" class="add-btn">
                         Добавить
@@ -210,7 +210,7 @@ const formatPrice = (p: number) => {
                             <div class="edit-fields">
                                 <div class="edit-inputs-row">
                                     <FpNumberInput v-model="editPrice" label="Цена" :min="0" :step="0.01" />
-                                    <FpNumberInput v-model="editQuantity" label="Кол-во" :min="1" :step="1" />
+                                    <FpNumberInput v-model="editQuantity" label="Кол-во" :min="1" :step="1" stepper />
                                 </div>
                                 <div class="edit-actions-row">
                                     <FpButton size="sm" variant="secondary" @click="editingItemId = null">Отмена</FpButton>
