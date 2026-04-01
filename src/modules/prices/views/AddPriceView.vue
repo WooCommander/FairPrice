@@ -98,7 +98,10 @@ const selectProduct = (p: { id: string, name: string }) => {
   if (fullProduct?.unit) {
     unit.value = fullProduct.unit
   }
-  if (fullProduct?.lastStore) {
+  const lastUsedGlobal = localStorage.getItem('lastUsedStoreName')
+  if (lastUsedGlobal) {
+    storeName.value = lastUsedGlobal
+  } else if (fullProduct?.lastStore) {
     storeName.value = fullProduct.lastStore
   }
   step.value = 2
@@ -176,6 +179,10 @@ const submit = async () => {
       quantity: quantity.value || 1,
       quantityUnit: unit.value
     })
+    
+    // Сохраняем магазин для следующих покупок
+    localStorage.setItem('lastUsedStoreName', storeName.value)
+
     FpHaptics.success()
     isSuccess.value = true
     setTimeout(() => {
@@ -201,7 +208,14 @@ onMounted(() => {
         const p = catalogStore.currentProduct.value
         currentProduct.value = { id: p.id, name: p.name, category: p.category, unit: p.unit }
         if (p.unit) unit.value = p.unit
-        if (p.lastStore) storeName.value = p.lastStore
+        
+        const lastUsedGlobal = localStorage.getItem('lastUsedStoreName')
+        if (lastUsedGlobal) {
+          storeName.value = lastUsedGlobal
+        } else if (p.lastStore) {
+          storeName.value = p.lastStore
+        }
+        
         step.value = 2
       }
     })
