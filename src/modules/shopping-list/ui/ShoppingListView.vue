@@ -208,10 +208,14 @@ const formatPrice = (p: number) => {
                         <!-- Quick Price/Qty Edit when checking -->
                         <div v-if="editingItemId === item.id" class="edit-overlay">
                             <div class="edit-fields">
-                                <FpNumberInput v-model="editPrice" label="Цена" :min="0" :step="0.01" />
-                                <FpNumberInput v-model="editQuantity" label="Кол-во" :min="1" :step="1" />
-                                <FpButton size="sm" @click="confirmPurchase">Ок</FpButton>
-                                <FpButton size="sm" variant="secondary" @click="editingItemId = null">Отмена</FpButton>
+                                <div class="edit-inputs-row">
+                                    <FpNumberInput v-model="editPrice" label="Цена" :min="0" :step="0.01" />
+                                    <FpNumberInput v-model="editQuantity" label="Кол-во" :min="1" :step="1" />
+                                </div>
+                                <div class="edit-actions-row">
+                                    <FpButton size="sm" variant="secondary" @click="editingItemId = null">Отмена</FpButton>
+                                    <FpButton size="sm" @click="confirmPurchase">Ок</FpButton>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -468,8 +472,27 @@ const formatPrice = (p: number) => {
 
     .edit-fields {
         display: flex;
+        flex-direction: column;
         gap: 8px;
-        align-items: center;
+    }
+
+    .edit-inputs-row {
+        display: flex;
+        gap: 8px;
+
+        :deep(.fp-number-input) {
+            flex: 1;
+            min-width: 0;
+        }
+    }
+
+    .edit-actions-row {
+        display: flex;
+        gap: 8px;
+
+        :deep(.fp-btn) {
+            flex: 1;
+        }
     }
 }
 
