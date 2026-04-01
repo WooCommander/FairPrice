@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { Swords, Fingerprint, ArrowLeft } from 'lucide-vue-next'
+import { Swords, Fingerprint, Brain, ArrowLeft } from 'lucide-vue-next'
 
 const router = useRouter()
 </script>
@@ -17,6 +17,19 @@ const router = useRouter()
         <p class="subtitle">Отдохните с пользой или потренируйте логику!</p>
 
         <div class="games-grid">
+            <div class="game-card theme-accent" @click="router.push('/games/memory')">
+                <div class="game-icon-wrap">
+                    <Brain :size="32" />
+                </div>
+                <div class="game-info">
+                    <h2>Мэмори</h2>
+                    <p>Тренируй память и запоминай товары! Очки зависят от времени и сложности.</p>
+                </div>
+                <div class="play-btn-wrap">
+                    <button class="play-btn">Играть</button>
+                </div>
+            </div>
+
             <div class="game-card theme-primary" @click="router.push('/games/price-battle')">
                 <div class="game-icon-wrap">
                     <Swords :size="32" />
@@ -129,6 +142,11 @@ const router = useRouter()
     &.theme-success {
         .game-icon-wrap { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
         .play-btn { background: var(--color-success); color: white; }
+    }
+    
+    &.theme-accent {
+        .game-icon-wrap { background: color-mix(in srgb, #f59e0b 15%, transparent); color: #f59e0b; }
+        .play-btn { background: #f59e0b; color: white; }
     }
 }
 

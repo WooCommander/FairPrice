@@ -221,7 +221,7 @@ export const catalogStore = {
         }
     },
 
-    async updateProduct(id: string, updates: { name?: string, category?: string }) {
+    async updateProduct(id: string, updates: { name?: string, category?: string, unit?: string }) {
         await CatalogService.updateProduct(id, updates)
         if (currentProduct.value && currentProduct.value.id === id) {
             await catalogStore.loadProductById(id)

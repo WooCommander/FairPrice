@@ -88,7 +88,7 @@ onMounted(load)
                 <!-- Info -->
                 <div class="entry-info">
                     <div class="entry-name-row">
-                        <span class="entry-name" :class="{ 'me-label': entry.isCurrentUser }">
+                        <span class="entry-name" :class="{ 'me-label': entry.isCurrentUser }" :title="entry.displayName">
                             {{ entry.displayName }}
                         </span>
                         <span class="level-badge" :style="{ color: LEVEL_COLORS[entry.level] }">
@@ -202,13 +202,18 @@ onMounted(load)
     display: flex;
     align-items: baseline;
     gap: 8px;
-    flex-wrap: wrap;
+    width: 100%;
 }
 
 .entry-name {
     font-size: 15px;
     font-weight: 600;
     color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
 
     &.me-label {
         color: var(--color-primary);

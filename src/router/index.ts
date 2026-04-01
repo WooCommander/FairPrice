@@ -146,6 +146,11 @@ const routes = [
         name: 'AddReceipt',
         component: () => import('@/modules/receipts/ui/AddReceiptView.vue'),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/games/memory',
+        name: 'MemoryGame',
+        component: () => import('@/modules/game').then(m => m.MemoryGameView)
     }
 ]
 

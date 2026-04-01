@@ -12,11 +12,13 @@ export interface CommunityLevel {
 }
 
 export interface LevelScore {
-    id: string
-    level_id: string
-    user_id: string
-    score: number
     created_at: string
+}
+
+export interface GameScoreInsert {
+    game_type: string
+    score: number
+    difficulty: string
 }
 
 class GameService {
@@ -74,6 +76,22 @@ class GameService {
         
         if (error) {
             console.error('Error saving score:', error)
+        }
+    }
+
+    async saveGameScore(data: GameScoreInsert): Promise<void> {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        const { error } = await supabase.from('game_scores').insert({
+            user_id: user.id,
+            game_type: data.game_type,
+            score: data.score,
+            difficulty: data.difficulty
+        })
+
+        if (error) {
+            console.error('Error saving game score:', error)
         }
     }
 

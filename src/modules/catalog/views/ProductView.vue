@@ -37,7 +37,7 @@ const translationCategory = ref('')
 
 // Product Editing State
 const isEditingProduct = ref(false)
-const productForm = ref({ name: '', category: '' })
+const productForm = ref({ name: '', category: '', unit: '' })
 const translationEdits = ref<Record<string, string>>({})
 
 // Analytics
@@ -114,7 +114,8 @@ const startEditProduct = () => {
 	if (currentProduct.value) {
 		productForm.value = {
 			name: currentProduct.value.name,
-			category: currentProduct.value.category
+			category: currentProduct.value.category,
+			unit: currentProduct.value.unit || 'шт'
 		}
 		translationEdits.value = { ...translationNames.value }
 		isEditingProduct.value = true
@@ -400,7 +401,10 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 
 					<div class="modal-form">
 						<FpInput v-model="productForm.name" label="Название товара" placeholder="Введите название" />
-						<FpInput v-model="productForm.category" label="Категория" placeholder="Категория" />
+						<div class="form-row">
+							<FpInput v-model="productForm.category" label="Категория" placeholder="Категория" style="flex: 2" />
+							<FpInput v-model="productForm.unit" label="Ед. изм." placeholder="шт/кг" style="flex: 1" />
+						</div>
 						<div class="translation-block">
 							<div class="translation-title">Translations</div>
 							<FpInput v-for="lang in supportedLocales" :key="lang" v-model="translationEdits[lang]"

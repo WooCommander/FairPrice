@@ -17,6 +17,7 @@ export interface ProductDTO {
     quantityUnit?: string;
     averagePrice?: number; // New field: Average price for current month
     created_by?: string; // Owner ID
+    image_url?: string;
     history?: ProductHistoryDTO[];
 }
 
@@ -367,6 +368,8 @@ class CatalogService {
             name: newProduct.name,
             category: newProduct.category,
             unit: newProduct.unit,
+            image_url: newProduct.image_url,
+            created_by: newProduct.created_by,
             lastUpdate: newProduct.created_at
         }
     }
@@ -405,6 +408,7 @@ class CatalogService {
             lastUpdate: lastPriceObj?.created_at || p.created_at,
             priceRange: this.calculatePriceRange(validPrices),
             averagePrice: this.calculateAveragePrice(validPrices),
+            image_url: p.image_url,
             history: validPrices.map((price: any) => {
                 const verifications: Array<{ user_id: string; vote: string }> = price.price_verifications || []
                 const confirmCount = verifications.filter(v => v.vote === 'confirm').length
@@ -433,7 +437,7 @@ class CatalogService {
         }
     }
 
-    async updateProduct(id: string, updates: { name?: string, category?: string }) {
+    async updateProduct(id: string, updates: { name?: string, category?: string, unit?: string }) {
         const { error } = await supabase
             .from('products')
             .update(updates)
@@ -679,6 +683,25 @@ class CatalogService {
                 description: input.description
             }, { onConflict: 'product_id,lang' })
         if (error) throw error
+    }
+
+    async getRandomProductsForGame(count: number = 8): Promise<ProductDTO[]> {
+        // Use RPC with ORDER BY random() for true randomness across the whole table
+        const { data, error } = await supabase.rpc('get_random_products', { p_limit: count })
+
+        if (error || !data) {
+            // Fallback if RPC is not deployed yet
+            console.warn('RPC get_random_products not found, using basic fallback')
+            const { data: fallbackData } = await supabase
+                .from('products')
+                .select('*')
+                .limit(count * 5)
+            
+            if (!fallbackData) return []
+            return fallbackData.sort(() => 0.5 - Math.random()).slice(0, count).map(p => this.mapToDTO(p))
+        }
+
+        return (data as any[]).map(p => this.mapToDTO(p))
     }
 }
 
