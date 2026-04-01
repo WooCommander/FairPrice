@@ -9,7 +9,7 @@ export interface ReleaseNote {
 
 export const changelog: ReleaseNote[] = [
     {
-        version: '1.1.8',
+        version: '1.1.9',
         date: '2026-04-02',
         highlights: [
             'Новая игра: "Корзина на бюджет"'
