@@ -186,10 +186,6 @@ const handleLogout = async () => {
 				<Calculator class="icon" :size="20" />
 				<span class="label">{{ t('nav.quickCalc') }}</span>
 			</a>
-			<a class="nav-item" :class="{ active: route.path === '/receipts' }" @click.prevent="navigate('/receipts')">
-				<Receipt class="icon" :size="20" />
-				<span class="label">Чеки</span>
-			</a>
 		</nav>
 
 		<!-- Backdrop -->

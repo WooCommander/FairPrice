@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Trash2 } from 'lucide-vue-next'
-import type { Birthday } from '../../domain/Birthday'
-import { getZodiac, getChineseZodiac, getDaysUntilNext, getTurningAge, getNextRoundDays } from '../../lib/birthdayUtils'
+import { ref, computed } from 'vue'
+import { Trash2, Edit2, Check, X } from 'lucide-vue-next'
+import type { Birthday, BirthdayUpdateDTO } from '../../domain/Birthday'
+import { getZodiac, getChineseZodiac, getDaysUntilNext, getTurningAge, getNextRoundDays, parseBirthdayInput } from '../../lib/birthdayUtils'
 
 const props = defineProps<{
     birthday: Birthday
@@ -10,7 +10,19 @@ const props = defineProps<{
 
 defineEmits<{
     (e: 'delete', id: string): void
+    (e: 'edit', id: string, updates: BirthdayUpdateDTO): void
 }>()
+
+const isEditing = ref(false)
+const editValue = ref('')
+
+const startEditing = () => {
+    isEditing.value = true
+    const d = String(props.birthday.day).padStart(2, '0')
+    const m = String(props.birthday.month).padStart(2, '0')
+    const y = props.birthday.year ? `.${props.birthday.year}` : ''
+    editValue.value = `${d}.${m}${y} ${props.birthday.name}`
+}
 
 const daysLeft = computed(() => getDaysUntilNext(props.birthday.day, props.birthday.month))
 const turningAge = computed(() => getTurningAge(props.birthday.year, props.birthday.day, props.birthday.month))
@@ -80,7 +92,37 @@ const cardStyle = computed(() => {
 
 <template>
     <div class="birthday-card" :style="cardStyle">
-        <div class="card-header">
+        <!-- Режим редактирования -->
+        <div v-if="isEditing" class="edit-mode">
+            <input 
+                v-model="editValue"
+                type="text" 
+                class="edit-input" 
+                placeholder="22.02.1977 Имя"
+                @keyup.enter="$emit('edit', birthday.id, parseBirthdayInput(editValue) as BirthdayUpdateDTO); isEditing = false"
+                @keyup.esc="isEditing = false"
+            />
+            <div class="edit-actions">
+                <button class="action-btn cancel-btn" @click="isEditing = false" aria-label="Отмена">
+                    <X :size="20" />
+                </button>
+                <button 
+                    class="action-btn save-btn" 
+                    :disabled="!parseBirthdayInput(editValue)"
+                    @click="$emit('edit', birthday.id, parseBirthdayInput(editValue) as BirthdayUpdateDTO); isEditing = false" 
+                    aria-label="Сохранить"
+                >
+                    <Check :size="20" />
+                </button>
+            </div>
+            <div class="error-msg" v-if="editValue && !parseBirthdayInput(editValue)">
+                Формат: ДД.ММ.ГГГГ Имя
+            </div>
+        </div>
+
+        <!-- Режим просмотра -->
+        <template v-else>
+            <div class="card-header">
             <div class="main-info">
                 <h3 class="name">{{ birthday.name }}</h3>
                 <span class="date">{{ formattedDate }}</span>
@@ -113,9 +155,15 @@ const cardStyle = computed(() => {
             </div>
         </div>
         
-        <button class="delete-btn" @click="$emit('delete', birthday.id)" aria-label="Удалить">
-            <Trash2 :size="16" />
-        </button>
+        <div class="card-actions">
+            <button class="action-hover-btn edit-btn" @click="startEditing" aria-label="Редактировать">
+                <Edit2 :size="16" />
+            </button>
+            <button class="action-hover-btn delete-btn" @click="$emit('delete', birthday.id)" aria-label="Удалить">
+                <Trash2 :size="16" />
+            </button>
+        </div>
+        </template>
     </div>
 </template>
 
@@ -244,10 +292,25 @@ const cardStyle = computed(() => {
     }
 }
 
-.delete-btn {
+.card-actions {
     position: absolute;
     bottom: 12px;
     right: 12px;
+    display: flex;
+    gap: 8px;
+    opacity: 0.6; // visible on mobile
+    transition: all 0.2s;
+
+    @media (hover: hover) {
+        opacity: 0;
+    }
+}
+
+.birthday-card:hover .card-actions {
+    opacity: 1;
+}
+
+.action-hover-btn {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     color: var(--color-text-tertiary);
@@ -258,18 +321,81 @@ const cardStyle = computed(() => {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    opacity: 0.6; // visible on mobile
     transition: all 0.2s;
 
-    @media (hover: hover) {
-        opacity: 0;
-    }
-
-    &:hover {
+    &.delete-btn:hover {
         background: rgba(239, 68, 68, 0.1);
         color: #ef4444;
         border-color: rgba(239, 68, 68, 0.3);
     }
+    &.edit-btn:hover {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+}
+
+.edit-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.edit-input {
+    width: 100%;
+    background: var(--color-background);
+    border: 1px solid var(--color-primary);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 1rem;
+    color: var(--color-text-primary);
+    outline: none;
+    font-weight: 600;
+}
+
+.edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: var(--color-background);
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+
+    &.save-btn {
+        background: var(--color-primary);
+        color: var(--color-on-primary);
+        
+        &:disabled {
+            background: var(--color-border);
+            color: var(--color-text-tertiary);
+            cursor: not-allowed;
+        }
+        
+        &:not(:disabled):hover {
+            transform: scale(1.05);
+        }
+    }
+
+    &.cancel-btn:hover {
+        background: var(--color-surface-hover);
+        color: var(--color-text-primary);
+    }
+}
+
+.error-msg {
+    font-size: 0.75rem;
+    color: #ef4444;
 }
 
 @keyframes pulseHeart {

@@ -9,7 +9,7 @@ import BirthdayCard from './components/BirthdayCard.vue'
 import type { BirthdayInsertDTO } from '../domain/Birthday'
 
 const router = useRouter()
-const { sortedBirthdays, isLoading, fetchBirthdays, addBirthday, removeBirthday } = useBirthdaysStore()
+const { sortedBirthdays, isLoading, fetchBirthdays, addBirthday, editBirthday, removeBirthday } = useBirthdaysStore()
 
 onMounted(() => {
     fetchBirthdays()
@@ -33,6 +33,15 @@ const handleDelete = async (id: string) => {
         } catch (e) {
             console.error(e)
         }
+    }
+}
+
+const handleEdit = async (id: string, updates: any) => {
+    try {
+        await editBirthday(id, updates)
+        FpHaptics.success()
+    } catch (e) {
+        console.error(e)
     }
 }
 </script>
@@ -65,6 +74,7 @@ const handleDelete = async (id: string) => {
                     :key="bday.id" 
                     :birthday="bday"
                     @delete="handleDelete"
+                    @edit="handleEdit"
                 />
             </TransitionGroup>
         </div>
