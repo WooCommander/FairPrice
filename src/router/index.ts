@@ -134,6 +134,18 @@ const routes = [
         name: 'Birthdays',
         component: () => import('@/modules/birthdays').then(m => m.BirthdaysView),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/receipts',
+        name: 'Receipts',
+        component: () => import('@/modules/receipts/ui/ReceiptsView.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/receipts/add',
+        name: 'AddReceipt',
+        component: () => import('@/modules/receipts/ui/AddReceiptView.vue'),
+        meta: { requiresAuth: true }
     }
 ]
 
