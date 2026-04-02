@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { FpHaptics } from '@/shared/lib/haptics'
 
-export type NotifyType = 'success' | 'info' | 'error' | 'warning'
+export type NotifyType = 'success' | 'info' | 'error' | 'warning' | 'birthday'
 
 export interface FpNotif {
     id: string
@@ -20,6 +20,10 @@ export function useNotify() {
         if (type === 'success') FpHaptics.success()
         else if (type === 'error') FpHaptics.error()
         else if (type === 'warning') FpHaptics.warning()
+        else if (type === 'birthday') {
+            FpHaptics.light()
+            setTimeout(() => FpHaptics.light(), 100)
+        }
         else FpHaptics.light()
 
         if (duration > 0) {

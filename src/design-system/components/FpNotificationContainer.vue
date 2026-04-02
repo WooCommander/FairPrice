@@ -7,7 +7,8 @@ const iconMap: Record<string, string> = {
     success: '✓',
     error: '✕',
     info: 'i',
-    warning: '!'
+    warning: '!',
+    birthday: '🎂'
 }
 </script>
 
@@ -72,6 +73,19 @@ const iconMap: Record<string, string> = {
         background: var(--color-warning);
         color: var(--color-on-primary);
     }
+
+    &--birthday {
+        background: linear-gradient(135deg, #FF3CAC 0%, #784BA0 50%, #2B86C5 100%);
+        color: #fff;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        animation: fp-bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        
+        .fp-notif__icon {
+            background: rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+    }
 }
 
 .fp-notif__icon {
@@ -109,5 +123,12 @@ const iconMap: Record<string, string> = {
 
 .fp-notif-move {
     transition: transform 0.28s ease;
+}
+
+@keyframes fp-bounce-in {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
 }
 </style>
