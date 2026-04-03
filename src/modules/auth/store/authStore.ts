@@ -5,12 +5,14 @@ import { catalogStore } from '@/modules/catalog/store/catalogStore'
 const user = ref<User | null>(null)
 const session = ref<Session | null>(null)
 const isLoading = ref(true)
+const isRecoveryFlow = ref(false)
 const error = ref<string | null>(null)
 
 export const authStore = {
     user: readonly(user),
     session: readonly(session),
     isLoading: readonly(isLoading),
+    isRecoveryFlow: readonly(isRecoveryFlow),
     error: readonly(error),
 
     isAuthenticated: computed(() => !!user.value),
@@ -34,6 +36,15 @@ export const authStore = {
         // Listen for auth changes to keep state in sync
         AuthService.onAuthStateChange((event, currentSession) => {
             console.log('Auth event:', event)
+            
+            if (event === 'PASSWORD_RECOVERY') {
+                isRecoveryFlow.value = true
+            }
+
+            if (event === 'SIGNED_OUT') {
+                isRecoveryFlow.value = false
+            }
+
             session.value = currentSession
             user.value = currentSession?.user || null
             if (currentSession?.user?.user_metadata) {
@@ -89,6 +100,38 @@ export const authStore = {
         // Immediate UI feedback
         user.value = null
         session.value = null
+        isRecoveryFlow.value = false
         await AuthService.signOut().catch(console.error)
+    },
+
+    async sendResetLink(email: string) {
+        isLoading.value = true
+        error.value = null
+        try {
+            const { error: authError } = await AuthService.resetPasswordForEmail(email)
+            if (authError) throw authError
+            return true
+        } catch (e: any) {
+            error.value = e.message
+            return false
+        } finally {
+            isLoading.value = false
+        }
+    },
+
+    async updatePassword(password: string) {
+        isLoading.value = true
+        error.value = null
+        try {
+            const { error: authError } = await AuthService.updateUserPassword(password)
+            if (authError) throw authError
+            isRecoveryFlow.value = false
+            return true
+        } catch (e: any) {
+            error.value = e.message
+            return false
+        } finally {
+            isLoading.value = false
+        }
     }
 }

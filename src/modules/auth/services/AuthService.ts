@@ -39,6 +39,18 @@ class AuthService {
         if (error) throw error
     }
 
+    async resetPasswordForEmail(email: string) {
+        return await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/login`,
+        })
+    }
+
+    async updateUserPassword(password: string) {
+        return await supabase.auth.updateUser({
+            password
+        })
+    }
+
     onAuthStateChange(callback: (event: string, session: Session | null) => void) {
         return supabase.auth.onAuthStateChange(callback)
     }

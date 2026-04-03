@@ -32,6 +32,12 @@
     "password": "Пароль",
     "submitLogin": "Войти",
     "submitRegister": "Создать аккаунт",
+    "confirmPassword": "Подтвердите пароль",
+    "forgotPassword": "Забыли пароль?",
+    "sendResetLink": "Отправить ссылку",
+    "backToLogin": "Вернуться к входу",
+    "setNewPassword": "Новый пароль",
+    "updatePassword": "Обновить пароль",
     "noAccount": "Нет аккаунта?",
     "create": "Создать",
     "haveAccount": "Есть аккаунт?",
@@ -39,12 +45,16 @@
     "errors": {
       "fillAll": "Заполните все поля",
       "shortPassword": "Пароль должен быть не менее 6 символов",
+      "passwordMismatch": "Пароли не совпадают",
       "loginFailed": "Ошибка входа",
       "registerFailed": "Ошибка регистрации",
       "notConfirmed": "Email не подтверждён. Проверьте почту.",
-      "invalidCredentials": "Неверный email или пароль"
+      "invalidCredentials": "Неверный email или пароль",
+      "resetFailed": "Ошибка сброса пароля"
     },
-    "successRegister": "Регистрация успешна! Проверьте почту для подтверждения."
+    "successRegister": "Регистрация успешна! Проверьте почту для подтверждения.",
+    "resetEmailSent": "Ссылка на восстановление отправлена на Email",
+    "passwordUpdated": "Пароль успешно обновлен"
   },
   "profile": {
     "activityTitle": "Последняя активность",
