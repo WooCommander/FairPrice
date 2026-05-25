@@ -7,6 +7,7 @@ import { ReceiptService } from '../services/ReceiptService'
 import type { AddReceiptItemDTO } from '../domain/Receipt'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { FpHaptics } from '@/shared/lib/haptics'
+import { UserPreferences } from '@/shared/lib/user-preferences'
 import {
   FpButton,
   FpCard,
@@ -19,7 +20,7 @@ import { ArrowLeft, Plus, Trash2 } from 'lucide-vue-next'
 const router = useRouter()
 
 // Header form (Receipt metadata)
-const storeName = ref(localStorage.getItem('lastUsedStoreName') || '')
+const storeName = ref(UserPreferences.lastUsedStoreName || '')
 const storeResults = ref<{ id: string, name: string }[]>([])
 const purchaseDate = ref(new Date().toISOString().split('T')[0])
 const isSearchingStores = ref(false)
@@ -104,7 +105,7 @@ const submitReceipt = async () => {
 
     isSubmitting.value = true
     try {
-        localStorage.setItem('lastUsedStoreName', storeName.value)
+        UserPreferences.lastUsedStoreName = storeName.value
         
         // Prepare purchase date with time
         const d = new Date(purchaseDate.value)

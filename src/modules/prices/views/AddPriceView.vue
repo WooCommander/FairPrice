@@ -5,6 +5,7 @@ import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { priceStore } from '../store/priceStore'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { FpHaptics } from '@/shared/lib/haptics'
+import { UserPreferences } from '@/shared/lib/user-preferences'
 import {
   FpButton,
   FpCard,
@@ -98,7 +99,7 @@ const selectProduct = (p: { id: string, name: string }) => {
   if (fullProduct?.unit) {
     unit.value = fullProduct.unit
   }
-  const lastUsedGlobal = localStorage.getItem('lastUsedStoreName')
+  const lastUsedGlobal = UserPreferences.lastUsedStoreName
   if (lastUsedGlobal) {
     storeName.value = lastUsedGlobal
   } else if (fullProduct?.lastStore) {
@@ -181,7 +182,7 @@ const submit = async () => {
     })
     
     // Сохраняем магазин для следующих покупок
-    localStorage.setItem('lastUsedStoreName', storeName.value)
+    UserPreferences.lastUsedStoreName = storeName.value
 
     FpHaptics.success()
     isSuccess.value = true
@@ -209,7 +210,7 @@ onMounted(() => {
         currentProduct.value = { id: p.id, name: p.name, category: p.category, unit: p.unit }
         if (p.unit) unit.value = p.unit
         
-        const lastUsedGlobal = localStorage.getItem('lastUsedStoreName')
+        const lastUsedGlobal = UserPreferences.lastUsedStoreName
         if (lastUsedGlobal) {
           storeName.value = lastUsedGlobal
         } else if (p.lastStore) {
