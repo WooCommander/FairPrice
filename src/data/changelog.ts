@@ -9,6 +9,17 @@ export interface ReleaseNote {
 
 export const changelog: ReleaseNote[] = [
     {
+        version: '1.3.2',
+        date: '2026-05-26',
+        highlights: [
+            'Новый дизайн иконки приложения',
+        ],
+        features: [
+            'Кастомная иконка: у приложения появилась уникальная современная иконка и заставка загрузки.'
+        ],
+        fixes: []
+    },
+    {
         version: '1.3.1',
         date: '2026-05-26',
         highlights: [
