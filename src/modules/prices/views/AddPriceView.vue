@@ -30,7 +30,7 @@ const loadMoreTrigger = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
 
 // Form data
-const currentProduct = ref<{ id: string, name: string, category: string, unit?: string } | null>(null)
+const currentProduct = ref<{ id: string, name: string, category: string, unit?: string, history?: any[], lastPrice?: number } | null>(null)
 const storeName = ref('')
 const storeResults = ref<{ id: string, name: string }[]>([])
 const isSearchingStores = ref(false)
@@ -94,10 +94,15 @@ const selectProduct = (p: { id: string, name: string }) => {
     id: p.id,
     name: p.name,
     category: fullProduct?.category || 'Разное',
-    unit: fullProduct?.unit
+    unit: fullProduct?.unit,
+    history: fullProduct?.history || [],
+    lastPrice: fullProduct?.lastPrice
   }
   if (fullProduct?.unit) {
     unit.value = fullProduct.unit
+  }
+  if (fullProduct?.lastPrice) {
+    price.value = fullProduct.lastPrice
   }
   const lastUsedGlobal = UserPreferences.lastUsedStoreName
   if (lastUsedGlobal) {
@@ -207,8 +212,16 @@ onMounted(() => {
     catalogStore.loadProductById(id).then(() => {
       if (catalogStore.currentProduct.value) {
         const p = catalogStore.currentProduct.value
-        currentProduct.value = { id: p.id, name: p.name, category: p.category, unit: p.unit }
+        currentProduct.value = { 
+          id: p.id, 
+          name: p.name, 
+          category: p.category, 
+          unit: p.unit,
+          history: p.history || [],
+          lastPrice: p.lastPrice
+        }
         if (p.unit) unit.value = p.unit
+        if (p.lastPrice) price.value = p.lastPrice
         
         const lastUsedGlobal = UserPreferences.lastUsedStoreName
         if (lastUsedGlobal) {
@@ -386,6 +399,22 @@ watch(selectedCategory, loadProducts)
 
         <div v-if="isSuccess" class="success-message">
           ✅ Цена успешно добавлена!
+        </div>
+      </FpCard>
+
+      <FpCard v-if="currentProduct?.history && currentProduct.history.length > 0" class="history-card">
+        <h3>Предыдущие цены</h3>
+        <div class="history-list">
+          <div v-for="h in currentProduct.history" :key="h.id" class="history-item">
+            <div class="history-left">
+              <span class="history-price">{{ h.price }} ₽</span>
+              <span class="history-unit" v-if="h.unit">за {{ h.unit }}</span>
+            </div>
+            <div class="history-right">
+              <span class="history-store">{{ h.storeName }}</span>
+              <span class="history-date">{{ new Date(h.date).toLocaleDateString() }}</span>
+            </div>
+          </div>
         </div>
       </FpCard>
     </section>
@@ -623,5 +652,65 @@ watch(selectedCategory, loadProducts)
 
 .load-more-trigger {
   height: 1px;
+}
+
+.history-card {
+  margin-top: 16px;
+
+  h3 {
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.history-left {
+  display: flex;
+  flex-direction: column;
+
+  .history-price {
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  .history-unit {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+  }
+}
+
+.history-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  .history-store {
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .history-date {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+  }
 }
 </style>

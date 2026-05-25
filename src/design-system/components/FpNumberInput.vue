@@ -108,6 +108,12 @@ const onBlur = (e: Event) => {
     displayValue.value = String(val)
     emit('update:modelValue', val)
 }
+
+const onFocus = (e: Event) => {
+    isFocused.value = true
+    const input = e.target as HTMLInputElement
+    setTimeout(() => input.select(), 10)
+}
 </script>
 
 <template>
@@ -128,7 +134,7 @@ const onBlur = (e: Event) => {
                     @keydown="onKeyDown"
                     @input="onInput"
                     @blur="onBlur"
-                    @focus="isFocused = true"
+                    @focus="onFocus"
                 />
                 <button class="stepper-btn" type="button" :disabled="!canInc" @click="increment" aria-label="Увеличить">
                     <Plus :size="16" :stroke-width="2.5" />
@@ -150,7 +156,7 @@ const onBlur = (e: Event) => {
                     @keydown="onKeyDown"
                     @input="onInput"
                     @blur="onBlur"
-                    @focus="isFocused = true"
+                    @focus="onFocus"
                 />
                 <span v-if="unit" class="plain-unit">{{ unit }}</span>
             </div>
