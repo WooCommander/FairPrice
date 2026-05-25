@@ -31,7 +31,7 @@ const loadMoreTrigger = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
 
 // Form data
-const currentProduct = ref<{ id: string, name: string, category: string, unit?: string, history?: any[], lastPrice?: number } | null>(null)
+const currentProduct = ref<{ id: string, name: string, category: string, unit?: string, history?: readonly any[], lastPrice?: number } | null>(null)
 const storeName = ref('')
 const storeResults = ref<{ id: string, name: string }[]>([])
 const isSearchingStores = ref(false)
