@@ -156,6 +156,12 @@ const routes = [
         path: '/games/basket',
         name: 'BasketGame',
         component: () => import('@/modules/game').then(m => m.BasketGameView)
+    },
+    {
+        path: '/reminders',
+        name: 'Reminders',
+        component: () => import('@/modules/reminders').then(m => m.RemindersView),
+        meta: { requiresAuth: true }
     }
 ]
 
