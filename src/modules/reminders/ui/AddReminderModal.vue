@@ -6,7 +6,7 @@ import type { RepeatInterval } from '../domain/Reminder';
 import { reminderStore } from '../state/reminderStore';
 import { FpHaptics } from '@/shared/lib/haptics';
 
-const props = defineProps<{ visible: boolean }>();
+defineProps<{ visible: boolean }>();
 const emit = defineEmits<{ (e: 'update:visible', value: boolean): void, (e: 'added'): void }>();
 
 const isSearching = ref(false);
@@ -109,7 +109,7 @@ const isValid = computed(() => productName.value && triggerDate.value && trigger
                       label="Повторять"
                       :items="repeatOptions"
                       title="Повтор"
-                      @select="repeatInterval = $event.id"
+                      @select="repeatInterval = $event.id as any"
                   />
               </div>
           </div>

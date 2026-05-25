@@ -1,5 +1,5 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
-import type { Reminder, ReminderInsertDTO } from '../domain/Reminder';
+import type { Reminder } from '../domain/Reminder';
 
 const STORAGE_KEY = 'fp_reminders';
 
