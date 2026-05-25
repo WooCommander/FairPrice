@@ -71,10 +71,20 @@ const calculatedUnitPrice = computed(() => {
   const q = quantity.value
   if (!p || !q) return null
 
-  const res = (p / q) * (unit.value === 'кг' || unit.value === 'л' ? 1 : 1000)
+  let multiplier = 1
+  if (unit.value === 'г' || unit.value === 'мл') {
+    multiplier = 1000
+  }
+
+  const res = (p / q) * multiplier
+  
+  let targetUnit = unit.value
+  if (unit.value === 'г') targetUnit = 'кг'
+  if (unit.value === 'мл') targetUnit = 'л'
+
   return {
-    price: Math.round(res),
-    unit: unit.value === 'кг' || unit.value === 'л' ? unit.value : (unit.value === 'шт' ? 'шт' : (unit.value === 'мл' ? 'л' : 'кг'))
+    price: Math.round(res * 100) / 100, // round to 2 decimal places instead of whole numbers to avoid losing kopecks
+    unit: targetUnit
   }
 })
 
