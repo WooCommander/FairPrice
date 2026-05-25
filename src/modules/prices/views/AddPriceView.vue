@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { TrendingUp, TrendingDown } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { priceStore } from '../store/priceStore'
@@ -75,6 +76,19 @@ const calculatedUnitPrice = computed(() => {
     price: Math.round(res),
     unit: unit.value === 'кг' || unit.value === 'л' ? unit.value : (unit.value === 'шт' ? 'шт' : (unit.value === 'мл' ? 'л' : 'кг'))
   }
+})
+
+const enrichedHistory = computed(() => {
+  if (!currentProduct.value?.history) return []
+  const h = currentProduct.value.history
+  return h.map((item, index) => {
+    let delta = 0
+    if (index < h.length - 1) {
+      const prevPrice = h[index + 1].price
+      delta = Number((item.price - prevPrice).toFixed(2))
+    }
+    return { ...item, delta }
+  })
 })
 
 // Methods
@@ -402,12 +416,19 @@ watch(selectedCategory, loadProducts)
         </div>
       </FpCard>
 
-      <FpCard v-if="currentProduct?.history && currentProduct.history.length > 0" class="history-card">
+      <FpCard v-if="enrichedHistory.length > 0" class="history-card">
         <h3>Предыдущие цены</h3>
         <div class="history-list">
-          <div v-for="h in currentProduct.history" :key="h.id" class="history-item">
+          <div v-for="h in enrichedHistory" :key="h.id" class="history-item">
             <div class="history-left">
-              <span class="history-price">{{ h.price }} ₽</span>
+              <div class="price-row">
+                <span class="history-price">{{ h.price }} ₽</span>
+                <span v-if="h.delta" class="history-delta" :class="h.delta > 0 ? 'delta-up' : 'delta-down'">
+                  <TrendingUp v-if="h.delta > 0" :size="14" />
+                  <TrendingDown v-if="h.delta < 0" :size="14" />
+                  {{ Math.abs(h.delta) }} ₽
+                </span>
+              </div>
               <span class="history-unit" v-if="h.unit">за {{ h.unit }}</span>
             </div>
             <div class="history-right">
@@ -686,10 +707,37 @@ watch(selectedCategory, loadProducts)
 .history-left {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+
+  .price-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
   .history-price {
     font-weight: 700;
     color: var(--color-primary);
+  }
+
+  .history-delta {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 6px;
+
+    &.delta-up {
+      color: var(--color-error);
+      background: color-mix(in srgb, var(--color-error) 15%, transparent);
+    }
+    
+    &.delta-down {
+      color: var(--color-success);
+      background: color-mix(in srgb, var(--color-success) 15%, transparent);
+    }
   }
 
   .history-unit {
