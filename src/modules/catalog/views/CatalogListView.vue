@@ -3,7 +3,7 @@ import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import { catalogStore } from '../store/catalogStore'
 import { priceStore } from '@/modules/prices/store/priceStore'
 import { useRouter, useRoute } from 'vue-router'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, TrendingUp, TrendingDown } from 'lucide-vue-next'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpCombobox from '@/design-system/components/FpCombobox.vue'
 import FpMobilePicker from '@/design-system/components/FpMobilePicker.vue'
@@ -25,6 +25,13 @@ const { categories } = catalogStore
 
 const products = computed(() => catalogStore.searchResults.value)
 const isLoading = computed(() => catalogStore.isLoading.value)
+
+const getDelta = (product: any) => {
+  if (!product.history || product.history.length < 2) return 0;
+  const current = product.history[0].price;
+  const prev = product.history[1].price;
+  return Number((current - prev).toFixed(2));
+}
 
 // ── Inline add-price form ──
 const addingPriceFor = ref<{ id: string; name: string; unit?: string; lastStore?: string; lastPrice?: number } | null>(null)
@@ -265,7 +272,14 @@ watch(loadMoreTrigger, (el) => {
               <h3 class="title">{{ product.name }}</h3>
             </div>
             <div class="tile-footer">
-              <span class="main-value">{{ product.lastPrice ? formatPrice(product.lastPrice) : 'Нет цены' }}</span>
+              <div class="price-info" style="display: flex; align-items: center; gap: 6px;">
+                <span class="main-value">{{ product.lastPrice ? formatPrice(product.lastPrice) : 'Нет цены' }}</span>
+                <span v-if="getDelta(product) !== 0" class="history-delta" :class="getDelta(product) > 0 ? 'delta-up' : 'delta-down'">
+                  <TrendingUp v-if="getDelta(product) > 0" :size="12" />
+                  <TrendingDown v-if="getDelta(product) < 0" :size="12" />
+                  {{ Math.abs(getDelta(product)) }} ₽
+                </span>
+              </div>
               <FpButton size="icon" variant="secondary" @click.stop="openAddPrice(product)">+</FpButton>
             </div>
           </div>
@@ -328,6 +342,26 @@ watch(loadMoreTrigger, (el) => {
 // ── Tile overrides ──
 .fp-tile .title {
   font-size: 16px;
+}
+
+.history-delta {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 6px;
+
+  &.delta-up {
+    color: var(--color-error);
+    background: color-mix(in srgb, var(--color-error) 15%, transparent);
+  }
+  
+  &.delta-down {
+    color: var(--color-success);
+    background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  }
 }
 
 // ── Add-price form ──
