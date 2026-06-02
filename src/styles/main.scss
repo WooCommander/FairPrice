@@ -21,6 +21,7 @@ body {
     color: var(--color-text-primary);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    overscroll-behavior-x: none;
 }
 
 a {

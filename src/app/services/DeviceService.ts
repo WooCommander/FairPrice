@@ -1,7 +1,27 @@
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
+import type { Router } from 'vue-router';
 
 export class DeviceService {
+  /**
+   * Инициализирует перехват аппаратной кнопки "Назад" и системного свайпа на Android
+   */
+  static initBackButton(router: Router) {
+    if (!Capacitor.isNativePlatform()) return;
+
+    CapacitorApp.addListener('backButton', () => {
+      const exitRoutes = ['Home', 'Catalog', 'ShoppingList', 'QuickCalc', 'Login'];
+      const currentRouteName = router.currentRoute.value.name as string;
+
+      if (exitRoutes.includes(currentRouteName)) {
+        CapacitorApp.exitApp();
+      } else {
+        router.back();
+      }
+    });
+  }
+
   /**
    * Инициализирует и настраивает Status Bar под текущую тему приложения.
    */

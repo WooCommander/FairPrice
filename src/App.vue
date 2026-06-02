@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import MainLayout from '@/layouts/MainLayout.vue'
 import FpNotificationContainer from '@/design-system/components/FpNotificationContainer.vue'
@@ -8,12 +9,14 @@ import { DeviceService } from '@/app/services/DeviceService'
 import { appService } from '@/app/services/app-service'
 
 const { initTheme } = useTheme()
+const router = useRouter()
 
 const update = ref<UpdateInfo | null>(null)
 
 onMounted(async () => {
   initTheme()
   DeviceService.initStatusBar()
+  DeviceService.initBackButton(router)
   appService.initBirthdayReminders() // Проверка ДР
   const result = await checkForUpdate()
   if (result.hasUpdate) update.value = result
