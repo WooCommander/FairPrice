@@ -1,24 +1,28 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { catalogStore } from '@/modules/catalog/store/catalogStore';
-import { FpButton, FpMobilePicker } from '@/design-system';
+import { FpModal, FpButton, FpInput, FpTextarea, FpMobilePicker } from '@/design-system';
 import type { RepeatInterval } from '../domain/Reminder';
 import { reminderStore } from '../state/reminderStore';
 import { FpHaptics } from '@/shared/lib/haptics';
+import { useNotify } from '@/composables/useNotify';
 
-defineProps<{ visible: boolean }>();
+const props = defineProps<{ visible: boolean }>();
 const emit = defineEmits<{ (e: 'update:visible', value: boolean): void, (e: 'added'): void }>();
 
-const isSearching = ref(false);
-const searchQuery = ref('');
-const searchResults = computed(() => catalogStore.searchResults.value.map(p => ({ id: p.id, name: p.name })));
+const { notify } = useNotify();
 
+const title = ref('');
+const note = ref('');
 const productName = ref('');
 const productId = ref<string | undefined>(undefined);
-// set default date/time to now + 10 mins
-const now = new Date(Date.now() + 10 * 60000);
-const triggerDate = ref(now.toISOString().split('T')[0]);
-const triggerTime = ref(now.toTimeString().substring(0, 5));
+const showProduct = ref(false);
+
+const searchResults = computed(() => catalogStore.searchResults.value.map(p => ({ id: p.id, name: p.name })));
+
+const defaultDt = () => new Date(Date.now() + 10 * 60000);
+const triggerDate = ref(defaultDt().toISOString().split('T')[0]);
+const triggerTime = ref(defaultDt().toTimeString().substring(0, 5));
 const repeatInterval = ref<RepeatInterval>('none');
 
 const repeatOptions = [
@@ -28,140 +32,146 @@ const repeatOptions = [
     { id: 'monthly', name: 'Раз в месяц' },
 ];
 
+watch(() => props.visible, v => {
+    if (!v) return;
+    title.value = '';
+    note.value = '';
+    productName.value = '';
+    productId.value = undefined;
+    showProduct.value = false;
+    repeatInterval.value = 'none';
+    const d = defaultDt();
+    triggerDate.value = d.toISOString().split('T')[0];
+    triggerTime.value = d.toTimeString().substring(0, 5);
+});
+
 let searchTimer: any;
 const onSearch = (q: string) => {
-    searchQuery.value = q;
-    productName.value = q;
     clearTimeout(searchTimer);
     if (q.length < 2) return;
-    isSearching.value = true;
-    searchTimer = setTimeout(async () => {
-        await catalogStore.searchProducts(q);
-        isSearching.value = false;
-    }, 500);
+    searchTimer = setTimeout(() => catalogStore.searchProducts(q), 400);
 };
 
-const onSelect = (item: any) => {
+const onSelectProduct = (item: any) => {
     productName.value = item.name;
     productId.value = item.id;
+    if (!title.value.trim()) title.value = `Купить: ${item.name}`;
 };
 
 const close = () => emit('update:visible', false);
 
+const isValid = computed(() => !!title.value.trim() && !!triggerDate.value && !!triggerTime.value);
+
 const save = async () => {
-    if (!productName.value || !triggerDate.value || !triggerTime.value) return;
-    // Local date string construction to ISO
+    if (!isValid.value) return;
     const dt = new Date(`${triggerDate.value}T${triggerTime.value}:00`);
-    
+
     await reminderStore.addReminder({
-        productName: productName.value,
+        title: title.value,
+        note: note.value || undefined,
         productId: productId.value,
+        productName: productId.value ? productName.value : undefined,
         repeatInterval: repeatInterval.value,
-        nextTriggerAt: dt.toISOString()
+        nextTriggerAt: dt.toISOString(),
     });
-    
-    productName.value = '';
-    productId.value = undefined;
-    repeatInterval.value = 'none';
-    
+
     FpHaptics.success();
+    notify('Напоминание создано', 'success');
     emit('added');
     close();
 };
-
-const isValid = computed(() => productName.value && triggerDate.value && triggerTime.value);
 </script>
 
 <template>
-  <div v-if="visible" class="modal-overlay">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h3>Новое напоминание</h3>
-              <button class="close-btn" @click="close">✕</button>
-          </div>
-          <div class="modal-body">
-              <FpMobilePicker
-                  v-model="productName"
-                  label="Товар"
-                  placeholder="Что напомнить купить?"
-                  :items="searchResults"
-                  title="Выберите товар"
-                  allow-create
-                  @search="onSearch"
-                  @select="onSelect"
-                  @create="productName = $event"
-              />
-              
-              <div class="row mt-3">
-                  <div class="field">
-                      <label>Дата</label>
-                      <input type="date" v-model="triggerDate" class="native-input" />
-                  </div>
-                  <div class="field">
-                      <label>Время</label>
-                      <input type="time" v-model="triggerTime" class="native-input" />
-                  </div>
-              </div>
+  <FpModal :visible="visible" title="Новое напоминание" size="sm"
+    @update:visible="emit('update:visible', $event)">
+    <div class="form">
+      <FpInput variant="outlined" v-model="title" label="О чём напомнить"
+        placeholder="Купить молоко, позвонить маме, будильник…" />
 
-              <div class="mt-3">
-                  <FpMobilePicker
-                      v-model="repeatInterval"
-                      label="Повторять"
-                      :items="repeatOptions"
-                      title="Повтор"
-                      @select="repeatInterval = $event.id as any"
-                  />
-              </div>
-          </div>
-          <div class="modal-footer">
-              <FpButton variant="outline" @click="close" style="flex: 1">Отмена</FpButton>
-              <FpButton :disabled="!isValid" @click="save" style="flex: 1">Сохранить</FpButton>
-          </div>
+      <FpTextarea v-model="note" label="Заметка (необязательно)" :rows="2"
+        placeholder="детали, ссылка, сумма…" />
+
+      <div class="row">
+        <label class="field">
+          <span class="field-label">Дата</span>
+          <input type="date" v-model="triggerDate" class="native-input" />
+        </label>
+        <label class="field">
+          <span class="field-label">Время</span>
+          <input type="time" v-model="triggerTime" class="native-input" />
+        </label>
       </div>
-  </div>
+
+      <FpMobilePicker v-model="repeatInterval" label="Повторять" :items="repeatOptions"
+        title="Повтор" @select="repeatInterval = $event.id as any" />
+
+      <button v-if="!showProduct" type="button" class="link-btn" @click="showProduct = true">
+        + Привязать товар из каталога
+      </button>
+      <FpMobilePicker v-else v-model="productName" label="Товар" placeholder="Найти товар…"
+        :items="searchResults" title="Выберите товар" allow-create
+        @search="onSearch" @select="onSelectProduct" @create="productName = $event" />
+    </div>
+
+    <template #footer>
+      <FpButton variant="text" size="full" @click="close">Отмена</FpButton>
+      <FpButton variant="primary" size="full" :disabled="!isValid" @click="save">Сохранить</FpButton>
+    </template>
+  </FpModal>
 </template>
 
 <style scoped lang="scss">
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
+.form {
     display: flex;
-    align-items: flex-end;
-    z-index: 1000;
+    flex-direction: column;
+    gap: 16px;
 }
-.modal-content {
-    background: var(--color-surface);
-    width: 100%;
-    border-top-left-radius: var(--radius-lg);
-    border-top-right-radius: var(--radius-lg);
-    padding: var(--spacing-md);
-    padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom, 20px));
-}
-.modal-header {
+
+.row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-md);
-    h3 { margin: 0; font-size: var(--text-h6); color: var(--color-text-primary); }
-    .close-btn { background: none; border: none; font-size: 24px; color: var(--color-text-secondary); cursor: pointer; }
+    gap: 12px;
 }
-.row { display: flex; gap: var(--spacing-sm); }
-.field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-label { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; }
+
+.field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.field-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    padding-left: 2px;
+}
+
 .native-input {
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: 12px;
+    width: 100%;
+    height: 44px;
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0 12px;
     font-size: 16px;
     color: var(--color-text-primary);
     font-family: inherit;
+
+    &:focus {
+        outline: none;
+        border-color: var(--color-primary);
+    }
 }
-.mt-3 { margin-top: 16px; }
-.modal-footer {
-    display: flex;
-    gap: var(--spacing-sm);
-    margin-top: 24px;
+
+.link-btn {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
 }
 </style>

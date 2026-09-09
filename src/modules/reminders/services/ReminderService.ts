@@ -56,10 +56,11 @@ export class ReminderService {
             await LocalNotifications.schedule({
                 notifications: [
                     {
-                        title: 'Напоминание о покупке',
-                        body: `Пора купить: ${reminder.productName}`,
+                        title: reminder.title,
+                        body: reminder.note || 'Напоминание',
                         id: notificationId,
-                        schedule: schedule
+                        schedule,
+                        extra: { reminderId: reminder.id },
                     }
                 ]
             });
@@ -73,6 +74,24 @@ export class ReminderService {
             await LocalNotifications.cancel({ notifications: [{ id: notificationId }] });
         } catch (e) {
             console.error('Failed to cancel notification', e);
+        }
+    }
+
+    /**
+     * Wire OS notification events to a callback so the running app reacts
+     * in realtime (no restart needed). Safe to call once at startup.
+     */
+    static async initListeners(onFired: (notificationId: number) => void): Promise<void> {
+        try {
+            await LocalNotifications.addListener('localNotificationReceived', n => {
+                if (typeof n.id === 'number') onFired(n.id);
+            });
+            await LocalNotifications.addListener('localNotificationActionPerformed', a => {
+                const id = a.notification?.id;
+                if (typeof id === 'number') onFired(id);
+            });
+        } catch (e) {
+            console.warn('LocalNotifications listeners unavailable (web?)', e);
         }
     }
 }

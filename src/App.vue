@@ -7,6 +7,7 @@ import FpNotificationContainer from '@/design-system/components/FpNotificationCo
 import { checkForUpdate, installUpdate, type UpdateInfo } from '@/modules/updates/UpdateService'
 import { DeviceService } from '@/app/services/DeviceService'
 import { appService } from '@/app/services/app-service'
+import { reminderStore } from '@/modules/reminders/state/reminderStore'
 
 const { initTheme } = useTheme()
 const router = useRouter()
@@ -18,6 +19,7 @@ onMounted(async () => {
   DeviceService.initStatusBar()
   DeviceService.initBackButton(router)
   appService.initBirthdayReminders() // Проверка ДР
+  reminderStore.init() // напоминания: realtime-обработка в открытом приложении
   const result = await checkForUpdate()
   if (result.hasUpdate) update.value = result
 })
