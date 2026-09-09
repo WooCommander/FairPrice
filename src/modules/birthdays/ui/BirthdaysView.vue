@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, Gift } from 'lucide-vue-next'
+import { ArrowLeft, Gift, Share2, Users } from 'lucide-vue-next'
 import { useBirthdaysStore } from '../state/useBirthdaysStore'
 import { FpHaptics } from '@/shared/lib/haptics'
+import { FpIconButton } from '@/design-system'
 import AddBirthdayInput from './components/AddBirthdayInput.vue'
 import BirthdayCard from './components/BirthdayCard.vue'
+import BirthdayShareModal from './components/BirthdayShareModal.vue'
 import type { BirthdayInsertDTO } from '../domain/Birthday'
 
 const router = useRouter()
-const { sortedBirthdays, isLoading, fetchBirthdays, addBirthday, editBirthday, removeBirthday } = useBirthdaysStore()
+const { birthdays, sortedBirthdays, sharedGroups, isLoading, fetchBirthdays, addBirthday, editBirthday, removeBirthday } = useBirthdaysStore()
+
+const showShare = ref(false)
 
 onMounted(() => {
     fetchBirthdays()
@@ -49,13 +53,16 @@ const handleEdit = async (id: string, updates: any) => {
 <template>
     <div class="birthdays-view">
         <header class="hub-header">
-            <button class="icon-btn" @click="router.back()">
-                <ArrowLeft :size="24" />
-            </button>
+            <FpIconButton variant="surface" round label="Назад" @click="router.back()">
+                <ArrowLeft :size="22" />
+            </FpIconButton>
             <h1 class="title">Дни Рождения</h1>
+            <FpIconButton variant="surface" round label="Поделиться списком" @click="showShare = true">
+                <Share2 :size="18" />
+            </FpIconButton>
         </header>
 
-        <p class="subtitle">Ваш личный календарь праздников. Никто кроме вас не видит этот список.</p>
+        <p class="subtitle">Ваш личный календарь праздников. Можно поделиться списком целиком или выборочно.</p>
 
         <!-- Ввод -->
         <AddBirthdayInput @add="handleAdd" />
@@ -87,6 +94,16 @@ const handleEdit = async (id: string, updates: any) => {
             <h3>Нет предстоящих праздников</h3>
             <p>Добавьте дни рождения близких, чтобы всегда помнить о них!</p>
         </div>
+
+        <!-- Поделились со мной -->
+        <section v-for="group in sharedGroups" :key="group.ownerEmail" class="shared-section">
+            <h2 class="shared-label"><Users :size="16" /> От {{ group.ownerEmail }}</h2>
+            <div class="birthdays-list">
+                <BirthdayCard v-for="bday in group.items" :key="bday.id" :birthday="bday" readonly />
+            </div>
+        </section>
+
+        <BirthdayShareModal :visible="showShare" :birthdays="birthdays" @close="showShare = false" />
     </div>
 </template>
 
@@ -112,7 +129,25 @@ const handleEdit = async (id: string, updates: any) => {
         font-weight: 800;
         margin: 0;
         color: var(--color-text-primary);
+        flex: 1;
     }
+}
+
+.shared-section {
+    margin-top: var(--spacing-xl);
+}
+
+.shared-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-tertiary);
+    font-weight: 700;
+    margin: 0 0 12px;
+    word-break: break-all;
 }
 
 .subtitle {

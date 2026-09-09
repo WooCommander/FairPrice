@@ -6,6 +6,7 @@ import { getZodiac, getChineseZodiac, getDaysUntilNext, getTurningAge, getNextRo
 
 const props = defineProps<{
     birthday: Birthday
+    readonly?: boolean
 }>()
 
 defineEmits<{
@@ -155,7 +156,7 @@ const cardStyle = computed(() => {
             </div>
         </div>
         
-        <div class="card-actions">
+        <div v-if="!readonly" class="card-actions">
             <button class="action-hover-btn edit-btn" @click="startEditing" aria-label="Редактировать">
                 <Edit2 :size="16" />
             </button>
