@@ -162,6 +162,24 @@ const routes = [
         name: 'Reminders',
         component: () => import('@/modules/reminders').then(m => m.RemindersView),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/collections',
+        name: 'Collections',
+        component: () => import('@/modules/collections').then(m => m.CollectionsView),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/collections/:id',
+        name: 'Collection',
+        component: () => import('@/modules/collections').then(m => m.CollectionView),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/collections/:id/item/:itemId',
+        name: 'CollectionItem',
+        component: () => import('@/modules/collections').then(m => m.CollectionItemView),
+        meta: { requiresAuth: true }
     }
 ]
 

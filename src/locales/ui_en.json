@@ -103,5 +103,8 @@
   "rates": {
     "usdInRub": "1 $ in rubles",
     "eurInRub": "1 € in rubles"
+  },
+  "app": {
+    "swipeToExit": "Swipe again to exit"
   }
 }

@@ -1,11 +1,22 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { ArrowLeft, Plus, Trash2, Search, BookOpen } from 'lucide-vue-next'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import FpCombobox, { type ComboboxItem } from '@/design-system/components/FpCombobox.vue'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpConfirmationModal from '@/design-system/components/FpConfirmationModal.vue'
+import FpModal from '@/design-system/components/FpModal.vue'
+import FpIconButton from '@/design-system/components/FpIconButton.vue'
+import FpFab from '@/design-system/components/FpFab.vue'
+import FpEmptyState from '@/design-system/components/FpEmptyState.vue'
+import FpSelect from '@/design-system/components/FpSelect.vue'
+import FpTextarea from '@/design-system/components/FpTextarea.vue'
+import FpTagsInput from '@/design-system/components/FpTagsInput.vue'
+import FpSearchInput from '@/design-system/components/FpSearchInput.vue'
+import FpChip from '@/design-system/components/FpChip.vue'
+import FpImageUploader from '@/design-system/components/FpImageUploader.vue'
 
 // Button demo
 const btnLoading = ref(false)
@@ -15,6 +26,7 @@ const toggleLoading = () => btnLoading.value = !btnLoading.value
 const textVal = ref('')
 const numberVal = ref('')
 const errorVal = ref('Invalid input')
+const outlinedVal = ref('')
 
 // NumberInput demo
 const numVal1 = ref(1)
@@ -38,6 +50,34 @@ const handleCreate = (val: string) => {
 const modalVisible = ref(false)
 const modalDangerVisible = ref(false)
 
+// --- New components demo ---
+const contentModalVisible = ref(false)
+const selectVal = ref<string | number | null>(null)
+const selectOptions = [
+    { value: 'have', label: 'В наличии' },
+    { value: 'for_sale', label: 'На продажу' },
+    { value: 'wanted', label: 'Хочу купить' },
+]
+const textareaVal = ref('')
+const tagsVal = ref<string[]>(['фантастика', 'подарок'])
+const searchVal = ref('')
+const activeChip = ref('all')
+const chips = [
+    { key: 'all', label: 'Все', color: null as string | null },
+    { key: 'fiction', label: 'Проза', color: '#86efac' },
+    { key: 'sci', label: 'Фантастика', color: '#93c5fd' },
+    { key: 'hist', label: 'История', color: '#fca5a5' },
+]
+const removableTags = ref(['один', 'два', 'три'])
+const photos = ref<string[]>([])
+const photoUploading = ref(false)
+const onAddPhotos = (files: File[]) => {
+    photoUploading.value = true
+    setTimeout(() => {
+        photos.value.push(...files.map(f => URL.createObjectURL(f)))
+        photoUploading.value = false
+    }, 600)
+}
 </script>
 
 <template>
@@ -80,6 +120,20 @@ const modalDangerVisible = ref(false)
         </section>
 
         <section class="ds-section">
+            <h2>Icon Button</h2>
+            <FpCard>
+                <div class="row">
+                    <FpIconButton variant="ghost" label="back"><ArrowLeft :size="20" /></FpIconButton>
+                    <FpIconButton variant="surface" round label="back"><ArrowLeft :size="20" /></FpIconButton>
+                    <FpIconButton variant="primary" label="add"><Plus :size="20" /></FpIconButton>
+                    <FpIconButton variant="danger" label="delete"><Trash2 :size="18" /></FpIconButton>
+                    <FpIconButton variant="surface" size="sm" label="s"><Search :size="16" /></FpIconButton>
+                    <FpIconButton variant="surface" size="lg" label="l"><Search :size="22" /></FpIconButton>
+                </div>
+            </FpCard>
+        </section>
+
+        <section class="ds-section">
             <h2>Inputs</h2>
             <div class="ds-grid">
                 <FpCard>
@@ -93,6 +147,11 @@ const modalDangerVisible = ref(false)
 
                 <FpCard>
                     <FpInput v-model="errorVal" label="Error State" error="This field is required" />
+                </FpCard>
+
+                <FpCard>
+                    <FpInput v-model="outlinedVal" variant="outlined" label="Outlined variant"
+                        placeholder="bordered box + top label" />
                 </FpCard>
             </div>
         </section>
@@ -115,11 +174,95 @@ const modalDangerVisible = ref(false)
         </section>
 
         <section class="ds-section">
+            <h2>Select</h2>
+            <FpCard>
+                <FpSelect v-model="selectVal" label="Статус" placeholder="Выберите…" :options="selectOptions" />
+                <p>Selected: {{ selectVal }}</p>
+            </FpCard>
+        </section>
+
+        <section class="ds-section">
+            <h2>Textarea</h2>
+            <FpCard>
+                <FpTextarea v-model="textareaVal" label="Заметки" :rows="3" placeholder="состояние, кому одолжил…" />
+            </FpCard>
+        </section>
+
+        <section class="ds-section">
+            <h2>Tags Input</h2>
+            <FpCard>
+                <FpTagsInput v-model="tagsVal" label="Теги" />
+                <p>{{ tagsVal }}</p>
+            </FpCard>
+        </section>
+
+        <section class="ds-section">
+            <h2>Search Input</h2>
+            <FpCard>
+                <FpSearchInput v-model="searchVal" placeholder="Поиск: книги" />
+                <p>Query: "{{ searchVal }}"</p>
+            </FpCard>
+        </section>
+
+        <section class="ds-section">
+            <h2>Chip</h2>
+            <FpCard>
+                <div class="row">
+                    <FpChip v-for="c in chips" :key="c.key" :active="activeChip === c.key" :color="c.color"
+                        @click="activeChip = c.key">
+                        {{ c.label }}
+                    </FpChip>
+                </div>
+                <div class="row" style="margin-top: 12px">
+                    <FpChip v-for="(t, i) in removableTags" :key="t" static removable
+                        @remove="removableTags.splice(i, 1)">
+                        {{ t }}
+                    </FpChip>
+                </div>
+            </FpCard>
+        </section>
+
+        <section class="ds-section">
             <h2>Combobox</h2>
             <FpCard>
                 <FpCombobox v-model="comboVal" :items="comboItems" label="Fruit Selector" placeholder="Select a fruit"
                     allow-create @create="handleCreate" />
                 <p>Selected: {{ comboVal }}</p>
+            </FpCard>
+        </section>
+
+        <section class="ds-section">
+            <h2>Image Uploader</h2>
+            <FpCard>
+                <FpImageUploader v-model="photos" label="Фото" cover-first :uploading="photoUploading"
+                    @add="onAddPhotos" />
+            </FpCard>
+        </section>
+
+        <section class="ds-section">
+            <h2>Empty State</h2>
+            <FpCard padding="none">
+                <FpEmptyState title="Пока нет каталогов" description="Создай первый — например, домашнюю библиотеку.">
+                    <template #icon><BookOpen :size="44" /></template>
+                    <FpButton size="sm">Создать</FpButton>
+                </FpEmptyState>
+            </FpCard>
+        </section>
+
+        <section class="ds-section">
+            <h2>Modal</h2>
+            <FpCard>
+                <FpButton @click="contentModalVisible = true">Открыть модалку</FpButton>
+                <FpModal v-model:visible="contentModalVisible" title="Пример модалки">
+                    <div style="display: flex; flex-direction: column; gap: 14px">
+                        <FpInput variant="outlined" model-value="" label="Название" placeholder="…" />
+                        <FpTextarea model-value="" label="Описание" :rows="3" />
+                    </div>
+                    <template #footer>
+                        <FpButton variant="text" size="full" @click="contentModalVisible = false">Отмена</FpButton>
+                        <FpButton variant="primary" size="full" @click="contentModalVisible = false">Сохранить</FpButton>
+                    </template>
+                </FpModal>
             </FpCard>
         </section>
 
@@ -152,14 +295,26 @@ const modalDangerVisible = ref(false)
                 <FpCard flat>Flat Card</FpCard>
             </div>
         </section>
+
+        <section class="ds-section">
+            <h2>FAB</h2>
+            <FpCard>
+                <p style="color: var(--color-text-secondary)">Плавающая кнопка закреплена в правом нижнем углу экрана ↘</p>
+            </FpCard>
+        </section>
+
+        <FpFab label="Пример FAB">
+            <Plus :size="26" :stroke-width="3" />
+        </FpFab>
     </div>
 </template>
 
 <style scoped lang="scss">
 .design-system-view {
     // max-width: 800px;
-    // 
+    //
     padding: var(--spacing-sm);
+    padding-bottom: 120px;
 }
 
 .ds-header {

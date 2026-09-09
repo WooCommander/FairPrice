@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { authStore } from '@/modules/auth/store/authStore'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { changelog } from '@/data/changelog'
 import { setLocale, supportedLocales, i18n } from '@/i18n'
 import { useI18n } from 'vue-i18n'
-import { Home, Star, User, Package, Store, Trophy, Menu, X, CheckSquare, Calculator, Palette, FileText, LogOut, Sun, Moon, Plus, ShoppingCart, Gamepad2, StickyNote, Gift, Receipt, Bell } from 'lucide-vue-next'
+import { Home, Star, User, Package, Store, Trophy, Menu, X, CheckSquare, Calculator, Palette, FileText, LogOut, Sun, Moon, Plus, ShoppingCart, Gamepad2, StickyNote, Gift, Receipt, Bell, Library } from 'lucide-vue-next'
 import { FpHaptics } from '@/shared/lib/haptics'
+import { App as CapacitorApp } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
+import { useNotify } from '@/composables/useNotify'
 const refreshKey = ref(0)
 const forceRefresh = () => { refreshKey.value += 1 }
 
@@ -16,6 +19,7 @@ const router = useRouter()
 const route = useRoute()
 const { isDark, toggleTheme } = useTheme()
 const { t } = useI18n()
+const { notify } = useNotify()
 const userRef = computed(() => authStore.user.value)
 const appVersion = changelog[0]?.version || ''
 const currentLocale = computed(() => i18n.global.locale.value as string)
@@ -111,13 +115,61 @@ const handleLogout = async () => {
 	router.push('/login')
 }
 
+// Edge swipe navigation
+const layoutRef = ref<HTMLElement | null>(null)
+const EDGE_THRESHOLD = 35
+const SWIPE_MIN_DISTANCE = 70
+const DOUBLE_SWIPE_INTERVAL = 400
 
+let swipeTouchStartX = 0
+let swipeTouchStartY = 0
+let isEdgeSwipe = false
+let lastSwipeTime = 0
+
+const onSwipeTouchStart = (e: TouchEvent) => {
+	swipeTouchStartX = e.touches[0].clientX
+	swipeTouchStartY = e.touches[0].clientY
+	isEdgeSwipe = swipeTouchStartX < EDGE_THRESHOLD
+}
+
+const onSwipeTouchEnd = (e: TouchEvent) => {
+	if (!isEdgeSwipe || isMenuOpen.value) return
+
+	const dx = e.changedTouches[0].clientX - swipeTouchStartX
+	const dy = e.changedTouches[0].clientY - swipeTouchStartY
+
+	if (dx > SWIPE_MIN_DISTANCE && Math.abs(dy) < dx * 0.6) {
+		const now = Date.now()
+		if (now - lastSwipeTime < DOUBLE_SWIPE_INTERVAL) {
+			FpHaptics.medium()
+			if (Capacitor.isNativePlatform()) CapacitorApp.exitApp()
+		} else {
+			FpHaptics.light()
+			notify(t('app.swipeToExit'), 'info', 1500)
+		}
+		lastSwipeTime = now
+	}
+}
+
+onMounted(() => {
+	const el = layoutRef.value
+	if (!el) return
+	el.addEventListener('touchstart', onSwipeTouchStart, { passive: true })
+	el.addEventListener('touchend', onSwipeTouchEnd, { passive: true })
+})
+
+onUnmounted(() => {
+	const el = layoutRef.value
+	if (!el) return
+	el.removeEventListener('touchstart', onSwipeTouchStart)
+	el.removeEventListener('touchend', onSwipeTouchEnd)
+})
 
 
 </script>
 
 <template>
-	<div class="main-layout">
+	<div class="main-layout" ref="layoutRef">
 		<header class="top-nav">
 			<div class="nav-container">
 				<div class="logo-area">
@@ -246,6 +298,13 @@ const handleLogout = async () => {
 								<Calculator :size="24" />
 							</span>
 							{{ t('nav.quickCalc') }}
+						</a>
+						<a class="drawer-link" :class="{ active: currentPath.startsWith('/collections') }"
+							@click.prevent="navigate('/collections'); isMenuOpen = false">
+							<span class="link-icon">
+								<Library :size="24" />
+							</span>
+							Каталоги
 						</a>
 						<a class="drawer-link" :class="{ active: currentPath === '/notes' }"
 							@click.prevent="navigate('/notes'); isMenuOpen = false">

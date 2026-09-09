@@ -9,12 +9,15 @@ interface Props {
   error?: string
   disabled?: boolean
   id?: string
+  /** 'filled' = Material bottom-border w/ floating label (default); 'outlined' = bordered box w/ static top label */
+  variant?: 'filled' | 'outlined'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: '',
   type: 'text',
-  disabled: false
+  disabled: false,
+  variant: 'filled'
 })
 
 const emit = defineEmits<{
@@ -48,12 +51,13 @@ const onBlur = () => {
 </script>
 
 <template>
-  <div class="fp-input-wrapper" :class="{ 'has-error': !!props.error, 'is-focused': isFocused, 'has-value': hasValue }">
+  <div class="fp-input-wrapper" :class="[`variant-${variant}`, { 'has-error': !!props.error, 'is-focused': isFocused, 'has-value': hasValue }]">
+    <span v-if="variant === 'outlined' && props.label" class="fp-top-label">{{ props.label }}</span>
     <div class="input-container">
       <input :id="inputId" class="fp-input" :type="props.type" :value="props.modelValue" :disabled="props.disabled"
-        :placeholder="props.label && !isFocused && !hasValue ? '' : props.placeholder || ' '" @input="onInput"
+        :placeholder="variant === 'filled' && props.label && !isFocused && !hasValue ? '' : props.placeholder || ' '" @input="onInput"
         @focus="onFocus" @blur="onBlur" />
-      <label v-if="props.label" :for="inputId" class="fp-label">
+      <label v-if="variant === 'filled' && props.label" :for="inputId" class="fp-label">
         {{ props.label }}
       </label>
     </div>
@@ -128,5 +132,45 @@ const onBlur = () => {
   font-size: var(--text-caption);
   color: var(--color-error);
   padding: 4px 16px 0;
+}
+
+/* ── Outlined variant ──────────────────────────────── */
+.variant-outlined {
+  gap: 5px;
+  margin-bottom: 0; // spacing controlled by parent layout
+
+  .fp-top-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    padding-left: 2px;
+  }
+
+  .input-container {
+    height: 44px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    align-items: center;
+  }
+
+  .fp-input {
+    height: 100%;
+    margin-bottom: 0;
+    padding: 0 12px;
+    font-size: 16px;
+  }
+
+  &.is-focused .input-container {
+    border-color: var(--color-primary);
+    background-color: var(--color-surface);
+  }
+
+  &.has-error .input-container {
+    border-color: var(--color-error);
+  }
+
+  .error-text {
+    padding: 0 2px;
+  }
 }
 </style>
