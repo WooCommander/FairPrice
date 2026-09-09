@@ -11,14 +11,14 @@ const isLoaded = ref(false)
 const error = ref<string | null>(null)
 
 export const useCollectionsStore = () => {
-    const fetchCollections = async (force = false) => {
+    const fetchCollections = async (_force = false) => {
         if (!authStore.user.value) {
             collections.value = []
             isLoaded.value = false
             return
         }
-        if (isLoaded.value && !force) return
-
+        // Always refresh: link_my_shares() must run every visit so a freshly
+        // accepted invitation shows up without restarting the app.
         isLoading.value = true
         error.value = null
         try {

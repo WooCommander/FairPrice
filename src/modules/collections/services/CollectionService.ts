@@ -6,7 +6,13 @@ export class CollectionService {
     /** Attach pending email invitations to this user (no-op if RPC missing). */
     static async linkShares(): Promise<void> {
         const { error } = await supabase.rpc('link_my_shares')
-        if (error) console.warn('link_my_shares failed:', error.message)
+        if (error) {
+            // PGRST202 = function not found -> db/collections.sql was not (fully) applied
+            console.error(
+                `link_my_shares failed (${error.code}): ${error.message}. ` +
+                    'Убедись, что db/collections.sql выполнен в Supabase целиком.',
+            )
+        }
     }
 
     /** Map of collection_id -> role for collections shared with the current user. */
