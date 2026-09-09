@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ImagePlus, Loader2, Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { ImagePlus, Camera as CameraIcon, Loader2, Trash2 } from 'lucide-vue-next'
 
 interface Props {
 	/** list of image URLs already attached */
@@ -10,6 +11,8 @@ interface Props {
 	disabled?: boolean
 	/** style the first image as a "cover" */
 	coverFirst?: boolean
+	/** show a "take a photo" tile (uses the device camera) */
+	camera?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -17,6 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
 	uploading: false,
 	disabled: false,
 	coverFirst: false,
+	camera: true,
 })
 
 const emit = defineEmits<{
@@ -25,11 +29,40 @@ const emit = defineEmits<{
 	(e: 'remove', url: string): void
 }>()
 
+const cameraFallbackRef = ref<HTMLInputElement | null>(null)
+
 const onPick = (e: Event) => {
 	const input = e.target as HTMLInputElement
 	const files = Array.from(input.files ?? [])
 	input.value = ''
 	if (files.length) emit('add', files)
+}
+
+const captureFromCamera = async () => {
+	if (props.disabled || props.uploading) return
+	try {
+		const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera')
+		const photo = await Camera.getPhoto({
+			quality: 85,
+			resultType: CameraResultType.Uri,
+			source: CameraSource.Camera,
+			correctOrientation: true,
+			promptLabelHeader: 'Фото',
+			promptLabelPhoto: 'Из галереи',
+			promptLabelPicture: 'Сделать снимок',
+		})
+		if (!photo.webPath) return
+		const blob = await (await fetch(photo.webPath)).blob()
+		const file = new File([blob], `photo.${photo.format || 'jpg'}`, {
+			type: blob.type || 'image/jpeg',
+		})
+		emit('add', [file])
+	} catch (e: any) {
+		const msg = String(e?.message ?? e).toLowerCase()
+		if (msg.includes('cancel') || msg.includes('denied')) return
+		// plugin unavailable (e.g. plain browser) -> native file input with camera hint
+		cameraFallbackRef.value?.click()
+	}
 }
 
 const remove = (url: string) => {
@@ -53,13 +86,24 @@ const remove = (url: string) => {
 				</button>
 			</div>
 
-			<label v-if="modelValue.length < max" class="fp-uploader__add">
-				<Loader2 v-if="uploading" :size="22" class="spin" />
-				<ImagePlus v-else :size="22" />
-				<input type="file" accept="image/*" multiple hidden :disabled="disabled || uploading"
-					@change="onPick" />
-			</label>
+			<template v-if="modelValue.length < max">
+				<button v-if="camera" type="button" class="fp-uploader__tile" :disabled="disabled || uploading"
+					@click="captureFromCamera">
+					<Loader2 v-if="uploading" :size="22" class="spin" />
+					<CameraIcon v-else :size="22" />
+				</button>
+
+				<label class="fp-uploader__tile">
+					<Loader2 v-if="uploading && !camera" :size="22" class="spin" />
+					<ImagePlus v-else :size="22" />
+					<input type="file" accept="image/*" multiple hidden :disabled="disabled || uploading"
+						@change="onPick" />
+				</label>
+			</template>
 		</div>
+
+		<input ref="cameraFallbackRef" type="file" accept="image/*" capture="environment" hidden
+			@change="onPick" />
 	</div>
 </template>
 
@@ -89,7 +133,7 @@ const remove = (url: string) => {
 }
 
 .fp-uploader__thumb,
-.fp-uploader__add {
+.fp-uploader__tile {
 	width: 76px;
 	height: 76px;
 	border-radius: var(--radius-md);
@@ -126,17 +170,22 @@ const remove = (url: string) => {
 	cursor: pointer;
 }
 
-.fp-uploader__add {
+.fp-uploader__tile {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	border: 1px dashed var(--color-border);
+	background: transparent;
 	color: var(--color-text-tertiary);
 	cursor: pointer;
 
-	&:hover {
+	&:hover:not(:disabled) {
 		color: var(--color-primary);
 		border-color: var(--color-primary);
+	}
+
+	&:disabled {
+		cursor: default;
 	}
 }
 

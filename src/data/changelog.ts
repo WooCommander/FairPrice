@@ -9,6 +9,17 @@ export interface ReleaseNote {
 
 export const changelog: ReleaseNote[] = [
     {
+        version: '1.4.5',
+        date: '2026-09-10',
+        highlights: [
+            'Фото с камеры в каталогах'
+        ],
+        features: [
+            'Обложку книги (и любое фото в каталоге) можно сделать прямо с камеры — новая кнопка «снимок» рядом с выбором из галереи.'
+        ],
+        fixes: []
+    },
+    {
         version: '1.4.4',
         date: '2026-09-10',
         highlights: [
