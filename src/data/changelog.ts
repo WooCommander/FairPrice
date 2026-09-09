@@ -9,6 +9,17 @@ export interface ReleaseNote {
 
 export const changelog: ReleaseNote[] = [
     {
+        version: '1.4.7',
+        date: '2026-09-10',
+        highlights: [
+            'Исправлены перекрывающиеся окна'
+        ],
+        features: [],
+        fixes: [
+            'Выбор повтора и товара при создании напоминания больше не прячется за окном формы.'
+        ]
+    },
+    {
         version: '1.4.6',
         date: '2026-09-10',
         highlights: [

@@ -191,7 +191,9 @@ watch(searchQuery, (q) => {
     right: 0;
     bottom: 0;
     background: var(--color-background);
-    z-index: 2000;
+    // above FpModal (3000) / FpConfirmationModal (3500): the picker is often
+    // opened from inside a modal (e.g. AddReminderModal)
+    z-index: 3600;
     display: flex;
     flex-direction: column;
 }
