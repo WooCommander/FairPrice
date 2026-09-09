@@ -66,7 +66,9 @@ const confirm = () => {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    // above FpModal (3000) / FpMobilePicker (2000): a destructive confirm is the
+    // most-blocking dialog and may be opened from inside another modal
+    z-index: 3500;
     padding: 16px;
 }
 
