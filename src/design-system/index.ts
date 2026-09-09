@@ -18,6 +18,7 @@ import FpSpinner from './components/FpSpinner.vue'
 import FpMobilePicker from './components/FpMobilePicker.vue'
 import FpSkeleton from './components/FpSkeleton.vue'
 import FpSwipeable from './components/FpSwipeable.vue'
+import FpSwitch from './components/FpSwitch.vue'
 import FpTagsInput from './components/FpTagsInput.vue'
 import FpTextarea from './components/FpTextarea.vue'
 import FpPullToRefresh from './components/FpPullToRefresh.vue'
@@ -42,6 +43,7 @@ export {
     FpMobilePicker,
     FpSkeleton,
     FpSwipeable,
+    FpSwitch,
     FpTagsInput,
     FpTextarea,
     FpPullToRefresh

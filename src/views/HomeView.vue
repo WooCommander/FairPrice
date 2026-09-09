@@ -7,6 +7,10 @@ import { useNotesStore } from '@/modules/notes/state/useNotesStore'
 import { AuthService } from '@/modules/auth/services/AuthService'
 import { useBirthdaysStore } from '@/modules/birthdays/state/useBirthdaysStore'
 import { getDaysUntilNext, getTurningAge, getZodiac } from '@/modules/birthdays/lib/birthdayUtils'
+import { useCollectionsStore } from '@/modules/collections/state/useCollectionsStore'
+import { getCollectionType } from '@/modules/collections/config'
+import { resolveIcon } from '@/modules/collections/config/icons'
+import { homeStore } from '@/modules/settings/store/homeStore'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import { FpPullToRefresh } from '@/design-system'
@@ -57,6 +61,10 @@ const upcomingBirthdays = computed(() => {
 const notesStore = useNotesStore()
 const lastNote = computed(() => notesStore.notes.value[0] || null)
 
+// Collections (own catalogs)
+const collectionsStore = useCollectionsStore()
+const myCollections = computed(() => collectionsStore.ownCollections.value.slice(0, 6))
+
 // Personalized Data
 const userStats = ref<any>(null)
 const isLoading = ref(true)
@@ -84,7 +92,8 @@ const loadData = async () => {
       catalogStore.loadDashboardStats(),
       shoppingListStore.loadItems ? shoppingListStore.loadItems() : Promise.resolve(),
       birthdayStore.fetchBirthdays(),
-      notesStore.fetchNotes()
+      notesStore.fetchNotes(),
+      homeStore.isVisible('collections') ? collectionsStore.fetchCollections() : Promise.resolve()
     ])
     userStats.value = stats
     userProfile.value = profile
@@ -116,7 +125,7 @@ onMounted(loadData)
 
         </div>
 
-        <FpCard v-if="userStats" class="profile-card">
+        <FpCard v-if="userStats && homeStore.isVisible('profile')" class="profile-card">
           <div class="profile-header">
             <div class="level-badge">LVL {{ userStats.level }}</div>
             <div class="profile-main">
@@ -140,7 +149,7 @@ onMounted(loadData)
 
       <div class="dashboard-content">
         <!-- Personalized Stats -->
-        <section class="stats-grid">
+        <section v-if="homeStore.isVisible('stats')" class="stats-grid">
           <FpCard class="stat-card" @click="router.push('/shopping-list')">
             <div class="stat-icon list">🛒</div>
             <div class="stat-info">
@@ -166,8 +175,26 @@ onMounted(loadData)
           </FpCard>
         </section>
 
+        <!-- My Catalogs -->
+        <section v-if="homeStore.isVisible('collections') && myCollections.length > 0" class="collections-section">
+          <div class="section-header">
+            <h2 class="section-title">Мои каталоги 📚</h2>
+            <FpButton variant="text" size="sm" @click="router.push('/collections')">Все</FpButton>
+          </div>
+          <div class="collections-row">
+            <FpCard v-for="c in myCollections" :key="c.id" class="collection-chip"
+              @click="router.push(`/collections/${c.id}`)">
+              <span class="collection-chip__icon">
+                <component :is="resolveIcon(c.icon || getCollectionType(c.type).icon)" :size="20" />
+              </span>
+              <span class="collection-chip__name">{{ c.name }}</span>
+              <span class="collection-chip__count">{{ c.item_count ?? 0 }}</span>
+            </FpCard>
+          </div>
+        </section>
+
         <!-- Upcoming Birthdays Widget -->
-        <section v-if="upcomingBirthdays.length > 0" class="birthdays-section">
+        <section v-if="homeStore.isVisible('birthdays') && upcomingBirthdays.length > 0" class="birthdays-section">
           <div class="section-header">
             <h2 class="section-title">Ближайшие праздники 🎁</h2>
             <FpButton variant="text" size="sm" @click="router.push('/birthdays')">Все</FpButton>
@@ -195,7 +222,7 @@ onMounted(loadData)
         </section>
 
         <!-- Last Note Widget -->
-        <section v-if="lastNote" class="notes-preview-section">
+        <section v-if="homeStore.isVisible('notes') && lastNote" class="notes-preview-section">
           <div class="section-header">
             <h2 class="section-title">Последняя заметка 📝</h2>
             <FpButton variant="text" size="sm" @click="router.push('/notes')">Все</FpButton>
@@ -210,7 +237,7 @@ onMounted(loadData)
         </section>
 
         <!-- Quick Actions -->
-        <section class="actions-row">
+        <section v-if="homeStore.isVisible('actions')" class="actions-row">
           <button class="action-btn-circle" @click="router.push('/add-price')" title="Добавить цену">
             <span class="icon">+</span>
             <span class="label">Цена</span>
@@ -236,7 +263,7 @@ onMounted(loadData)
 
 
         <!-- Global Insights (Small) - Moved to bottom -->
-        <div class="global-mini-stats">
+        <div v-if="homeStore.isVisible('globalStats')" class="global-mini-stats">
           <div class="mini-stat">
             <span>📦<br> {{ totalProductCount }}<br> товаров</span>
           </div>
@@ -698,6 +725,61 @@ onMounted(loadData)
     font-weight: 700;
     margin: 0;
     color: var(--color-text-primary);
+  }
+}
+
+// My Catalogs
+.collections-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.collection-chip {
+  flex-shrink: 0;
+  min-width: 128px;
+  max-width: 180px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.15s;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__count {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-tertiary);
   }
 }
 </style>

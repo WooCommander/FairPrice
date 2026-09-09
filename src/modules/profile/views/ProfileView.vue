@@ -6,6 +6,8 @@ import { AuthService } from '@/modules/auth/services/AuthService'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import FpSwitch from '@/design-system/components/FpSwitch.vue'
+import { homeStore } from '@/modules/settings/store/homeStore'
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
@@ -370,6 +372,18 @@ onMounted(async () => {
       </div>
     </section>
 
+    <!-- Home page blocks -->
+    <section class="settings-section">
+      <h2>Главная страница</h2>
+      <p class="home-blocks-hint">Что показывать на главном экране</p>
+      <FpCard class="home-blocks-card">
+        <FpSwitch v-for="block in homeStore.blocks" :key="block.key" class="home-block-row"
+          :model-value="homeStore.isVisible(block.key)" :label="block.label"
+          :description="block.description"
+          @update:model-value="homeStore.setVisible(block.key, $event)" />
+      </FpCard>
+    </section>
+
     <section class="activity-section">
       <div class="section-title-row">
         <h2>{{ t('profile.activityTitle') }}</h2>
@@ -633,6 +647,25 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: var(--spacing-sm);
+}
+
+.home-blocks-hint {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin: -6px 0 0;
+}
+
+.home-blocks-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-block-row {
+  padding: 12px 0;
+
+  & + & {
+    border-top: 1px solid var(--color-border);
+  }
 }
 
 .currency-option-btn {

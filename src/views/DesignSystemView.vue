@@ -17,6 +17,7 @@ import FpTagsInput from '@/design-system/components/FpTagsInput.vue'
 import FpSearchInput from '@/design-system/components/FpSearchInput.vue'
 import FpChip from '@/design-system/components/FpChip.vue'
 import FpImageUploader from '@/design-system/components/FpImageUploader.vue'
+import FpSwitch from '@/design-system/components/FpSwitch.vue'
 
 // Button demo
 const btnLoading = ref(false)
@@ -69,6 +70,8 @@ const chips = [
     { key: 'hist', label: 'История', color: '#fca5a5' },
 ]
 const removableTags = ref(['один', 'два', 'три'])
+const switch1 = ref(true)
+const switch2 = ref(false)
 const photos = ref<string[]>([])
 const photoUploading = ref(false)
 const onAddPhotos = (files: File[]) => {
@@ -219,6 +222,15 @@ const onAddPhotos = (files: File[]) => {
                         {{ t }}
                     </FpChip>
                 </div>
+            </FpCard>
+        </section>
+
+        <section class="ds-section">
+            <h2>Switch</h2>
+            <FpCard>
+                <FpSwitch v-model="switch1" label="Показывать блок" description="Вкл/выкл на главной" />
+                <FpSwitch v-model="switch2" label="Без описания" style="margin-top: 12px" />
+                <FpSwitch :model-value="true" label="Заблокирован" disabled style="margin-top: 12px" />
             </FpCard>
         </section>
 
