@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Plus, Share2 } from 'lucide-vue-next'
+import { ArrowLeft, Plus, Share2, Settings2 } from 'lucide-vue-next'
 import { FpHaptics } from '@/shared/lib/haptics'
 import { useNotify } from '@/composables/useNotify'
 import { FpChip, FpEmptyState, FpFab, FpIconButton, FpSearchInput, FpSelect, FpSpinner } from '@/design-system'
@@ -13,6 +13,7 @@ import { getCollectionType } from '../config'
 import ItemModal from './components/ItemModal.vue'
 import ItemCard from './components/ItemCard.vue'
 import ShareModal from './components/ShareModal.vue'
+import CollectionSettingsModal from './components/CollectionSettingsModal.vue'
 import type { Collection } from '../domain/Collection'
 import type { CollectionItem, CollectionItemInsertDTO } from '../domain/CollectionItem'
 
@@ -33,6 +34,7 @@ const canEdit = computed(
 )
 
 const showShare = ref(false)
+const showSettings = ref(false)
 
 const search = ref('')
 const activeCategory = ref<string | null>(null)
@@ -155,6 +157,10 @@ const handleDelete = async (item: CollectionItem) => {
 				@click="showShare = true">
 				<Share2 :size="18" />
 			</FpIconButton>
+			<FpIconButton v-if="collection?.is_owner" variant="surface" round label="Настройки каталога"
+				@click="showSettings = true">
+				<Settings2 :size="18" />
+			</FpIconButton>
 		</header>
 
 		<div class="toolbar">
@@ -197,6 +203,10 @@ const handleDelete = async (item: CollectionItem) => {
 
 		<ShareModal v-if="collection" :visible="showShare" :collection-id="collectionId"
 			:collection-name="collection.name" @close="showShare = false" />
+
+		<CollectionSettingsModal v-if="collection" :visible="showSettings" :collection="collection"
+			@close="showSettings = false" @renamed="collection && (collection.name = $event)"
+			@deleted="router.replace('/collections')" />
 	</div>
 </template>
 
