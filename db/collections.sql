@@ -104,10 +104,10 @@ alter table collection_shares     enable row level security;
 -- collections
 drop policy if exists "collections read"  on collections;
 drop policy if exists "collections write" on collections;
+-- NB: use the helper, not an inline subquery — a bare `id` inside a subquery
+-- over collection_shares binds to collection_shares.id, not collections.id.
 create policy "collections read" on collections for select
-  using (owner_id = auth.uid()
-         or exists (select 1 from collection_shares s
-                    where s.collection_id = id and s.member_id = auth.uid()));
+  using (owner_id = auth.uid() or can_access_collection(id));
 create policy "collections write" on collections for all
   using (owner_id = auth.uid())
   with check (owner_id = auth.uid());
