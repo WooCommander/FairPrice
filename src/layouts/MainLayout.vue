@@ -35,7 +35,7 @@ const avatarLetter = computed(() => userRef.value?.email?.charAt(0).toUpperCase(
 const profileTooltip = computed(() => userRef.value?.email || t('auth.guest'))
 const pendingModerationCount = ref(0)
 const loadPendingCount = async () => {
-	if (!userRef.value) return
+	if (!userRef.value || !authStore.isAdmin.value) { pendingModerationCount.value = 0; return }
 	try {
 		const items = await CatalogService.getPendingProductsForModeration()
 		pendingModerationCount.value = items.length

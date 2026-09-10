@@ -1,5 +1,6 @@
 
 import { supabase } from '@/api/supabase'
+import { PRICE_VOTING_ENABLED } from '@/config/features'
 
 export interface ProductDTO {
     id: string;
@@ -303,9 +304,12 @@ class CatalogService {
 
         if (error || !data) return undefined
 
-        const priceIds = (data.prices || []).map((p: any) => p.id)
-        const { VerificationService } = await import('@/modules/prices/services/VerificationService')
-        const userVotes = await VerificationService.getUserVotes(priceIds)
+        let userVotes: Record<string, string> = {}
+        if (PRICE_VOTING_ENABLED) {
+            const priceIds = (data.prices || []).map((p: any) => p.id)
+            const { VerificationService } = await import('@/modules/prices/services/VerificationService')
+            userVotes = await VerificationService.getUserVotes(priceIds)
+        }
 
         return this.mapToDTO(data, userVotes)
     }
@@ -375,14 +379,17 @@ class CatalogService {
     }
 
     private mapToDTO(p: any, userVotes: Record<string, string> = {}): ProductDTO {
-        // 1. Filter out highly untrusted prices (net score <= -3)
+        // 1. Filter out highly untrusted prices (net score <= -3).
+        // Skipped while voting is paused — every price stays visible.
         let validPrices = p.prices || []
-        validPrices = validPrices.filter((price: any) => {
-            const verifications: Array<{ user_id: string; vote: string }> = price.price_verifications || []
-            const confirmCount = verifications.filter((v: any) => v.vote === 'confirm').length
-            const denyCount = verifications.filter((v: any) => v.vote === 'deny').length
-            return (denyCount - confirmCount) < 3
-        })
+        if (PRICE_VOTING_ENABLED) {
+            validPrices = validPrices.filter((price: any) => {
+                const verifications: Array<{ user_id: string; vote: string }> = price.price_verifications || []
+                const confirmCount = verifications.filter((v: any) => v.vote === 'confirm').length
+                const denyCount = verifications.filter((v: any) => v.vote === 'deny').length
+                return (denyCount - confirmCount) < 3
+            })
+        }
 
         // Find latest price from the joined prices array if available
         let lastPriceObj = null

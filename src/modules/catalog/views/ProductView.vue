@@ -20,6 +20,7 @@ import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { useI18n } from 'vue-i18n'
 import { supportedLocales } from '@/i18n'
+import { PRICE_VOTING_ENABLED } from '@/config/features'
 
 const route = useRoute()
 const router = useRouter()
@@ -45,6 +46,11 @@ const selectedPeriod = ref<'7d' | '30d' | '90d' | 'all'>('all')
 const bestPlaces = ref<CheapPlace[]>([])
 
 const currentUserId = computed(() => authStore.user.value?.id)
+const isAdmin = computed(() => authStore.isAdmin.value)
+const canManageProduct = computed(
+	() => !!currentProduct.value && (currentProduct.value.created_by === currentUserId.value || isAdmin.value),
+)
+const canManagePrice = (createdBy?: string) => createdBy === currentUserId.value || isAdmin.value
 
 onMounted(async () => {
 	// Ensure auth is init
@@ -279,10 +285,10 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 							<span v-if="isFavorite">⭐</span>
 							<span v-else>☆</span>
 						</button>
-						<button class="action-icon-btn" @click="startEditProduct" title="Редактировать">
+						<button v-if="canManageProduct" class="action-icon-btn" @click="startEditProduct" title="Редактировать">
 							<span>✏️</span>
 						</button>
-						<button class="action-icon-btn danger" @click="confirmDeleteProduct" title="Удалить">
+						<button v-if="canManageProduct" class="action-icon-btn danger" @click="confirmDeleteProduct" title="Удалить">
 							<span>🗑️</span>
 						</button>
 					</div>
@@ -374,7 +380,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 						<div class="h-card-right">
 							<div class="h-date">{{ item.dateRelative }}</div>
 
-							<div v-if="item.createdBy !== currentUserId" class="vote-row">
+							<div v-if="PRICE_VOTING_ENABLED && item.createdBy !== currentUserId" class="vote-row">
 								<button class="vote-btn confirm" :class="{ active: item.userVote === 'confirm' }"
 									:disabled="votingInProgress.has(item.id!)" @click.stop="handleVote(item.id, 'confirm')">
 									👍<span v-if="item.confirmCount > 0"> {{ item.confirmCount }}</span>
@@ -385,7 +391,7 @@ async function handleVote(priceId: string | undefined, voteType: 'confirm' | 'de
 								</button>
 							</div>
 
-							<button v-if="item.createdBy === currentUserId && item.id" class="delete-price-btn"
+							<button v-if="canManagePrice(item.createdBy) && item.id" class="delete-price-btn"
 								@click.stop="confirmDeletePrice(item.id)">
 								<Trash2 :size="14" />
 							</button>

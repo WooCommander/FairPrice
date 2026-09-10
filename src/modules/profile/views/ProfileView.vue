@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Edit2 } from 'lucide-vue-next'
 import { AuthService } from '@/modules/auth/services/AuthService'
+import { authStore } from '@/modules/auth/store/authStore'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
@@ -11,6 +12,7 @@ import { homeStore } from '@/modules/settings/store/homeStore'
 import { updateStore } from '@/modules/updates/updateStore'
 
 const updateAvailable = updateStore.available
+const isAdmin = computed(() => authStore.isAdmin.value)
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
@@ -222,11 +224,13 @@ onMounted(async () => {
       localStorage.setItem('fp_last_seen_level', String(stats.value.level))
     }
     activityFeed.value = await AuthService.getUserActivity()
-    try {
-      pendingProducts.value = await CatalogService.getPendingProductsForModeration()
-    } catch (err: any) {
-      pendingError.value = err?.message || t('login.errors.registerFailed')
-      notify(pendingError.value, 'error')
+    if (isAdmin.value) {
+      try {
+        pendingProducts.value = await CatalogService.getPendingProductsForModeration()
+      } catch (err: any) {
+        pendingError.value = err?.message || t('login.errors.registerFailed')
+        notify(pendingError.value, 'error')
+      }
     }
   } finally {
     isLoading.value = false
@@ -428,7 +432,7 @@ onMounted(async () => {
       </div>
     </section>
 
-    <section class="moderation-section">
+    <section v-if="isAdmin" class="moderation-section">
       <div class="section-title-row">
         <h2>{{ t('profile.moderation.title') }}</h2>
         <span class="caption" v-if="pendingProducts.length">{{ t('profile.moderation.caption') }}</span>

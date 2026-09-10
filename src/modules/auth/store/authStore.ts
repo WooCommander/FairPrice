@@ -17,6 +17,9 @@ export const authStore = {
 
     isAuthenticated: computed(() => !!user.value),
     currentUserId: computed(() => user.value?.id),
+    // Admin flag comes from server-controlled app_metadata (set in Supabase:
+    // Auth > Users > user > app_metadata = { "role": "admin" }). Not user-editable.
+    isAdmin: computed(() => (user.value?.app_metadata as Record<string, any> | undefined)?.role === 'admin'),
 
     async init() {
         isLoading.value = true
