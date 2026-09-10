@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import MainLayout from '@/layouts/MainLayout.vue'
 import FpNotificationContainer from '@/design-system/components/FpNotificationContainer.vue'
-import { checkForUpdate, installUpdate, type UpdateInfo } from '@/modules/updates/UpdateService'
+import { updateStore } from '@/modules/updates/updateStore'
 import { DeviceService } from '@/app/services/DeviceService'
 import { appService } from '@/app/services/app-service'
 import { reminderStore } from '@/modules/reminders/state/reminderStore'
@@ -12,7 +12,8 @@ import { reminderStore } from '@/modules/reminders/state/reminderStore'
 const { initTheme } = useTheme()
 const router = useRouter()
 
-const update = ref<UpdateInfo | null>(null)
+const update = updateStore.available
+const bannerVisible = updateStore.bannerVisible
 
 onMounted(async () => {
   initTheme()
@@ -20,8 +21,7 @@ onMounted(async () => {
   DeviceService.initBackButton(router)
   appService.initBirthdayReminders() // Проверка ДР
   reminderStore.init() // напоминания: realtime-обработка в открытом приложении
-  const result = await checkForUpdate()
-  if (result.hasUpdate) update.value = result
+  updateStore.check()
 })
 </script>
 
@@ -31,14 +31,14 @@ onMounted(async () => {
 
   <!-- Update banner -->
   <Transition name="slide-up">
-    <div v-if="update" class="update-banner">
+    <div v-if="bannerVisible && update" class="update-banner">
       <div class="update-text">
         <span class="update-title">Доступно обновление {{ update.version }}</span>
         <span v-if="update.notes" class="update-notes">{{ update.notes }}</span>
       </div>
       <div class="update-actions">
-        <button class="btn-dismiss" @click="update = null">Позже</button>
-        <button class="btn-install" @click="installUpdate(update!.apkUrl!)">Обновить</button>
+        <button class="btn-dismiss" @click="updateStore.dismiss()">Свернуть</button>
+        <button class="btn-install" @click="updateStore.install()">Обновить</button>
       </div>
     </div>
   </Transition>

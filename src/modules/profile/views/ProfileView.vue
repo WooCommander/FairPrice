@@ -8,6 +8,9 @@ import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import FpSwitch from '@/design-system/components/FpSwitch.vue'
 import { homeStore } from '@/modules/settings/store/homeStore'
+import { updateStore } from '@/modules/updates/updateStore'
+
+const updateAvailable = updateStore.available
 import { catalogStore } from '@/modules/catalog/store/catalogStore'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
@@ -183,6 +186,7 @@ const savePersonalProfile = async () => {
 }
 
 onMounted(async () => {
+  updateStore.check()
   try {
     const { user: authUser } = await AuthService.getUser()
     if (authUser) {
@@ -370,6 +374,23 @@ onMounted(async () => {
         <button class="save-rates-btn" @click="saveRates">{{ t('profile.applyRates') }}</button>
         <p class="settings-saved" v-if="ratesSaved">✓ {{ t('profile.saved') }}</p>
       </div>
+    </section>
+
+    <!-- App version / update -->
+    <section class="settings-section">
+      <h2>Версия приложения</h2>
+      <FpCard class="version-card" :class="{ 'has-update': updateAvailable }">
+        <div class="version-row">
+          <div class="version-info">
+            <span class="version-current">v{{ updateStore.currentVersion }}</span>
+            <span class="version-status">
+              {{ updateAvailable ? `Доступна v${updateAvailable.version}` : 'Актуальная версия' }}
+            </span>
+          </div>
+          <FpButton v-if="updateAvailable" size="sm" @click="updateStore.install()">Обновить</FpButton>
+        </div>
+        <p v-if="updateAvailable?.notes" class="version-notes">{{ updateAvailable.notes }}</p>
+      </FpCard>
     </section>
 
     <!-- Home page blocks -->
@@ -647,6 +668,54 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: var(--spacing-sm);
+}
+
+.version-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &.has-update {
+    border-color: var(--color-primary);
+  }
+}
+
+.version-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.version-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.version-current {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.version-status {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+
+  .has-update & {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+}
+
+.version-notes {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  white-space: pre-line;
 }
 
 .home-blocks-hint {
