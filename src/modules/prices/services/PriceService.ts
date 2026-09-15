@@ -1,4 +1,5 @@
 import { supabase } from '@/api/supabase'
+import { getCache, setCache } from '@/shared/lib/cache'
 
 export interface AddPriceDTO {
     productId: string
@@ -9,8 +10,16 @@ export interface AddPriceDTO {
     quantityUnit: string  // New: Unit (e.g. 'ml')
 }
 
+interface AddPriceOptions {
+    createdBy?: string
+    recordedAt?: string
+}
+
 class PriceService {
-    async addPrice(dto: AddPriceDTO): Promise<void> {
+    async addPrice(dto: AddPriceDTO, options: AddPriceOptions = {}): Promise<void> {
+        const userId = options.createdBy || (await supabase.auth.getUser()).data.user?.id
+        if (!userId) throw new Error('Требуется авторизация')
+
         // 1. Find or Create Store
         let storeId: string | undefined
 
@@ -29,7 +38,7 @@ class PriceService {
                 .from('stores')
                 .insert({
                     name: dto.storeName,
-                    created_by: (await supabase.auth.getUser()).data.user?.id
+                    created_by: userId
                 })
                 .select('id')
                 .single()
@@ -65,21 +74,24 @@ class PriceService {
         }
 
         // 3. Insert Price
+        const priceRecord: Record<string, unknown> = {
+            product_id: dto.productId,
+            store_id: storeId,
+            price: dto.price,
+            currency: dto.currency,
+            quantity: dto.quantity,
+            quantity_unit: dto.quantityUnit,
+            normalized_price: normalizedPrice ? Math.round(normalizedPrice) : null,
+            created_by: userId
+        }
+
+        if (options.recordedAt) {
+            priceRecord.created_at = options.recordedAt
+        }
+
         const { error: priceError } = await supabase
             .from('prices')
-            .insert({
-                product_id: dto.productId,
-                store_id: storeId,
-                price: dto.price,
-                currency: dto.currency,
-                quantity: dto.quantity,
-                quantity_unit: dto.quantityUnit,
-                normalized_price: normalizedPrice ? Math.round(normalizedPrice) : null,
-                // We store the unit user entered, but normalized_price is implicitly per base unit (kg/l)
-                // or we could add normalized_unit column. For MVP, usually kg/l implies normalized.
-
-                created_by: (await supabase.auth.getUser()).data.user?.id
-            })
+            .insert(priceRecord)
 
         if (priceError) {
             console.error('Error adding price:', priceError)
@@ -88,6 +100,7 @@ class PriceService {
     }
 
     async getStores(query: string = '', limit: number = 50): Promise<{ id: string, name: string }[]> {
+        const cachedStores = getCache<{ id: string, name: string }[]>('stores') || []
         let queryBuilder = supabase
             .from('stores')
             .select('id, name')
@@ -102,10 +115,15 @@ class PriceService {
 
         if (error) {
             console.error('Error fetching stores:', error)
-            return []
+            const normalizedQuery = query.trim().toLocaleLowerCase()
+            return cachedStores
+                .filter(store => !normalizedQuery || store.name.toLocaleLowerCase().includes(normalizedQuery))
+                .slice(0, limit)
         }
 
-        return data || []
+        const stores = data || []
+        if (!query) setCache('stores', stores)
+        return stores
     }
 }
 

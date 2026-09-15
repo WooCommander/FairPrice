@@ -42,6 +42,7 @@ const apQuantity = ref(1)
 const apUnit = ref('шт')
 const apSubmitting = ref(false)
 const apSuccess = ref(false)
+const apQueued = ref(false)
 
 const unitItems = ['г', 'кг', 'мл', 'л', 'шт', 'уп'].map(u => ({ id: u, name: u }))
 
@@ -52,6 +53,7 @@ const openAddPrice = async (product: Readonly<{ id: string; name: string; unit?:
   apUnit.value = product.unit || 'шт'
   apStoreName.value = product.lastStore || ''
   apSuccess.value = false
+  apQueued.value = false
   // prefetch stores
   apStoreResults.value = await priceStore.getStores('')
   document.querySelector('.page-content')?.scrollTo({ top: 0, behavior: 'smooth' })
@@ -70,7 +72,7 @@ const submitPrice = async () => {
   if (!addingPriceFor.value || !apStoreName.value || !apPrice.value) return
   apSubmitting.value = true
   try {
-    await priceStore.submitPrice({
+    const result = await priceStore.submitPrice({
       productId: addingPriceFor.value.id,
       storeName: apStoreName.value,
       price: apPrice.value,
@@ -78,6 +80,7 @@ const submitPrice = async () => {
       quantity: apQuantity.value || 1,
       quantityUnit: apUnit.value
     })
+    apQueued.value = result === 'queued'
     apSuccess.value = true
     setTimeout(() => {
       addingPriceFor.value = null
@@ -188,7 +191,7 @@ watch(loadMoreTrigger, (el) => {
 
       <div v-if="apSuccess" class="ap-success">
         <div class="ap-success-icon">✓</div>
-        <span>Цена добавлена!</span>
+        <span>{{ apQueued ? 'Цена сохранена и ожидает синхронизации' : 'Цена добавлена!' }}</span>
       </div>
 
       <div v-else class="ap-form">

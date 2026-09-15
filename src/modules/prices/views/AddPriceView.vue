@@ -39,6 +39,7 @@ const price = ref(0)
 const quantity = ref(1)
 const unit = ref('кг')
 const isSuccess = ref(false)
+const isQueued = ref(false)
 
 // Create product state
 const newProductName = ref('')
@@ -201,7 +202,7 @@ const submit = async () => {
   if (!currentProduct.value || !storeName.value || !price.value) return
 
   try {
-    await priceStore.submitPrice({
+    const result = await priceStore.submitPrice({
       productId: currentProduct.value.id,
       storeName: storeName.value,
       price: price.value,
@@ -209,6 +210,7 @@ const submit = async () => {
       quantity: quantity.value || 1,
       quantityUnit: unit.value
     })
+    isQueued.value = result === 'queued'
     
     // Сохраняем магазин для следующих покупок
     UserPreferences.lastUsedStoreName = storeName.value
@@ -422,7 +424,7 @@ watch(selectedCategory, loadProducts)
         </div>
 
         <div v-if="isSuccess" class="success-message">
-          ✅ Цена успешно добавлена!
+          {{ isQueued ? 'Цена сохранена на устройстве и будет синхронизирована' : '✅ Цена успешно добавлена!' }}
         </div>
       </FpCard>
 

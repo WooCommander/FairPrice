@@ -132,6 +132,14 @@ export const catalogStore = {
             if (query) {
                 addToHistory(query)
             }
+
+            const cacheKey = `product_search_${query}_${filters?.category || ''}_${filters?.sort || ''}_${filters?.storeId || ''}`
+            const cached = getCache<{ items: ProductModel[], total: number }>(cacheKey)
+            if (cached) {
+                searchResults.value = cached.items
+                totalResults.value = cached.total
+                hasMore.value = cached.items.length < cached.total
+            }
         }
 
         try {
@@ -148,19 +156,29 @@ export const catalogStore = {
                 searchResults.value = [...searchResults.value, ...adapted]
             } else {
                 searchResults.value = adapted
+                const cacheKey = `product_search_${currentQuery.value}_${currentFilters.value.category || ''}_${currentFilters.value.sort || ''}_${currentFilters.value.storeId || ''}`
+                setCache(cacheKey, { items: adapted, total })
             }
 
             totalResults.value = total
             hasMore.value = searchResults.value.length < total
+        } catch (error) {
+            console.warn('Failed to load products, using cached results', error)
         } finally {
             isSearching.value = false
         }
     },
 
     async loadCategories() {
+        const cached = getCache<string[]>('product_categories')
+        if (cached?.length) categories.value = cached
+
         try {
             const cats = await CatalogService.getCategories()
-            if (cats.length > 0) categories.value = cats
+            if (cats.length > 0) {
+                categories.value = cats
+                setCache('product_categories', cats)
+            }
         } catch (e) {
             console.error('Failed to load categories', e)
         }
@@ -197,11 +215,20 @@ export const catalogStore = {
     },
 
     async loadProductById(id: string) {
-        const dto = await CatalogService.getProductById(id)
-        if (dto) {
-            currentProduct.value = adaptProduct(dto)
-        } else {
-            currentProduct.value = null
+        const cached = getCache<ProductModel>(`product_${id}`)
+        if (cached) currentProduct.value = cached
+
+        try {
+            const dto = await CatalogService.getProductById(id)
+            if (dto) {
+                currentProduct.value = adaptProduct(dto)
+                setCache(`product_${id}`, currentProduct.value)
+            } else if (!cached) {
+                currentProduct.value = null
+            }
+        } catch (error) {
+            if (!cached) throw error
+            console.warn('Failed to load product, using cached result', error)
         }
     },
 
@@ -282,4 +309,3 @@ export const catalogStore = {
         return store?.name || 'Магазин'
     }
 }
-
