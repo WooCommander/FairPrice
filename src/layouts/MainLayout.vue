@@ -417,7 +417,14 @@ onUnmounted(() => {
 .main-layout {
 	display: flex;
 	flex-direction: column;
-	min-height: 100vh;
+	// fixed (not min-) height + hidden overflow so `.page-content` below is the ONLY
+	// scrolling element on the page. With `min-height`, a tall book list made the whole
+	// document grow and scroll instead — on mobile that lets the browser/webview's chrome
+	// hide-on-scroll resize the viewport mid-scroll, which makes our sticky header and
+	// fixed bottom nav jump/disappear.
+	height: 100vh;
+	height: 100dvh;
+	overflow: hidden;
 	background-color: var(--color-background);
 }
 

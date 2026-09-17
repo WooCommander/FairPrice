@@ -16,9 +16,16 @@ const containerRef = ref<HTMLElement | null>(null)
 
 const onTouchStart = (e: TouchEvent) => {
   if (isRefreshing.value) return
-  // Enable pull only if scrolled to top
-  const scrollTop = document.documentElement.scrollTop || document.body.scrollTop || containerRef.value?.scrollTop || 0
-  if (scrollTop > 5) return 
+  // Enable pull only if scrolled to top. The app's actual scroll container is
+  // MainLayout's `.page-content` (document/body no longer scroll — see MainLayout's
+  // `.main-layout { height: 100vh; overflow: hidden }`), so check that first.
+  const scrollTop =
+    document.querySelector('.page-content')?.scrollTop ??
+    containerRef.value?.scrollTop ??
+    document.documentElement.scrollTop ??
+    document.body.scrollTop ??
+    0
+  if (scrollTop > 5) return
   
   startY.value = e.touches[0].clientY
   isPulling.value = true
