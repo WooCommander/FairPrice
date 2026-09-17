@@ -59,7 +59,7 @@ const doDelete = async () => {
 	try {
 		await store.removeCollection(props.collection.id)
 		FpHaptics.success()
-		notify('Каталог удалён', 'success')
+		notify('Коллекция удалена', 'success')
 		emit('deleted')
 	} catch (e: any) {
 		notify(e.message || 'Не удалось удалить', 'error')
@@ -70,14 +70,14 @@ const doDelete = async () => {
 </script>
 
 <template>
-	<FpModal :visible="visible" title="Настройки каталога" size="sm"
+	<FpModal :visible="visible" title="Настройки коллекции" size="sm"
 		@update:visible="!$event && emit('close')" @close="emit('close')">
 		<div class="settings">
-			<FpInput variant="outlined" v-model="name" label="Название каталога" />
+			<FpInput variant="outlined" v-model="name" label="Название коллекции" />
 
 			<div class="danger">
 				<div class="danger-text">
-					<span class="danger-title">Удалить каталог</span>
+					<span class="danger-title">Удалить коллекцию</span>
 					<span class="danger-hint">
 						Удалятся все элементы ({{ getCollectionType(collection.type).label.toLowerCase() }},
 						{{ collection.item_count ?? 0 }} шт.), категории и доступы. Необратимо.
@@ -97,8 +97,8 @@ const doDelete = async () => {
 		</template>
 	</FpModal>
 
-	<FpConfirmationModal v-model:visible="confirmDelete" title="Удалить каталог?"
-		:message="`«${collection.name}» и всё его содержимое будет удалено без возможности восстановления.`"
+	<FpConfirmationModal v-model:visible="confirmDelete" title="Удалить коллекцию?"
+		:message="`«${collection.name}» и всё её содержимое будет удалено без возможности восстановления.`"
 		confirm-text="Удалить" variant="danger" @confirm="doDelete" />
 </template>
 

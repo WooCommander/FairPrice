@@ -43,7 +43,7 @@ const submit = () => {
 </script>
 
 <template>
-	<FpModal :visible="visible" title="Новый каталог" size="sm"
+	<FpModal :visible="visible" title="Новая коллекция" size="sm"
 		@update:visible="!$event && emit('close')" @close="emit('close')">
 		<div class="form">
 			<div class="block">
@@ -57,7 +57,7 @@ const submit = () => {
 				</div>
 			</div>
 
-			<FpInput variant="outlined" v-model="name" label="Название каталога"
+			<FpInput variant="outlined" v-model="name" label="Название коллекции"
 				placeholder="Например, Моя библиотека" />
 		</div>
 

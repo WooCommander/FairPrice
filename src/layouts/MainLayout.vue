@@ -316,7 +316,7 @@ onUnmounted(() => {
 							<span class="link-icon">
 								<Library :size="24" />
 							</span>
-							Каталоги
+							Коллекции
 						</a>
 						<a class="drawer-link" :class="{ active: currentPath === '/notes' }"
 							@click.prevent="navigate('/notes'); isMenuOpen = false">

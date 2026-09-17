@@ -52,7 +52,7 @@ const loadAll = async () => {
 		collectionsStore.getById(collectionId.value) ??
 		(await CollectionService.getCollection(collectionId.value))
 	if (!collection.value) {
-		notify('Каталог не найден', 'error')
+		notify('Коллекция не найдена', 'error')
 		router.replace('/collections')
 		return
 	}
@@ -204,7 +204,7 @@ const confirmDelete = async () => {
 					@click="showShare = true">
 					<Share2 :size="15" />
 				</FpIconButton>
-				<FpIconButton v-if="collection?.is_owner" variant="surface" size="sm" round label="Настройки каталога"
+				<FpIconButton v-if="collection?.is_owner" variant="surface" size="sm" round label="Настройки коллекции"
 					@click="showSettings = true">
 					<Settings2 :size="15" />
 				</FpIconButton>

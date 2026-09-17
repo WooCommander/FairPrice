@@ -92,7 +92,7 @@ const confirmRemove = async () => {
 </script>
 
 <template>
-	<FpModal :visible="visible" title="Доступ к каталогу" size="sm"
+	<FpModal :visible="visible" title="Доступ к коллекции" size="sm"
 		@update:visible="!$event && emit('close')" @close="emit('close')">
 		<div class="share">
 			<p class="hint">
@@ -115,7 +115,7 @@ const confirmRemove = async () => {
 				<div v-if="isLoading && !shares.length" class="muted">Загрузка…</div>
 
 				<FpEmptyState v-else-if="!shares.length" compact title="Пока никого"
-					description="Каталог виден только вам." />
+					description="Коллекция видна только вам." />
 
 				<div v-for="s in shares" :key="s.id" class="member">
 					<div class="member-main">
@@ -143,7 +143,7 @@ const confirmRemove = async () => {
 	</FpModal>
 
 	<FpConfirmationModal v-model:visible="showRemoveConfirm" title="Убрать доступ?"
-		:message="`«${removeTarget?.email}» больше не увидит этот каталог.`" confirm-text="Убрать"
+		:message="`«${removeTarget?.email}» больше не увидит эту коллекцию.`" confirm-text="Убрать"
 		variant="danger" @confirm="confirmRemove" />
 </template>
 

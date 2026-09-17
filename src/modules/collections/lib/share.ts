@@ -39,7 +39,7 @@ export function buildItemShareText(
 	if (facts.length) lines.push('', ...facts)
 
 	if (item.notes) lines.push('', item.notes)
-	if (collectionName) lines.push('', `— из каталога «${collectionName}»`)
+	if (collectionName) lines.push('', `— из коллекции «${collectionName}»`)
 
 	return lines.join('\n')
 }

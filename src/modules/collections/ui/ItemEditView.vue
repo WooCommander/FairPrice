@@ -61,7 +61,7 @@ const load = async () => {
 		collectionsStore.getById(collectionId.value) ??
 		(await CollectionService.getCollection(collectionId.value))
 	if (!collection.value) {
-		notify('Каталог не найден', 'error')
+		notify('Коллекция не найдена', 'error')
 		router.replace('/collections')
 		return
 	}
@@ -135,9 +135,14 @@ const handleSave = async ({ id, dto }: { id?: string; dto: CollectionItemInsertD
 	gap: 18px;
 	padding: var(--spacing-md);
 	padding-bottom: 100px;
-	max-width: 640px;
-	margin: 0 auto;
 	width: 100%;
+
+	// same reasoning as CollectionItemView: full desktop width leaves the form fields
+	// awkwardly stretched, so cap it to a comfortable reading/editing width instead
+	@media (min-width: 768px) {
+		max-width: 760px;
+		margin: 0 auto;
+	}
 }
 
 .bar {

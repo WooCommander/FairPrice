@@ -71,7 +71,7 @@ const load = async () => {
 		collectionsStore.getById(collectionId.value) ??
 		(await CollectionService.getCollection(collectionId.value))
 	if (!collection.value) {
-		notify('Каталог не найден', 'error')
+		notify('Коллекция не найдена', 'error')
 		router.replace('/collections')
 		return
 	}
@@ -212,9 +212,14 @@ const confirmDelete = async () => {
 	gap: 18px;
 	padding: var(--spacing-md);
 	padding-bottom: 100px;
-	max-width: 640px;
-	margin: 0 auto;
 	width: 100%;
+
+	// wider than before (was 640px, felt cramped) but still capped — at full desktop width
+	// the facts grid and "Поделиться" button end up mostly empty space, which looks worse
+	@media (min-width: 768px) {
+		max-width: 760px;
+		margin: 0 auto;
+	}
 }
 
 .bar {
@@ -237,6 +242,12 @@ const confirmDelete = async () => {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
+
+	// the page itself is full-width on desktop, but a full-bleed 4:3 photo at that width
+	// gets absurdly tall — cap just the gallery so it stays a sane, non-scroll-inducing size
+	@media (min-width: 768px) {
+		max-width: 420px;
+	}
 }
 
 .gallery-main {

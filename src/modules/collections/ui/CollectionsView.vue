@@ -30,7 +30,7 @@ const { setFabAction } = useCollectionsFab()
 onMounted(() => {
 	fetchCollections()
 	setFabAction({
-		label: 'Создать каталог',
+		label: 'Создать коллекцию',
 		onClick: () => {
 			FpHaptics.selection()
 			showCreate.value = true
@@ -48,11 +48,11 @@ const handleCreate = async (dto: CollectionInsertDTO) => {
 	try {
 		const created = await addCollection(dto)
 		showCreate.value = false
-		notify('Каталог создан', 'success')
+		notify('Коллекция создана', 'success')
 		router.push(`/collections/${created.id}`)
 	} catch (e: any) {
 		console.error(e)
-		notify(e.message || 'Не удалось создать каталог', 'error')
+		notify(e.message || 'Не удалось создать коллекцию', 'error')
 	}
 }
 
@@ -65,9 +65,9 @@ const typeLabel = (type: string) => getCollectionType(type).label
 			<FpIconButton variant="surface" round label="Назад" @click="router.back()">
 				<ArrowLeft :size="22" />
 			</FpIconButton>
-			<h1 class="title">Каталоги</h1>
+			<h1 class="title">Коллекции</h1>
 		</header>
-		<p class="subtitle">Домашние каталоги: книги, аптечка и что угодно ещё.</p>
+		<p class="subtitle">Домашние коллекции: книги, аптечка и что угодно ещё.</p>
 
 		<div v-if="isLoading && !isLoaded" class="loading">
 			<FpSpinner size="md" />
@@ -84,7 +84,7 @@ const typeLabel = (type: string) => getCollectionType(type).label
 				</FpCard>
 			</section>
 
-			<FpEmptyState v-else title="Пока нет каталогов"
+			<FpEmptyState v-else title="Пока нет коллекций"
 				description="Создай первый — например, домашнюю библиотеку.">
 				<template #icon><Library :size="44" /></template>
 			</FpEmptyState>

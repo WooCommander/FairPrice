@@ -17,7 +17,7 @@ export const FALLBACK_TYPE: CollectionTypeConfig = {
     label: 'Элементы',
     itemLabel: 'Элемент',
     icon: 'Package',
-    defaultCollectionName: 'Новый каталог',
+    defaultCollectionName: 'Новая коллекция',
     titleHint: 'Название',
     subtitleHint: 'Описание',
     listLayout: 'list',

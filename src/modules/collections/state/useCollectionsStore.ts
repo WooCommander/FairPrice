@@ -27,7 +27,7 @@ export const useCollectionsStore = () => {
             isLoaded.value = true
         } catch (err: any) {
             console.error('Failed to fetch collections:', err)
-            error.value = err.message || 'Ошибка загрузки каталогов'
+            error.value = err.message || 'Ошибка загрузки коллекций'
         } finally {
             isLoading.value = false
         }
