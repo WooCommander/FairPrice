@@ -11,7 +11,10 @@ import FpNumberInput from '@/design-system/components/FpNumberInput.vue'
 import { FpSkeleton, FpPullToRefresh } from '@/design-system'
 import BarcodeScanner from '@/components/BarcodeScanner.vue'
 import { usePriceFormat } from '@/composables/usePriceFormat'
+import { useNotify } from '@/composables/useNotify'
 import { CatalogService } from '../services/CatalogService'
+
+const { notify } = useNotify()
 
 const router = useRouter()
 const route = useRoute()
@@ -86,7 +89,7 @@ const submitPrice = async () => {
       addingPriceFor.value = null
     }, 1200)
   } catch (e: any) {
-    alert(`Ошибка: ${e.message || e}`)
+    notify(`Ошибка: ${e.message || e}`, 'error')
   } finally {
     apSubmitting.value = false
   }

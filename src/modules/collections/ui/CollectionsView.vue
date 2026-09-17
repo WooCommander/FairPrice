@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, Plus, Library, Users } from 'lucide-vue-next'
+import { ArrowLeft, Library, Users } from 'lucide-vue-next'
 import { FpHaptics } from '@/shared/lib/haptics'
 import { useNotify } from '@/composables/useNotify'
-import { FpCard, FpEmptyState, FpFab, FpIconButton, FpSpinner } from '@/design-system'
+import { FpCard, FpEmptyState, FpIconButton, FpSpinner } from '@/design-system'
 import { useCollectionsStore } from '../state/useCollectionsStore'
+import { useCollectionsFab } from '../state/useCollectionsFab'
 import { getCollectionType } from '../config'
 import { resolveIcon } from '../config/icons'
 import CreateCollectionModal from './components/CreateCollectionModal.vue'
@@ -24,7 +25,19 @@ const {
 
 const showCreate = ref(false)
 
-onMounted(() => fetchCollections())
+const { setFabAction } = useCollectionsFab()
+
+onMounted(() => {
+	fetchCollections()
+	setFabAction({
+		label: 'Создать каталог',
+		onClick: () => {
+			FpHaptics.selection()
+			showCreate.value = true
+		},
+	})
+})
+onUnmounted(() => setFabAction(null))
 
 const open = (id: string) => {
 	FpHaptics.light()
@@ -90,10 +103,6 @@ const typeLabel = (type: string) => getCollectionType(type).label
 				</div>
 			</section>
 		</template>
-
-		<FpFab label="Создать каталог" @click="showCreate = true; FpHaptics.selection()">
-			<Plus :size="26" :stroke-width="3" />
-		</FpFab>
 
 		<CreateCollectionModal :visible="showCreate" @close="showCreate = false" @create="handleCreate" />
 	</div>

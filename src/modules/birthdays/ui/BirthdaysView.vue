@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { ArrowLeft, Gift, Share2, Users } from 'lucide-vue-next'
 import { useBirthdaysStore } from '../state/useBirthdaysStore'
 import { FpHaptics } from '@/shared/lib/haptics'
-import { FpIconButton } from '@/design-system'
+import { FpIconButton, FpConfirmationModal } from '@/design-system'
 import AddBirthdayInput from './components/AddBirthdayInput.vue'
 import BirthdayCard from './components/BirthdayCard.vue'
 import BirthdayShareModal from './components/BirthdayShareModal.vue'
@@ -27,16 +27,22 @@ const handleAdd = async (payload: BirthdayInsertDTO) => {
     }
 }
 
-const handleDelete = async (id: string) => {
-    const isConfirmed = window.confirm('Удалить этот день рождения?')
-    if (isConfirmed) {
-        FpHaptics.warning()
-        try {
-            await removeBirthday(id)
-            FpHaptics.success()
-        } catch (e) {
-            console.error(e)
-        }
+const showDeleteConfirm = ref(false)
+const pendingDeleteId = ref<string | null>(null)
+
+const handleDelete = (id: string) => {
+    pendingDeleteId.value = id
+    showDeleteConfirm.value = true
+}
+
+const confirmDeleteBirthday = async () => {
+    if (!pendingDeleteId.value) return
+    FpHaptics.warning()
+    try {
+        await removeBirthday(pendingDeleteId.value)
+        FpHaptics.success()
+    } catch (e) {
+        console.error(e)
     }
 }
 
@@ -104,6 +110,10 @@ const handleEdit = async (id: string, updates: any) => {
         </section>
 
         <BirthdayShareModal :visible="showShare" :birthdays="birthdays" @close="showShare = false" />
+
+        <FpConfirmationModal v-model:visible="showDeleteConfirm" title="Удалить день рождения?"
+            message="Это действие нельзя будет отменить." confirm-text="Удалить" variant="danger"
+            @confirm="confirmDeleteBirthday" />
     </div>
 </template>
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { Trash2, MailCheck, Clock } from 'lucide-vue-next'
-import { FpModal, FpButton, FpInput, FpSelect, FpIconButton, FpEmptyState } from '@/design-system'
+import { FpModal, FpButton, FpInput, FpSelect, FpIconButton, FpEmptyState, FpConfirmationModal } from '@/design-system'
 import { useNotify } from '@/composables/useNotify'
 import { FpHaptics } from '@/shared/lib/haptics'
 import { useCollectionSharesStore } from '../../state/useCollectionSharesStore'
@@ -72,10 +72,18 @@ const changeRole = async (id: string, next: string | number | null) => {
 	}
 }
 
-const remove = async (id: string, memberEmail: string) => {
-	if (!window.confirm(`Убрать доступ для ${memberEmail}?`)) return
+const showRemoveConfirm = ref(false)
+const removeTarget = ref<{ id: string; email: string } | null>(null)
+
+const askRemove = (id: string, memberEmail: string) => {
+	removeTarget.value = { id, email: memberEmail }
+	showRemoveConfirm.value = true
+}
+
+const confirmRemove = async () => {
+	if (!removeTarget.value) return
 	try {
-		await revoke(id)
+		await revoke(removeTarget.value.id)
 		FpHaptics.success()
 	} catch (e: any) {
 		notify(e.message || 'Не удалось убрать доступ', 'error')
@@ -121,7 +129,7 @@ const remove = async (id: string, memberEmail: string) => {
 						<FpSelect :model-value="s.role" :options="roleShort"
 							@update:model-value="v => changeRole(s.id, v)" />
 						<FpIconButton variant="danger" size="sm" label="Убрать доступ"
-							@click="remove(s.id, s.member_email)">
+							@click="askRemove(s.id, s.member_email)">
 							<Trash2 :size="15" />
 						</FpIconButton>
 					</div>
@@ -133,6 +141,10 @@ const remove = async (id: string, memberEmail: string) => {
 			<FpButton variant="text" size="full" @click="emit('close')">Готово</FpButton>
 		</template>
 	</FpModal>
+
+	<FpConfirmationModal v-model:visible="showRemoveConfirm" title="Убрать доступ?"
+		:message="`«${removeTarget?.email}» больше не увидит этот каталог.`" confirm-text="Убрать"
+		variant="danger" @confirm="confirmRemove" />
 </template>
 
 <style scoped lang="scss">

@@ -4,8 +4,10 @@ import { useRouter } from 'vue-router'
 import { supabase } from '@/api/supabase'
 import FpInput from '@/design-system/components/FpInput.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
+import { useNotify } from '@/composables/useNotify'
 
 const router = useRouter()
+const { notify } = useNotify()
 const name = ref('')
 const isSubmitting = ref(false)
 
@@ -29,7 +31,7 @@ const handleCreate = async () => {
         router.push(`/store/${data.id}`)
     } catch (error: any) {
         console.error('Failed to create store:', error)
-        alert(`Ошибка: ${error.message || error}`)
+        notify(`Ошибка: ${error.message || error}`, 'error')
     } finally {
         isSubmitting.value = false
     }

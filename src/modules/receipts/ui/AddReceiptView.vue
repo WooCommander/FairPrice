@@ -8,6 +8,7 @@ import type { AddReceiptItemDTO } from '../domain/Receipt'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { FpHaptics } from '@/shared/lib/haptics'
 import { UserPreferences } from '@/shared/lib/user-preferences'
+import { useNotify } from '@/composables/useNotify'
 import {
   FpButton,
   FpCard,
@@ -18,6 +19,7 @@ import {
 import { ArrowLeft, Plus, Trash2 } from 'lucide-vue-next'
 
 const router = useRouter()
+const { notify } = useNotify()
 
 // Header form (Receipt metadata)
 const storeName = ref(UserPreferences.lastUsedStoreName || '')
@@ -121,7 +123,7 @@ const submitReceipt = async () => {
         FpHaptics.success()
         router.push('/receipts')
     } catch (e: any) {
-        alert(e.message || 'Ошибка сохранения чека')
+        notify(e.message || 'Ошибка сохранения чека', 'error')
         console.error(e)
     } finally {
         isSubmitting.value = false

@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Share2, Pencil, Trash2, ImageOff } from 'lucide-vue-next'
 import { FpHaptics } from '@/shared/lib/haptics'
 import { useNotify } from '@/composables/useNotify'
-import { FpButton, FpChip, FpConfirmationModal, FpIconButton, FpSpinner } from '@/design-system'
+import { FpChip, FpConfirmationModal, FpIconButton, FpButton, FpSpinner } from '@/design-system'
 import { useCollectionsStore } from '../state/useCollectionsStore'
 import { useCollectionItemsStore } from '../state/useCollectionItemsStore'
 import { useCategoriesStore } from '../state/useCategoriesStore'
+import { useCollectionsFab } from '../state/useCollectionsFab'
 import { CollectionService } from '../services/CollectionService'
 import { CollectionItemService } from '../services/CollectionItemService'
 import { getCollectionType } from '../config'
 import { shareItem } from '../lib/share'
 import { ITEM_STATUS_LABELS } from '../domain/CollectionItem'
-import ItemModal from './components/ItemModal.vue'
 import type { Collection } from '../domain/Collection'
-import type { CollectionItem, CollectionItemInsertDTO } from '../domain/CollectionItem'
+import type { CollectionItem } from '../domain/CollectionItem'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,7 +32,6 @@ const collection = ref<Collection | null>(null)
 const item = ref<CollectionItem | null>(null)
 const loading = ref(true)
 
-const showEdit = ref(false)
 const showDelete = ref(false)
 const sharing = ref(false)
 
@@ -85,8 +84,14 @@ const load = async () => {
 	}
 }
 
-onMounted(load)
+const { setFabAction } = useCollectionsFab()
+
+onMounted(() => {
+	setFabAction(null)
+	load()
+})
 watch(itemId, load)
+onUnmounted(() => setFabAction(null))
 
 const doShare = async () => {
 	if (!item.value) return
@@ -98,19 +103,6 @@ const doShare = async () => {
 		else if (res.method === 'failed') notify('Не удалось поделиться', 'error')
 	} finally {
 		sharing.value = false
-	}
-}
-
-const handleSave = async ({ id, dto }: { id?: string; dto: CollectionItemInsertDTO }) => {
-	if (!id) return
-	try {
-		const { collection_id, ...updates } = dto
-		void collection_id
-		item.value = await itemsStore.editItem(id, updates)
-		showEdit.value = false
-		notify('Сохранено', 'success')
-	} catch (e: any) {
-		notify(e.message || 'Ошибка сохранения', 'error')
 	}
 }
 
@@ -139,7 +131,7 @@ const confirmDelete = async () => {
 				<Share2 :size="18" />
 			</FpIconButton>
 			<FpIconButton v-if="canEdit" variant="surface" round label="Редактировать"
-				@click="showEdit = true">
+				@click="router.push(`/collections/${collectionId}/item/${itemId}/edit`)">
 				<Pencil :size="18" />
 			</FpIconButton>
 			<FpIconButton v-if="canEdit" variant="danger" round label="Удалить" @click="showDelete = true">
@@ -206,10 +198,6 @@ const confirmDelete = async () => {
 				<Share2 :size="18" style="margin-right: 8px" /> Поделиться
 			</FpButton>
 		</template>
-
-		<ItemModal v-if="item && canEdit" :visible="showEdit" :collection-id="collectionId" :type="type"
-			:categories="categoriesStore.categories.value" :initial-data="item"
-			@close="showEdit = false" @save="handleSave" />
 
 		<FpConfirmationModal v-model:visible="showDelete" title="Удалить элемент?"
 			:message="`«${item?.title}» будет удалён без возможности восстановления.`"

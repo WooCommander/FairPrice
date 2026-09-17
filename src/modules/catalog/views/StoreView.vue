@@ -7,6 +7,9 @@ import FpCard from '@/design-system/components/FpCard.vue'
 import { CurrencyService } from '@/modules/catalog/services/CurrencyService'
 import FpButton from '@/design-system/components/FpButton.vue'
 import { FpSkeleton } from '@/design-system'
+import { useNotify } from '@/composables/useNotify'
+
+const { notify } = useNotify()
 
 const route = useRoute()
 const router = useRouter()
@@ -71,7 +74,7 @@ const saveEdit = async () => {
         isEditing.value = false
     } catch (e) {
         console.error('Failed to update store name', e)
-        alert('Не удалось обновить название магазина')
+        notify('Не удалось обновить название магазина', 'error')
     }
 }
 </script>

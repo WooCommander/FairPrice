@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ImagePlus, Camera as CameraIcon, Loader2, Trash2 } from 'lucide-vue-next'
+import { ImagePlus, Camera as CameraIcon, Loader2, Trash2, X } from 'lucide-vue-next'
+import FpConfirmationModal from './FpConfirmationModal.vue'
 
 interface Props {
 	/** list of image URLs already attached */
@@ -65,12 +66,26 @@ const captureFromCamera = async () => {
 	}
 }
 
-const remove = (url: string) => {
+const removeTarget = ref<string | null>(null)
+const askRemove = (url: string) => {
+	removeTarget.value = url
+}
+const confirmRemove = () => {
+	const url = removeTarget.value
+	if (!url) return
 	emit('remove', url)
 	emit(
 		'update:modelValue',
 		props.modelValue.filter(u => u !== url),
 	)
+}
+
+const previewUrl = ref<string | null>(null)
+const openPreview = (url: string) => {
+	previewUrl.value = url
+}
+const closePreview = () => {
+	previewUrl.value = null
 }
 </script>
 
@@ -80,8 +95,8 @@ const remove = (url: string) => {
 		<div class="fp-uploader__grid">
 			<div v-for="(url, i) in modelValue" :key="url" class="fp-uploader__thumb"
 				:class="{ 'is-cover': coverFirst && i === 0 }">
-				<img :src="url" alt="" />
-				<button type="button" class="fp-uploader__del" @click="remove(url)">
+				<img :src="url" alt="" @click="openPreview(url)" />
+				<button type="button" class="fp-uploader__del" aria-label="Удалить фото" @click="askRemove(url)">
 					<Trash2 :size="14" />
 				</button>
 			</div>
@@ -104,6 +119,21 @@ const remove = (url: string) => {
 
 		<input ref="cameraFallbackRef" type="file" accept="image/*" capture="environment" hidden
 			@change="onPick" />
+
+		<Teleport to="body">
+			<Transition name="fp-uploader-fade">
+				<div v-if="previewUrl" class="fp-uploader__preview" @click.self="closePreview">
+					<button type="button" class="fp-uploader__preview-close" aria-label="Закрыть" @click="closePreview">
+						<X :size="24" />
+					</button>
+					<img :src="previewUrl" alt="" />
+				</div>
+			</Transition>
+		</Teleport>
+
+		<FpConfirmationModal :visible="!!removeTarget" title="Удалить фото?"
+			message="Фото будет удалено без возможности восстановления." confirm-text="Удалить" variant="danger"
+			@confirm="confirmRemove" @update:visible="v => { if (!v) removeTarget = null }" />
 	</div>
 </template>
 
@@ -154,6 +184,7 @@ const remove = (url: string) => {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		cursor: pointer;
 	}
 }
 
@@ -197,5 +228,51 @@ const remove = (url: string) => {
 	100% {
 		transform: rotate(360deg);
 	}
+}
+
+.fp-uploader__preview {
+	position: fixed;
+	inset: 0;
+	background: color-mix(in srgb, black 88%, transparent);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	// above FpMobilePicker's overlay (3600); below FpConfirmationModal (3800) on purpose
+	// — the delete confirm above must stay reachable even while the preview is open
+	z-index: 3700;
+
+	img {
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: contain;
+		border-radius: var(--radius-md);
+	}
+}
+
+.fp-uploader__preview-close {
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border: none;
+	border-radius: 50%;
+	background: color-mix(in srgb, white 15%, transparent);
+	color: #fff;
+	cursor: pointer;
+}
+
+.fp-uploader-fade-enter-active,
+.fp-uploader-fade-leave-active {
+	transition: opacity 0.2s ease;
+}
+
+.fp-uploader-fade-enter-from,
+.fp-uploader-fade-leave-to {
+	opacity: 0;
 }
 </style>

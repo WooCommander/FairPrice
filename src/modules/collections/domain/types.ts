@@ -1,7 +1,11 @@
 // Config-driven collection types (books / meds / ...).
 // Each type describes the extra fields that live inside `CollectionItem.data`.
 
-export type FieldType = 'text' | 'number' | 'date' | 'select' | 'textarea' | 'boolean'
+// 'select': fixed options, listed in config.
+// 'reference': a "справочник" — options aren't fixed; they're the distinct values already
+// used for this key across the collection's items (e.g. publisher, illustrator), fetched
+// live and offered via a searchable picker that also lets you type a new one.
+export type FieldType = 'text' | 'number' | 'date' | 'select' | 'reference' | 'textarea' | 'boolean'
 
 export interface FieldSpec {
     /** key inside item.data */
@@ -15,6 +19,11 @@ export interface FieldSpec {
     scan?: boolean
     /** render half-width in the form grid */
     half?: boolean
+    /** for `select`/`reference`: render the label inside the picker box (stacked, like a
+     * caption) instead of above it — a standalone full-width field can afford this more
+     * compact look, but a field paired with a neighbour (e.g. half + half) should leave
+     * this off so both boxes' top edges still line up (see FpMobilePicker's `labelInside`) */
+    labelInside?: boolean
 }
 
 export interface SortOption {
@@ -37,6 +46,8 @@ export interface CollectionTypeConfig<TData = Record<string, unknown>> {
     titleHint: string
     /** placeholder for the built-in subtitle field ('' hides it) */
     subtitleHint: string
+    /** render the built-in subtitle field as a "справочник" picker (see FieldType) instead of plain text */
+    subtitleAsReference?: boolean
     /** type-specific fields stored in item.data */
     fields: FieldSpec[]
     /** card grid with covers, or a compact list */

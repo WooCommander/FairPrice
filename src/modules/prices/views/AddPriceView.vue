@@ -7,6 +7,7 @@ import { priceStore } from '../store/priceStore'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
 import { FpHaptics } from '@/shared/lib/haptics'
 import { UserPreferences } from '@/shared/lib/user-preferences'
+import { useNotify } from '@/composables/useNotify'
 import {
   FpButton,
   FpCard,
@@ -16,6 +17,7 @@ import {
   FpSpinner
 } from '@/design-system'
 
+const { notify } = useNotify()
 
 const route = useRoute()
 const router = useRouter()
@@ -168,7 +170,7 @@ const createProduct = async () => {
     selectProduct({ id: product.id, name: product.name })
     isCreating.value = false
   } catch (e: any) {
-    alert(e.message)
+    notify(e.message, 'error')
   }
 }
 

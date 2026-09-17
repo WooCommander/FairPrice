@@ -43,7 +43,7 @@ const qtyBadge = computed(() => (props.item.quantity > 1 ? `×${props.item.quant
 
 		<div class="body">
 			<h3 class="title">{{ item.title }}</h3>
-			<p v-if="subtitle" class="subtitle">{{ subtitle }}</p>
+			<p class="subtitle" :class="{ 'is-empty': !subtitle }">{{ subtitle || ' ' }}</p>
 
 			<div class="meta">
 				<FpChip v-if="category" static :active="!!category" :color="category.color">
@@ -54,7 +54,7 @@ const qtyBadge = computed(() => (props.item.quantity > 1 ? `×${props.item.quant
 			</div>
 
 			<div v-if="item.tags.length" class="tags">
-				<span v-for="t in item.tags.slice(0, 4)" :key="t">#{{ t }}</span>
+				<span v-for="t in item.tags.slice(0, 4)" :key="t" class="tag">#{{ t }}</span>
 			</div>
 		</div>
 
@@ -118,16 +118,33 @@ const qtyBadge = computed(() => (props.item.quantity > 1 ? `×${props.item.quant
 
 .title {
 	margin: 0;
+	// fixed 2-line slot regardless of how many lines the title actually needs, so every
+	// card in the grid reserves the same height here (not just capped at a max)
+	min-height: 2.5em;
 	font-size: 0.92rem;
 	font-weight: 700;
 	color: var(--color-text-primary);
 	line-height: 1.25;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	word-break: break-word;
 }
 
 .subtitle {
 	margin: 0;
+	min-height: 1.3em;
+	line-height: 1.3;
 	font-size: 0.8rem;
 	color: var(--color-text-secondary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+
+	&.is-empty {
+		visibility: hidden;
+	}
 }
 
 .meta {
@@ -135,6 +152,7 @@ const qtyBadge = computed(() => (props.item.quantity > 1 ? `×${props.item.quant
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 4px;
+	min-height: 24px;
 	margin-top: 2px;
 }
 
@@ -170,6 +188,15 @@ const qtyBadge = computed(() => (props.item.quantity > 1 ? `×${props.item.quant
 	gap: 6px;
 	font-size: 0.7rem;
 	color: var(--color-text-tertiary);
+	max-height: 2.4em;
+	overflow: hidden;
+}
+
+.tag {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .del {

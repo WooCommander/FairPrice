@@ -4,6 +4,7 @@ import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { authStore } from '@/modules/auth/store/authStore'
 import { CatalogService } from '@/modules/catalog/services/CatalogService'
+import { useCollectionsFab } from '@/modules/collections/state/useCollectionsFab'
 import { changelog } from '@/data/changelog'
 import { setLocale, supportedLocales, i18n } from '@/i18n'
 import { useI18n } from 'vue-i18n'
@@ -94,6 +95,9 @@ const navItems = computed(() => [
 ])
 
 const currentPath = computed(() => route.path)
+
+const isCollectionsRoute = computed(() => route.path.startsWith('/collections'))
+const { action: collectionsFabAction } = useCollectionsFab()
 
 const navigate = (path: string) => {
 	FpHaptics.light()
@@ -214,7 +218,15 @@ onUnmounted(() => {
 		</main>
 
 		<!-- Bottom Navigation (Mobile) -->
-		<nav class="bottom-nav">
+		<nav v-if="isCollectionsRoute" v-show="collectionsFabAction" class="bottom-nav collections-bottom-nav">
+			<div v-if="collectionsFabAction" class="nav-item action solo" @click="collectionsFabAction.onClick()">
+				<div class="plus-btn">
+					<Plus :size="24" :stroke-width="3" />
+				</div>
+				<span class="label">{{ collectionsFabAction.label }}</span>
+			</div>
+		</nav>
+		<nav v-else class="bottom-nav">
 			<a class="nav-item" :class="{ active: route.path === '/' }" @click.prevent="navigate('/')">
 				<Home class="icon" :size="20" />
 				<span class="label">{{ t('nav.home') }}</span>

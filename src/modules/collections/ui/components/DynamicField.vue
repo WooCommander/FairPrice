@@ -1,24 +1,29 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { ScanLine } from 'lucide-vue-next'
-import { FpInput, FpSelect, FpTextarea, FpNumberInput, FpIconButton } from '@/design-system'
+import { FpInput, FpMobilePicker, FpTextarea, FpNumberInput, FpIconButton } from '@/design-system'
 import type { FieldSpec } from '../../domain/types'
 
 const props = defineProps<{
 	spec: FieldSpec
 	modelValue: unknown
+	/** existing distinct values for `type: 'reference'` fields (see CollectionItemService.fetchDistinctFieldValues) */
+	referenceItems?: string[]
 }>()
 
 const emit = defineEmits<{
 	(e: 'update:modelValue', value: unknown): void
 	(e: 'scan'): void
+	(e: 'reference-rename', payload: { key: string; oldValue: string; newValue: string }): void
+	(e: 'reference-remove', payload: { key: string; value: string }): void
 }>()
 
 const set = (v: unknown) => emit('update:modelValue', v === '' || v == null ? undefined : v)
 
 const strValue = computed(() => (props.modelValue ?? '') as string | number)
 const numValue = computed(() => (props.modelValue ?? '') as number | string)
-const selectOptions = computed(() => props.spec.options ?? [])
+const selectItems = computed(() => (props.spec.options ?? []).map(o => ({ id: o, name: o })))
+const referenceSelectItems = computed(() => (props.referenceItems ?? []).map(o => ({ id: o, name: o })))
 </script>
 
 <template>
@@ -38,8 +43,17 @@ const selectOptions = computed(() => props.spec.options ?? [])
 		<FpInput v-else-if="spec.type === 'date'" variant="outlined" type="date" :model-value="strValue"
 			:label="spec.label" @update:model-value="set" />
 
-		<FpSelect v-else-if="spec.type === 'select'" :model-value="(modelValue as string) ?? null"
-			:label="spec.label" :options="selectOptions" placeholder="—" @update:model-value="set" />
+		<FpMobilePicker v-else-if="spec.type === 'select'" :model-value="(modelValue as string) ?? ''"
+			:label="spec.label" :items="selectItems" :title="spec.label" placeholder="—" variant="bordered"
+			:label-inside="spec.labelInside" @select="set($event.id)" />
+
+		<FpMobilePicker v-else-if="spec.type === 'reference'" :model-value="(modelValue as string) ?? ''"
+			:label="spec.label" :items="referenceSelectItems" :title="spec.label" placeholder="—"
+			variant="bordered" :label-inside="spec.labelInside" allow-create create-label="Добавить" editable
+			@select="set($event.id)"
+			@create="set"
+			@rename="emit('reference-rename', { key: spec.key, oldValue: String($event.item.name), newValue: $event.name })"
+			@remove="emit('reference-remove', { key: spec.key, value: String($event.name) })" />
 
 		<FpTextarea v-else-if="spec.type === 'textarea'" :model-value="(strValue as string)"
 			:label="spec.label" :placeholder="spec.placeholder" @update:model-value="set" />
@@ -54,6 +68,11 @@ const selectOptions = computed(() => props.spec.options ?? [])
 
 <style scoped lang="scss">
 .dyn-field {
+	// default: full row width — without this, a field with no `half` just shrinks to its
+	// content size (flex-basis: auto) and can end up sharing a row with the next field
+	flex: 1 1 100%;
+	min-width: 0;
+
 	&.half {
 		flex: 1 1 calc(50% - 6px);
 		min-width: 140px;

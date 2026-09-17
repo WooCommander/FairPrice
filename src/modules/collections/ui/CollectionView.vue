@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Plus, Share2, Settings2 } from 'lucide-vue-next'
+import { ArrowLeft, Share2, Settings2 } from 'lucide-vue-next'
 import { FpHaptics } from '@/shared/lib/haptics'
 import { useNotify } from '@/composables/useNotify'
-import { FpChip, FpEmptyState, FpFab, FpIconButton, FpSearchInput, FpSelect, FpSpinner } from '@/design-system'
+import { FpChip, FpConfirmationModal, FpEmptyState, FpIconButton, FpSearchInput, FpSelect, FpSpinner } from '@/design-system'
 import { useCollectionsStore } from '../state/useCollectionsStore'
 import { useCollectionItemsStore } from '../state/useCollectionItemsStore'
 import { useCategoriesStore } from '../state/useCategoriesStore'
+import { useCollectionsFab } from '../state/useCollectionsFab'
 import { CollectionService } from '../services/CollectionService'
 import { getCollectionType } from '../config'
 import ItemModal from './components/ItemModal.vue'
@@ -22,7 +23,10 @@ const router = useRouter()
 const { notify } = useNotify()
 
 const collectionsStore = useCollectionsStore()
-const { items, isLoading, load: loadItems, addItem, editItem, removeItem } = useCollectionItemsStore()
+const {
+	items, isLoading, isLoadingMore, hasMore,
+	load: loadItems, loadMore, loadFull, addItem, editItem, removeItem,
+} = useCollectionItemsStore()
 const categoriesStore = useCategoriesStore()
 
 const collectionId = computed(() => String(route.params.id))
@@ -61,6 +65,14 @@ const loadAll = async () => {
 onMounted(loadAll)
 watch(collectionId, loadAll)
 
+// Search/category filtering runs client-side over whatever's loaded — page 1 isn't enough
+// once the user actually wants to search, so pull in the rest of the collection then.
+watch([search, activeCategory], () => {
+	if ((search.value.trim() || activeCategory.value) && hasMore.value) {
+		loadFull(collectionId.value)
+	}
+})
+
 const sortOptions = computed(() => [
 	{ value: 'recent', label: 'Недавние' },
 	{ value: 'title', label: 'По названию' },
@@ -92,8 +104,9 @@ const filtered = computed(() => {
 	} else {
 		const k = sortKey.value
 		list.sort((a, b) => {
-			const av = a.data[k]
-			const bv = b.data[k]
+			// sort keys may name a top-level column (e.g. "subtitle") or a data field
+			const av = (a as unknown as Record<string, unknown>)[k] ?? a.data[k]
+			const bv = (b as unknown as Record<string, unknown>)[k] ?? b.data[k]
 			if (av == null) return 1
 			if (bv == null) return -1
 			return String(av).localeCompare(String(bv), undefined, { numeric: true })
@@ -102,11 +115,36 @@ const filtered = computed(() => {
 	return list
 })
 
+// Infinite scroll: observe a sentinel at the bottom of the list and pull the next page in
+// once it scrolls into view (see useCollectionItemsStore's `loadMore`).
+const sentinelRef = ref<HTMLElement | null>(null)
+let sentinelObserver: IntersectionObserver | null = null
+
+watch(sentinelRef, el => {
+	sentinelObserver?.disconnect()
+	if (!el) return
+	sentinelObserver = new IntersectionObserver(
+		entries => {
+			if (entries[0]?.isIntersecting) loadMore()
+		},
+		{ rootMargin: '300px' },
+	)
+	sentinelObserver.observe(el)
+})
+onUnmounted(() => sentinelObserver?.disconnect())
+
+const { setFabAction } = useCollectionsFab()
+
 const openAdd = () => {
 	FpHaptics.selection()
 	editing.value = null
 	showModal.value = true
 }
+
+watchEffect(() => {
+	setFabAction(canEdit.value ? { label: `Добавить: ${type.value.itemLabel}`, onClick: openAdd } : null)
+})
+onUnmounted(() => setFabAction(null))
 const openItem = (item: CollectionItem) => {
 	FpHaptics.light()
 	router.push(`/collections/${collectionId.value}/item/${item.id}`)
@@ -133,11 +171,19 @@ const handleSave = async ({ id, dto }: { id?: string; dto: CollectionItemInsertD
 	}
 }
 
-const handleDelete = async (item: CollectionItem) => {
+const showDeleteConfirm = ref(false)
+const pendingDelete = ref<CollectionItem | null>(null)
+
+const handleDelete = (item: CollectionItem) => {
 	FpHaptics.warning()
-	if (!window.confirm(`Удалить «${item.title}»?`)) return
+	pendingDelete.value = item
+	showDeleteConfirm.value = true
+}
+
+const confirmDelete = async () => {
+	if (!pendingDelete.value) return
 	try {
-		await removeItem(item.id)
+		await removeItem(pendingDelete.value.id)
 		FpHaptics.success()
 	} catch (e: any) {
 		notify(e.message || 'Не удалось удалить', 'error')
@@ -147,55 +193,61 @@ const handleDelete = async (item: CollectionItem) => {
 
 <template>
 	<div class="collection-view">
-		<header class="hub-header">
-			<FpIconButton variant="surface" round label="Назад" @click="router.push('/collections')">
-				<ArrowLeft :size="22" />
-			</FpIconButton>
-			<h1 class="title">{{ collection?.name || type.label }}</h1>
-			<span class="count">{{ items.length }}</span>
-			<FpIconButton v-if="collection?.is_owner" variant="surface" round label="Поделиться"
-				@click="showShare = true">
-				<Share2 :size="18" />
-			</FpIconButton>
-			<FpIconButton v-if="collection?.is_owner" variant="surface" round label="Настройки каталога"
-				@click="showSettings = true">
-				<Settings2 :size="18" />
-			</FpIconButton>
-		</header>
+		<div class="sticky-head">
+			<header class="hub-header">
+				<FpIconButton variant="surface" size="sm" round label="Назад" @click="router.push('/collections')">
+					<ArrowLeft :size="18" />
+				</FpIconButton>
+				<h1 class="title">{{ collection?.name || type.label }}</h1>
+				<span class="count">{{ items.length }}</span>
+				<FpIconButton v-if="collection?.is_owner" variant="surface" size="sm" round label="Поделиться"
+					@click="showShare = true">
+					<Share2 :size="15" />
+				</FpIconButton>
+				<FpIconButton v-if="collection?.is_owner" variant="surface" size="sm" round label="Настройки каталога"
+					@click="showSettings = true">
+					<Settings2 :size="15" />
+				</FpIconButton>
+			</header>
 
-		<div class="toolbar">
-			<FpSearchInput v-model="search" :placeholder="`Поиск: ${type.label.toLowerCase()}`" />
-			<div class="sort">
-				<FpSelect v-model="sortKey" :options="sortOptions" />
+			<div class="toolbar">
+				<FpSearchInput v-model="search" :placeholder="`Поиск: ${type.label.toLowerCase()}`" />
+				<div class="sort">
+					<FpSelect v-model="sortKey" :options="sortOptions" />
+				</div>
+			</div>
+
+			<div v-if="categoriesStore.categories.value.length" class="cat-chips">
+				<FpChip :active="activeCategory === null" @click="activeCategory = null">Все</FpChip>
+				<FpChip v-for="c in categoriesStore.categories.value" :key="c.id"
+					:active="activeCategory === c.id" :color="c.color"
+					@click="activeCategory = activeCategory === c.id ? null : c.id">
+					{{ c.name }}
+				</FpChip>
 			</div>
 		</div>
 
-		<div v-if="categoriesStore.categories.value.length" class="cat-chips">
-			<FpChip :active="activeCategory === null" @click="activeCategory = null">Все</FpChip>
-			<FpChip v-for="c in categoriesStore.categories.value" :key="c.id"
-				:active="activeCategory === c.id" :color="c.color"
-				@click="activeCategory = activeCategory === c.id ? null : c.id">
-				{{ c.name }}
-			</FpChip>
+		<div class="scroll-body">
+			<div v-if="isLoading && !items.length" class="loading">
+				<FpSpinner size="md" />
+			</div>
+
+			<FpEmptyState v-else-if="!filtered.length" compact
+				:title="items.length ? 'Ничего не найдено' : 'Пока пусто'"
+				:description="items.length ? undefined : 'Добавь первый элемент — кнопка «＋».'" />
+
+			<template v-else>
+				<div class="items" :class="type.listLayout">
+					<ItemCard v-for="it in filtered" :key="it.id" :item="it" :type="type"
+						:category="categoriesStore.getById(it.category_id)" :layout="type.listLayout"
+						@open="openItem(it)" @delete="handleDelete(it)" />
+				</div>
+
+				<div v-if="hasMore" ref="sentinelRef" class="load-more">
+					<FpSpinner v-if="isLoadingMore" size="sm" />
+				</div>
+			</template>
 		</div>
-
-		<div v-if="isLoading && !items.length" class="loading">
-			<FpSpinner size="md" />
-		</div>
-
-		<FpEmptyState v-else-if="!filtered.length" compact
-			:title="items.length ? 'Ничего не найдено' : 'Пока пусто'"
-			:description="items.length ? undefined : 'Добавь первый элемент — кнопка «＋».'" />
-
-		<div v-else class="items" :class="type.listLayout">
-			<ItemCard v-for="it in filtered" :key="it.id" :item="it" :type="type"
-				:category="categoriesStore.getById(it.category_id)" :layout="type.listLayout"
-				@open="openItem(it)" @delete="handleDelete(it)" />
-		</div>
-
-		<FpFab v-if="canEdit" :label="`Добавить: ${type.itemLabel}`" @click="openAdd">
-			<Plus :size="26" :stroke-width="3" />
-		</FpFab>
 
 		<ItemModal :visible="showModal" :collection-id="collectionId" :type="type"
 			:categories="categoriesStore.categories.value" :initial-data="editing"
@@ -207,6 +259,10 @@ const handleDelete = async (item: CollectionItem) => {
 		<CollectionSettingsModal v-if="collection" :visible="showSettings" :collection="collection"
 			@close="showSettings = false" @renamed="collection && (collection.name = $event)"
 			@deleted="router.replace('/collections')" />
+
+		<FpConfirmationModal v-model:visible="showDeleteConfirm" title="Удалить элемент?"
+			:message="`«${pendingDelete?.title}» будет удалён без возможности восстановления.`"
+			confirm-text="Удалить" variant="danger" @confirm="confirmDelete" />
 	</div>
 </template>
 
@@ -214,20 +270,32 @@ const handleDelete = async (item: CollectionItem) => {
 .collection-view {
 	display: flex;
 	flex-direction: column;
-	padding: var(--spacing-md);
-	padding-bottom: 100px;
 	min-height: 100%;
+}
+
+// pinned to the top of the page's scroll area (see MainLayout's `.page-content`) — only
+// the items below scroll, the header/search/category chips stay put
+.sticky-head {
+	position: sticky;
+	top: 0;
+	z-index: 5;
+	background: var(--color-background);
+	padding: 10px var(--spacing-md) 0;
+}
+
+.scroll-body {
+	padding: 0 var(--spacing-md) 100px;
 }
 
 .hub-header {
 	display: flex;
 	align-items: center;
-	gap: var(--spacing-md);
-	margin-bottom: var(--spacing-md);
+	gap: 8px;
+	margin-bottom: 8px;
 
 	.title {
 		margin: 0;
-		font-size: 1.35rem;
+		font-size: 1.05rem;
 		font-weight: 800;
 		color: var(--color-text-primary);
 		flex: 1;
@@ -237,20 +305,20 @@ const handleDelete = async (item: CollectionItem) => {
 	}
 
 	.count {
-		font-size: 0.85rem;
+		font-size: 0.75rem;
 		font-weight: 700;
 		color: var(--color-text-tertiary);
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-pill, 9999px);
-		padding: 2px 10px;
+		padding: 1px 8px;
 	}
 }
 
 .toolbar {
 	display: flex;
 	gap: 8px;
-	margin-bottom: 12px;
+	margin-bottom: 8px;
 
 	:deep(.fp-search) {
 		flex: 1;
@@ -263,10 +331,10 @@ const handleDelete = async (item: CollectionItem) => {
 
 .cat-chips {
 	display: flex;
-	gap: 8px;
+	gap: 6px;
 	overflow-x: auto;
-	padding-bottom: 8px;
-	margin-bottom: 8px;
+	padding-bottom: 6px;
+	margin-bottom: 0;
 	scrollbar-width: none;
 
 	&::-webkit-scrollbar {
@@ -292,5 +360,12 @@ const handleDelete = async (item: CollectionItem) => {
 		flex-direction: column;
 		gap: 10px;
 	}
+}
+
+.load-more {
+	display: flex;
+	justify-content: center;
+	padding: 20px 0;
+	min-height: 40px;
 }
 </style>

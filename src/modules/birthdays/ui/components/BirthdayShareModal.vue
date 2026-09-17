@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { Trash2, Pencil, MailCheck, Clock } from 'lucide-vue-next'
-import { FpModal, FpButton, FpInput, FpChip, FpIconButton, FpEmptyState } from '@/design-system'
+import { FpModal, FpButton, FpInput, FpChip, FpIconButton, FpEmptyState, FpConfirmationModal } from '@/design-system'
 import { useNotify } from '@/composables/useNotify'
 import { FpHaptics } from '@/shared/lib/haptics'
 import { useBirthdaySharesStore } from '../../state/useBirthdaySharesStore'
@@ -99,8 +99,17 @@ const startEdit = (id: string) => {
 	form.selected = [...s.birthday_ids]
 }
 
-const remove = async (id: string, email: string) => {
-	if (!window.confirm(`Убрать доступ для ${email}?`)) return
+const showRemoveConfirm = ref(false)
+const removeTarget = ref<{ id: string; email: string } | null>(null)
+
+const askRemove = (id: string, email: string) => {
+	removeTarget.value = { id, email }
+	showRemoveConfirm.value = true
+}
+
+const confirmRemove = async () => {
+	if (!removeTarget.value) return
+	const { id } = removeTarget.value
 	try {
 		await revoke(id)
 		if (form.editingId === id) resetForm()
@@ -176,7 +185,7 @@ const scopeBadge = (s: { scope: BirthdayShareScope; birthday_ids: readonly strin
 							<Pencil :size="15" />
 						</FpIconButton>
 						<FpIconButton variant="danger" size="sm" label="Убрать доступ"
-							@click="remove(s.id, s.member_email)">
+							@click="askRemove(s.id, s.member_email)">
 							<Trash2 :size="15" />
 						</FpIconButton>
 					</div>
@@ -188,6 +197,10 @@ const scopeBadge = (s: { scope: BirthdayShareScope; birthday_ids: readonly strin
 			<FpButton variant="text" size="full" @click="emit('close')">Готово</FpButton>
 		</template>
 	</FpModal>
+
+	<FpConfirmationModal v-model:visible="showRemoveConfirm" title="Убрать доступ?"
+		:message="`«${removeTarget?.email}» больше не увидит этот список.`" confirm-text="Убрать"
+		variant="danger" @confirm="confirmRemove" />
 </template>
 
 <style scoped lang="scss">

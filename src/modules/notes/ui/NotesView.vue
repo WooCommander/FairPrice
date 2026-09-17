@@ -6,6 +6,7 @@ import { useNotesStore } from '../state/useNotesStore'
 import type { Note } from '../domain/Note'
 import NoteModal from './components/NoteModal.vue'
 import { FpHaptics } from '@/shared/lib/haptics'
+import { FpConfirmationModal } from '@/design-system'
 
 const router = useRouter()
 const { notes, isLoading, fetchNotes, addNote, editNote, removeNote } = useNotesStore()
@@ -49,14 +50,19 @@ const handleSaveNote = async (payload: { id?: string, note: any }) => {
     }
 }
 
-const handleDelete = async (note: Note) => {
-    FpHaptics.warning()
-    const isConfirmed = window.confirm('Удалить заметку? Это действие нельзя будет отменить.')
+const showDeleteConfirm = ref(false)
+const pendingDelete = ref<Note | null>(null)
 
-    if (isConfirmed) {
-        FpHaptics.success()
-        await removeNote(note.id)
-    }
+const handleDelete = (note: Note) => {
+    FpHaptics.warning()
+    pendingDelete.value = note
+    showDeleteConfirm.value = true
+}
+
+const confirmDeleteNote = async () => {
+    if (!pendingDelete.value) return
+    FpHaptics.success()
+    await removeNote(pendingDelete.value.id)
 }
 </script>
 
@@ -113,12 +119,16 @@ const handleDelete = async (note: Note) => {
             <Plus :size="28" :stroke-width="3" />
         </button>
 
-        <NoteModal 
-            :visible="isModalOpen" 
+        <NoteModal
+            :visible="isModalOpen"
             :initial-data="editingNote"
             @close="closeModal"
             @save="handleSaveNote"
         />
+
+        <FpConfirmationModal v-model:visible="showDeleteConfirm" title="Удалить заметку?"
+            message="Это действие нельзя будет отменить." confirm-text="Удалить" variant="danger"
+            @confirm="confirmDeleteNote" />
     </div>
 </template>
 

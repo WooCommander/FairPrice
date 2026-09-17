@@ -180,6 +180,12 @@ const routes = [
         name: 'CollectionItem',
         component: () => import('@/modules/collections').then(m => m.CollectionItemView),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/collections/:id/item/:itemId/edit',
+        name: 'CollectionItemEdit',
+        component: () => import('@/modules/collections').then(m => m.ItemEditView),
+        meta: { requiresAuth: true }
     }
 ]
 

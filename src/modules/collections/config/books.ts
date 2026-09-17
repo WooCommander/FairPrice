@@ -1,9 +1,9 @@
 import type { CollectionTypeConfig } from '../domain/types'
 
 export interface BookData {
-    author?: string
     publisher?: string
-    edition?: string
+    illustrator?: string
+    city?: string
     year?: number
     isbn?: string
 }
@@ -16,20 +16,24 @@ export const booksType: CollectionTypeConfig<BookData> = {
     defaultCollectionName: 'Моя библиотека',
     titleHint: 'Название книги',
     subtitleHint: 'Автор',
+    // author is a "справочник" (see FieldType) — picked from authors already used in
+    // this catalog, not typed fresh (and not duplicated as a separate data.author field)
+    subtitleAsReference: true,
     listLayout: 'grid',
     fields: [
-        { key: 'author', type: 'text', label: 'Автор', half: true },
-        { key: 'publisher', type: 'text', label: 'Издательство', half: true },
-        { key: 'edition', type: 'text', label: 'Издание / серия', half: true },
+        // full-width: publisher/illustrator names run long and don't fit half-width
+        { key: 'publisher', type: 'reference', label: 'Издательство', labelInside: true },
+        { key: 'illustrator', type: 'reference', label: 'Иллюстратор' },
+        { key: 'city', type: 'reference', label: 'Город', half: true },
         { key: 'year', type: 'number', label: 'Год', half: true },
-        { key: 'isbn', type: 'text', label: 'ISBN', scan: true },
+        // ISBN dropped for now (scan/lookup UI needs its own pass)
     ],
     formatSubtitle: ({ subtitle, data }) => {
-        const parts = [subtitle || data.author, data.year ? String(data.year) : undefined]
+        const parts = [subtitle, data.year ? String(data.year) : undefined]
         return parts.filter(Boolean).join(' · ') || undefined
     },
     sortOptions: [
-        { key: 'author', label: 'По автору' },
+        { key: 'subtitle', label: 'По автору' },
         { key: 'year', label: 'По году' },
     ],
     starterCategories: [
