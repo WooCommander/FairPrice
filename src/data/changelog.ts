@@ -9,6 +9,17 @@ export interface ReleaseNote {
 
 export const changelog: ReleaseNote[] = [
     {
+        version: '1.6.2',
+        date: '2026-09-18',
+        highlights: [
+            'Коллекции: нижнее меню'
+        ],
+        features: [
+            'Внутри коллекций в нижнем меню теперь есть «Главная» (быстрый возврат) и «Коллекции», а кнопка добавления — по центру, как в основном меню.'
+        ],
+        fixes: []
+    },
+    {
         version: '1.6.1',
         date: '2026-09-18',
         highlights: [

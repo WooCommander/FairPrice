@@ -218,8 +218,17 @@ onUnmounted(() => {
 		</main>
 
 		<!-- Bottom Navigation (Mobile) -->
-		<nav v-if="isCollectionsRoute" v-show="collectionsFabAction" class="bottom-nav collections-bottom-nav">
-			<div v-if="collectionsFabAction" class="nav-item action solo" @click="collectionsFabAction.onClick()">
+		<nav v-if="isCollectionsRoute" class="bottom-nav collections-bottom-nav">
+			<a class="nav-item home-item" @click.prevent="navigate('/')">
+				<Home class="icon" :size="20" />
+				<span class="label">{{ t('nav.home') }}</span>
+			</a>
+			<!-- this bar only ever shows while inside /collections, so this tab is always "active" -->
+			<a class="nav-item collections-item active" @click.prevent="navigate('/collections')">
+				<Library class="icon" :size="20" />
+				<span class="label">Коллекции</span>
+			</a>
+			<div v-if="collectionsFabAction" class="nav-item action" @click="collectionsFabAction.onClick()">
 				<div class="plus-btn">
 					<Plus :size="24" :stroke-width="3" />
 				</div>
@@ -936,6 +945,29 @@ onUnmounted(() => {
 				transform: scale(0.9);
 			}
 		}
+	}
+}
+
+// Collections-mode bar only ever has Home + Коллекции + the add action, so a plain
+// space-around row bunches everything together; pin Home/Коллекции to opposite edges and
+// the plus to the true center, matching the main 5-item bar's look (elevated circular
+// button, dead center). `!important` + the doubled-up selector because `.bottom-nav`'s own
+// media-query rule for the same properties otherwise wins the cascade unpredictably.
+nav.bottom-nav.collections-bottom-nav {
+	position: relative;
+	justify-content: space-between !important;
+	padding: 0 24px;
+
+	.home-item,
+	.collections-item {
+		flex: 0 0 auto !important;
+	}
+
+	.action {
+		position: absolute;
+		left: 50%;
+		top: -14px;
+		transform: translateX(-50%);
 	}
 }
 </style>
