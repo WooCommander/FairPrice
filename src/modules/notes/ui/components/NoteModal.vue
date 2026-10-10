@@ -137,30 +137,30 @@ const handleSave = () => {
 
 .note-modal {
     width: 100%;
-    max-width: 400px;
-    border-radius: 12px; // Classic sticky notes are a bit square, but 12px looks modern
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    max-width: 480px;
+    max-height: calc(100dvh - 32px);
+    border-radius: 16px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     transition: background-color 0.3s ease;
-    // Note: color text is adjusted below
 }
 
 .modal-header {
     display: flex;
     align-items: center;
-    padding: 12px 16px;
-    padding-bottom: 0;
+    padding: 16px 16px 8px;
+    flex-shrink: 0;
     
     .title-input {
         flex: 1;
         background: transparent;
         border: none;
         outline: none;
-        font-size: 1.1rem;
+        font-size: 1.15rem;
         font-weight: 700;
-        color: #1f2937; // Dark text for light pastel backgrounds
+        color: #1f2937;
         
         &::placeholder {
             color: rgba(31, 41, 55, 0.4);
@@ -187,23 +187,47 @@ const handleSave = () => {
 }
 
 .modal-body {
-    padding: 16px;
+    padding: 8px 16px 16px;
     flex: 1;
-    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    min-height: 180px;
+    max-height: calc(100dvh - 170px);
+    overflow: hidden;
 }
 
 .content-input {
     width: 100%;
     height: 100%;
-    min-height: 200px;
+    min-height: 180px;
     background: transparent;
     border: none;
     outline: none;
     resize: none;
-    font-size: 1.05rem;
-    line-height: 1.5;
-    color: #374151; // Slightly softer than black
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #374151;
     font-family: inherit;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 9999px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.25);
+    }
     
     &::placeholder {
         color: rgba(55, 65, 81, 0.4);
@@ -215,8 +239,9 @@ const handleSave = () => {
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    background: rgba(255, 255, 255, 0.3); // Slight glass effect over the note color
+    background: rgba(255, 255, 255, 0.3);
     border-top: 1px solid rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
 }
 
 .color-picker {

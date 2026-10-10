@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Plus, Trash2, Edit2 } from 'lucide-vue-next'
 import { useNotesStore } from '../state/useNotesStore'
-import type { Note } from '../domain/Note'
+import type { Note, NoteInsertDTO } from '../domain/Note'
 import NoteModal from './components/NoteModal.vue'
 import { FpHaptics } from '@/shared/lib/haptics'
 import { FpConfirmationModal } from '@/design-system'
@@ -37,7 +37,7 @@ const closeModal = () => {
     }, 300)
 }
 
-const handleSaveNote = async (payload: { id?: string, note: any }) => {
+const handleSaveNote = async (payload: { id?: string, note: NoteInsertDTO }) => {
     try {
         if (payload.id) {
             await editNote(payload.id, payload.note)
@@ -45,7 +45,7 @@ const handleSaveNote = async (payload: { id?: string, note: any }) => {
             await addNote(payload.note)
         }
         closeModal()
-    } catch (e) {
+    } catch (e: unknown) {
         console.error(e)
     }
 }
@@ -241,6 +241,11 @@ const confirmDeleteNote = async () => {
     color: #1f2937;
     flex: 1;
     word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
     
     &.empty {
         height: 4px; // just space if no title
@@ -274,8 +279,13 @@ const confirmDeleteNote = async () => {
     font-size: 0.95rem;
     line-height: 1.5;
     color: #374151;
-    white-space: pre-wrap; // preserve line breaks
+    white-space: pre-wrap;
     word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .fab-btn {

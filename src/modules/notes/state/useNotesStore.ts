@@ -18,9 +18,9 @@ export const useNotesStore = () => {
         error.value = null
         try {
             notes.value = await NoteService.fetchNotes()
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to fetch notes:', err)
-            error.value = err.message || 'Ошибка загрузки заметок'
+            error.value = err instanceof Error ? err.message : 'Ошибка загрузки заметок'
         } finally {
             isLoading.value = false
         }
@@ -31,7 +31,7 @@ export const useNotesStore = () => {
             const newNote = await NoteService.createNote(data)
             notes.value.unshift(newNote)
             return newNote
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to add note:', err)
             throw err
         }
@@ -45,7 +45,7 @@ export const useNotesStore = () => {
                 notes.value[idx] = updated
             }
             return updated
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to edit note:', err)
             throw err
         }
@@ -55,7 +55,7 @@ export const useNotesStore = () => {
         try {
             await NoteService.deleteNote(id)
             notes.value = notes.value.filter(n => n.id !== id)
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to delete note:', err)
             throw err
         }
