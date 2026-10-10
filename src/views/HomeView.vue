@@ -11,6 +11,9 @@ import { useCollectionsStore } from '@/modules/collections/state/useCollectionsS
 import { getCollectionType } from '@/modules/collections/config'
 import { resolveIcon } from '@/modules/collections/config/icons'
 import { homeStore } from '@/modules/settings/store/homeStore'
+import NoteModal from '@/modules/notes/ui/components/NoteModal.vue'
+import type { Note, NoteInsertDTO } from '@/modules/notes/domain/Note'
+import { FpHaptics } from '@/shared/lib/haptics'
 import FpCard from '@/design-system/components/FpCard.vue'
 import FpButton from '@/design-system/components/FpButton.vue'
 import { FpPullToRefresh } from '@/design-system'
@@ -60,6 +63,35 @@ const upcomingBirthdays = computed(() => {
 // Notes
 const notesStore = useNotesStore()
 const lastNote = computed(() => notesStore.notes.value[0] || null)
+
+const isNoteModalOpen = ref(false)
+const selectedNote = ref<Note | null>(null)
+
+const openNoteModal = (note: Note) => {
+  FpHaptics.selection()
+  selectedNote.value = note
+  isNoteModalOpen.value = true
+}
+
+const closeNoteModal = () => {
+  isNoteModalOpen.value = false
+  setTimeout(() => {
+    selectedNote.value = null
+  }, 300)
+}
+
+const handleSaveNote = async (payload: { id?: string; note: NoteInsertDTO }) => {
+  try {
+    if (payload.id) {
+      await notesStore.editNote(payload.id, payload.note)
+    } else {
+      await notesStore.addNote(payload.note)
+    }
+    closeNoteModal()
+  } catch (e: unknown) {
+    console.error('Failed to save note from home', e)
+  }
+}
 
 // Collections (own catalogs)
 const collectionsStore = useCollectionsStore()
@@ -227,13 +259,17 @@ onMounted(loadData)
             <h2 class="section-title">Последняя заметка 📝</h2>
             <FpButton variant="text" size="sm" @click="router.push('/notes')">Все</FpButton>
           </div>
-          <FpCard class="note-card" @click="router.push('/notes')">
-            <h3 class="note-card__title">{{ lastNote.title }}</h3>
+          <div 
+            class="note-card" 
+            :style="{ backgroundColor: lastNote.color }" 
+            @click="openNoteModal(lastNote)"
+          >
+            <h3 v-if="lastNote.title" class="note-card__title">{{ lastNote.title }}</h3>
             <p class="note-card__text">{{ lastNote.content }}</p>
             <div class="note-card__footer">
               <span class="note-card__date">{{ new Date(lastNote.created_at).toLocaleDateString('ru-RU') }}</span>
             </div>
-          </FpCard>
+          </div>
         </section>
 
         <!-- Quick Actions -->
@@ -275,6 +311,13 @@ onMounted(loadData)
           </div>
         </div>
       </div>
+
+      <NoteModal
+        :visible="isNoteModalOpen"
+        :initial-data="selectedNote"
+        @close="closeNoteModal"
+        @save="handleSaveNote"
+      />
     </FpPullToRefresh>
   </div>
 </template>
@@ -670,29 +713,40 @@ onMounted(loadData)
 
 .note-card {
   padding: 16px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
   border-radius: 16px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: background 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
 
   &:active {
-    background: var(--color-surface-hover);
+    transform: scale(0.98);
   }
 
   &__title {
     font-size: 16px;
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: #1f2937;
     margin: 0;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__text {
     font-size: 14px;
-    color: var(--color-text-secondary);
+    color: #374151;
     line-height: 1.5;
     margin: 0;
     display: -webkit-box;
@@ -700,6 +754,9 @@ onMounted(loadData)
     line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    white-space: pre-wrap;
   }
 
   &__footer {
@@ -710,7 +767,8 @@ onMounted(loadData)
 
   &__date {
     font-size: 11px;
-    color: var(--color-text-tertiary);
+    color: rgba(31, 41, 55, 0.6);
+    font-weight: 500;
   }
 }
 
